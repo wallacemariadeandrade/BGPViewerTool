@@ -1,9 +1,0 @@
-c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\BGPViewerCore\bin\Debug\netstandard2.0\BGPViewerCore.deps.json
-c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\BGPViewerCore\bin\Debug\netstandard2.0\BGPViewerCore.dll
-c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\BGPViewerCore\bin\Debug\netstandard2.0\BGPViewerCore.pdb
-c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\BGPViewerCore\obj\Debug\netstandard2.0\BGPViewerCore.csprojAssemblyReference.cache
-c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\BGPViewerCore\obj\Debug\netstandard2.0\BGPViewerCore.csproj.CoreCompileInputs.cache
-c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\BGPViewerCore\obj\Debug\netstandard2.0\BGPViewerCore.AssemblyInfoInputs.cache
-c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\BGPViewerCore\obj\Debug\netstandard2.0\BGPViewerCore.AssemblyInfo.cs
-c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\BGPViewerCore\obj\Debug\netstandard2.0\BGPViewerCore.dll
-c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\BGPViewerCore\obj\Debug\netstandard2.0\BGPViewerCore.pdb
