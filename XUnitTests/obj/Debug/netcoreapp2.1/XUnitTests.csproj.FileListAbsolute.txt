@@ -1,0 +1,17 @@
+c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\XUnitTests\bin\Debug\netcoreapp2.1\xunit.runner.visualstudio.dotnetcore.testadapter.dll
+c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\XUnitTests\bin\Debug\netcoreapp2.1\xunit.runner.reporters.netcoreapp10.dll
+c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\XUnitTests\bin\Debug\netcoreapp2.1\xunit.runner.utility.netcoreapp10.dll
+c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\XUnitTests\bin\Debug\netcoreapp2.1\XUnitTests.deps.json
+c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\XUnitTests\bin\Debug\netcoreapp2.1\XUnitTests.runtimeconfig.json
+c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\XUnitTests\bin\Debug\netcoreapp2.1\XUnitTests.runtimeconfig.dev.json
+c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\XUnitTests\bin\Debug\netcoreapp2.1\XUnitTests.dll
+c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\XUnitTests\bin\Debug\netcoreapp2.1\XUnitTests.pdb
+c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\XUnitTests\bin\Debug\netcoreapp2.1\BGPViewerCore.dll
+c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\XUnitTests\bin\Debug\netcoreapp2.1\BGPViewerCore.pdb
+c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\XUnitTests\obj\Debug\netcoreapp2.1\XUnitTests.csprojAssemblyReference.cache
+c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\XUnitTests\obj\Debug\netcoreapp2.1\XUnitTests.csproj.CoreCompileInputs.cache
+c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\XUnitTests\obj\Debug\netcoreapp2.1\XUnitTests.AssemblyInfoInputs.cache
+c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\XUnitTests\obj\Debug\netcoreapp2.1\XUnitTests.AssemblyInfo.cs
+c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\XUnitTests\obj\Debug\netcoreapp2.1\XUnitTests.csproj.CopyComplete
+c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\XUnitTests\obj\Debug\netcoreapp2.1\XUnitTests.dll
+c:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\XUnitTests\obj\Debug\netcoreapp2.1\XUnitTests.pdb
