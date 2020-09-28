@@ -7,7 +7,7 @@ There are a few ways to use this repo content, so scroll down and have fun! :smi
 :construction: It's under construction :construction:
 
 ## .NET Developers
-If you're a .NET developer you can use the core library on your application. Just add a reference to it and go code!
+If you're a .NET developer you can use the core library on your application. Just add a reference to it and go code! :sunglasses:
 
 ### Create the Service
 ```c#
