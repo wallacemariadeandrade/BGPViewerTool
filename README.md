@@ -37,14 +37,14 @@ var details = service.GetAsnDetails(6762);
 ```
 
 ## Normal Human User
-If you're a normal human (maybe not so normal cause you probably work with telecom :laughing: :sweat_smile:) and likes Powershell, then you can use [BGPViewerPowerTool](https://github.com/wallacemariadeandrade/BGPViewerTool/tree/development/BGPViewerPowerTool)! It's a bunch of PowerShell scripts that do all the work for you. Download the folder and call the scripts from PowerShell prompt at scripts directory.
+If you're a normal human (maybe not so normal cause you probably work with telecom :laughing::sweat_smile:) and likes Powershell, then you can use [BGPViewerPowerTool](https://github.com/wallacemariadeandrade/BGPViewerTool/tree/development/BGPViewerPowerTool)! It's a bunch of PowerShell scripts that do all the work for you. Download the folder and call the scripts from PowerShell prompt at scripts directory.
 
 > [PowerShell](https://docs.microsoft.com/pt-br/powershell/scripting/overview?view=powershell-7) is a cross-platform task automation and configuration management framework, consisting of a command-line shell and scripting language. Unlike most shells, which accept and return text, PowerShell is built on top of the .NET Common Language Runtime (CLR), and accepts and returns .NET objects. This fundamental change brings entirely new tools and methods for automation.
 
-Download instructions PowerShell [here](https://docs.microsoft.com/pt-br/powershell/scripting/install/installing-powershell?view=powershell-7).
+Download PowerShell [here](https://docs.microsoft.com/pt-br/powershell/scripting/install/installing-powershell?view=powershell-7).
 
 ### Permit Powershell to Excute Scripts
-By default PowerShell don't allow scripts execution. To turn it on you have to run PowerShell as Administrator and paste the command bellow:
+By default PowerShell doesn't allow scripts execution. To turn it on you have to run PowerShell as Administrator and paste the command bellow:
 ```
 set-executionpolicy remotesigned
 
