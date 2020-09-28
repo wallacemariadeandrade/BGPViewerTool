@@ -856,11 +856,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Wallace-K2 Telecom\\source\\repos\\BGPViewerTool\\BGPViewerConsoleTool\\BGPViewerConsoleTool.csproj",
+      "projectUniqueName": "c:\\Users\\Wallace-K2 Telecom\\source\\repos\\BGPViewerTool\\BGPViewerConsoleTool\\BGPViewerConsoleTool.csproj",
       "projectName": "BGPViewerConsoleTool",
-      "projectPath": "C:\\Users\\Wallace-K2 Telecom\\source\\repos\\BGPViewerTool\\BGPViewerConsoleTool\\BGPViewerConsoleTool.csproj",
+      "projectPath": "c:\\Users\\Wallace-K2 Telecom\\source\\repos\\BGPViewerTool\\BGPViewerConsoleTool\\BGPViewerConsoleTool.csproj",
       "packagesPath": "C:\\Users\\Wallace-K2 Telecom\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Wallace-K2 Telecom\\source\\repos\\BGPViewerTool\\BGPViewerConsoleTool\\obj\\",
+      "outputPath": "c:\\Users\\Wallace-K2 Telecom\\source\\repos\\BGPViewerTool\\BGPViewerConsoleTool\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
@@ -879,8 +879,8 @@
       "frameworks": {
         "netcoreapp2.1": {
           "projectReferences": {
-            "C:\\Users\\Wallace-K2 Telecom\\source\\repos\\BGPViewerTool\\BGPViewerCore\\BGPViewerCore.csproj": {
-              "projectPath": "C:\\Users\\Wallace-K2 Telecom\\source\\repos\\BGPViewerTool\\BGPViewerCore\\BGPViewerCore.csproj"
+            "c:\\Users\\Wallace-K2 Telecom\\source\\repos\\BGPViewerTool\\BGPViewerCore\\BGPViewerCore.csproj": {
+              "projectPath": "c:\\Users\\Wallace-K2 Telecom\\source\\repos\\BGPViewerTool\\BGPViewerCore\\BGPViewerCore.csproj"
             }
           }
         }

@@ -10,60 +10,35 @@ namespace Xunit
         [Fact]
         public void GetAsnDetais()
         {
-            // Mocked from API
-            var expected = new AsnDetailsModel {
-                ASN = 6762,
-                Name = "SEABONE-NET",
-                DescriptionShort = "TELECOM ITALIA SPARKLE S.p.A.",
-                EmailContacts = new List<string> {
-                    "abuse@seabone.net",
-                    "peering@seabone.net",
-                    "tech@seabone.net",
-                    "francesco.chiappini@telecomitalia.it"
-                },
-                AbuseContacts = new List<string> {
-                    "abuse@seabone.net"
-                },
-                LookingGlassUrl = "https://gambadilegno.noc.seabone.net/lg/",
-                CountryCode = "IT"
-            };
-
-            var asnDetails = new BGPViewerService().GetAsnDetails(6762);
+            // Mocked Data
+            var asnDetails = new BGPViewerService(new BGPViewerMockApi())
+                .GetAsnDetails(6762);
             
-            Assert.Equal(expected.ASN, asnDetails.ASN);
-            Assert.Equal(expected.DescriptionShort, asnDetails.DescriptionShort);
-            Assert.Equal(expected.Name, asnDetails.Name);
-            Assert.Equal(expected.EmailContacts.ElementAt(0), asnDetails.EmailContacts.ElementAt(0));
-            Assert.Equal(expected.EmailContacts.ElementAt(1), asnDetails.EmailContacts.ElementAt(1));
-            Assert.Equal(expected.EmailContacts.ElementAt(2), asnDetails.EmailContacts.ElementAt(2));
-            Assert.Equal(expected.EmailContacts.ElementAt(3), asnDetails.EmailContacts.ElementAt(3));
-            Assert.Equal(expected.AbuseContacts.ElementAt(0), asnDetails.AbuseContacts.ElementAt(0));
-            Assert.Equal(expected.LookingGlassUrl, asnDetails.LookingGlassUrl);
-            Assert.Equal(expected.CountryCode, asnDetails.CountryCode);
+            Assert.Equal(6762, asnDetails.ASN);
+            Assert.Equal("TELECOM ITALIA SPARKLE S.p.A.", asnDetails.DescriptionShort);
+            Assert.Equal("SEABONE-NET", asnDetails.Name);
+            Assert.Equal("abuse@seabone.net", asnDetails.EmailContacts.ElementAt(0));
+            Assert.Equal("peering@seabone.net", asnDetails.EmailContacts.ElementAt(1));
+            Assert.Equal("tech@seabone.net", asnDetails.EmailContacts.ElementAt(2));
+            Assert.Equal("francesco.chiappini@telecomitalia.it", asnDetails.EmailContacts.ElementAt(3));
+            Assert.Equal("abuse@seabone.net", asnDetails.AbuseContacts.ElementAt(0));
+            Assert.Equal("https://gambadilegno.noc.seabone.net/lg/", asnDetails.LookingGlassUrl);
+            Assert.Equal("IT", asnDetails.CountryCode);
         }
 
         [Fact]
         public void GetAsnDetailsWhenSomePropertiesAreNull()
         {
-            // Mock from API
-            var expected = new AsnDetailsModel {
-                ASN = 53181,
-                Name = null,
-                DescriptionShort = null,
-                EmailContacts = new List<string> (),
-                AbuseContacts = new List<string> (),
-                LookingGlassUrl = null,
-                CountryCode = "BR"
-            };
-
-            var asnDetails = new BGPViewerService().GetAsnDetails(53181);
+            // Mocked Data
+            var asnDetails = new BGPViewerService(new BGPViewerMockApi())
+                .GetAsnDetails(53181);
             
-            Assert.Equal(expected.ASN, asnDetails.ASN);
-            Assert.Equal(expected.DescriptionShort, asnDetails.DescriptionShort);
-            Assert.Equal(expected.Name, asnDetails.Name);
-            Assert.Equal(expected.EmailContacts.Count(), asnDetails.EmailContacts.Count());
-            Assert.Equal(expected.LookingGlassUrl, asnDetails.LookingGlassUrl);
-            Assert.Equal(expected.CountryCode, asnDetails.CountryCode);
+            Assert.Equal(53181, asnDetails.ASN);
+            Assert.Equal(null, asnDetails.DescriptionShort);
+            Assert.Equal(null, asnDetails.Name);
+            Assert.Equal(0, asnDetails.EmailContacts.Count());
+            Assert.Equal(null, asnDetails.LookingGlassUrl);
+            Assert.Equal("BR", asnDetails.CountryCode);
         }
     }
 }

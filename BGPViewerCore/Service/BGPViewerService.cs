@@ -1,17 +1,20 @@
 using BGPViewerCore.Model;
 using System.Linq;
-using System.Text.Json;
 
 namespace BGPViewerCore.Service
 {
     public class BGPViewerService
     {
+        private IBGPViewerApi _api;
+
+        public BGPViewerService(IBGPViewerApi api)
+        {
+            _api = api;
+        }
+
         public AsnDetailsModel GetAsnDetails(int asNumber)
         {
-            var jsonData = JsonDocument.Parse(WebService.GetContentFrom($"https://api.bgpview.io/asn/{asNumber}"))
-                .RootElement
-                .GetProperty("data");
-            
+            var jsonData = _api.RetrieveAsnDetails(asNumber).RootElement.GetProperty("data");   
             return new AsnDetailsModel 
             {
                 ASN = asNumber,
