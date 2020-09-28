@@ -9,5 +9,6 @@ function RetrieveJsonFrom {
 function PrintInitialMessage () {
     Write-Host ""
     Write-Host "*** Powered by BGPView API ***"   
+    Write-Host "*** Information Accuracy depends on API data ***"
     Write-Host "*** Available at https://github.com/wallacemariadeandrade/BGPViewerTool.git ***"
 }
