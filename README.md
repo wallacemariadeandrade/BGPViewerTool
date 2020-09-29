@@ -17,22 +17,16 @@ var service = new BGPViewerService(new BGPViewerWebApi());
 ### Get ASN Information
 ```c#
 
-// Details like
-// ASN = 6762,
-// Name = "SEABONE-NET",
-// DescriptionShort = "TELECOM ITALIA SPARKLE S.p.A.",
-// EmailContacts = {
-//     "abuse@seabone.net",
-//     "peering@seabone.net",
-//     "tech@seabone.net",
-//     "francesco.chiappini@telecomitalia.it"
-// },
-// AbuseContacts = {
-//     "abuse@seabone.net"
-// },
-// LookingGlassUrl = "https://gambadilegno.noc.seabone.net/lg/",
-// CountryCode = "IT"
+// AS Number, Name, Description, Email Contacts, Looking Glass URL and Country Code
 var details = service.GetAsnDetails(6762);
+
+```
+
+### Get ASN Prefixes
+```c#
+
+// AS Number, IPv4 Prefixes, IPv6 Prefixes
+var prefixes = service.GetAsnPrefixes(131630);
 
 ```
 
