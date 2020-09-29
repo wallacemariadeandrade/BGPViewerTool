@@ -23,13 +23,30 @@ namespace BGPViewerCore.Service
                 EmailContacts = jsonData
                     .GetProperty("email_contacts")
                     .EnumerateArray()
-                    .Select(x => x.GetString()),
+                    .Select(email => email.GetString()),
                 AbuseContacts = jsonData
                     .GetProperty("abuse_contacts")
                     .EnumerateArray()
-                    .Select(x => x.GetString()),
+                    .Select(email => email.GetString()),
                 LookingGlassUrl = jsonData.GetProperty("looking_glass").GetString(),
                 CountryCode = jsonData.GetProperty("rir_allocation").GetProperty("country_code").GetString()
+            };
+        }
+
+        public AsnPrefixesModel GetAsnPrefixes(int asNumber)
+        {
+            var jsonData = _api.RetrieveAsnPrefixes(asNumber).RootElement.GetProperty("data");
+            return new AsnPrefixesModel
+            {
+                ASN = asNumber,
+                IPv4Prefixes = jsonData
+                .GetProperty("ipv4_prefixes")
+                .EnumerateArray()
+                .Select(prefix => prefix.GetProperty("prefix").GetString()),
+                IPv6Prefixes = jsonData
+                .GetProperty("ipv6_prefixes")
+                .EnumerateArray()
+                .Select(prefix => prefix.GetProperty("prefix").GetString()),
             };
         } 
     }

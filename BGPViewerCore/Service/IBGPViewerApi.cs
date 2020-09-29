@@ -6,5 +6,6 @@ namespace BGPViewerCore.Service
     public interface IBGPViewerApi
     {
         JsonDocument RetrieveAsnDetails(int asNumber);
+        JsonDocument RetrieveAsnPrefixes(int asNumber);
     }
 }
