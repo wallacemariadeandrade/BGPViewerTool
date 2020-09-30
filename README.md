@@ -30,6 +30,14 @@ var prefixes = service.GetAsnPrefixes(131630);
 
 ```
 
+### Get ASN Peers
+```c#
+
+// AS Number, Name, Description and Country Code for IPv4 and IPv6 peers
+var prefixes = service.GetAsnPeers(131630);
+
+```
+
 ## Normal Human User
 If you're a normal human (maybe not so normal cause you probably work with telecom :laughing::sweat_smile:) and likes Powershell, then you can use [BGPViewerPowerTool](https://github.com/wallacemariadeandrade/BGPViewerTool/tree/development/BGPViewerPowerTool)! It's a bunch of PowerShell scripts that do all the work for you. Download the folder and call the scripts from PowerShell prompt at scripts directory.
 

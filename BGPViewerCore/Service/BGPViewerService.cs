@@ -17,9 +17,13 @@ namespace BGPViewerCore.Service
             var jsonData = _api.RetrieveAsnDetails(asNumber).RootElement.GetProperty("data");   
             return new AsnDetailsModel 
             {
-                ASN = asNumber,
-                Name = jsonData.GetProperty("name").GetString(),
-                DescriptionShort = jsonData.GetProperty("description_short").GetString(),
+                Info = new AsnInfo 
+                {
+                    ASN = asNumber,
+                    Name = jsonData.GetProperty("name").GetString(),
+                    Description = jsonData.GetProperty("description_short").GetString(),
+                    CountryCode = jsonData.GetProperty("rir_allocation").GetProperty("country_code").GetString()
+                },
                 EmailContacts = jsonData
                     .GetProperty("email_contacts")
                     .EnumerateArray()
@@ -29,7 +33,6 @@ namespace BGPViewerCore.Service
                     .EnumerateArray()
                     .Select(email => email.GetString()),
                 LookingGlassUrl = jsonData.GetProperty("looking_glass").GetString(),
-                CountryCode = jsonData.GetProperty("rir_allocation").GetProperty("country_code").GetString()
             };
         }
 
@@ -49,5 +52,32 @@ namespace BGPViewerCore.Service
                 .Select(prefix => prefix.GetProperty("prefix").GetString()),
             };
         } 
+
+        public AsnPeersModel GetAsnPeers(int asNumber)
+        {
+            var jsonData = _api.RetrieveAsnPeers(asNumber).RootElement.GetProperty("data");
+            return new AsnPeersModel 
+            {
+                ASN = asNumber,
+                IPv4Peers = jsonData
+                .GetProperty("ipv4_peers")
+                .EnumerateArray()
+                .Select(peer => new AsnInfo {
+                    ASN = peer.GetProperty("asn").GetInt32(),
+                    Name = peer.GetProperty("name").GetString(),
+                    Description = peer.GetProperty("description").GetString(),
+                    CountryCode = peer.GetProperty("country_code").GetString()
+                }),
+                IPv6Peers = jsonData
+                .GetProperty("ipv6_peers")
+                .EnumerateArray()
+                .Select(peer => new AsnInfo {
+                    ASN = peer.GetProperty("asn").GetInt32(),
+                    Name = peer.GetProperty("name").GetString(),
+                    Description = peer.GetProperty("description").GetString(),
+                    CountryCode = peer.GetProperty("country_code").GetString()
+                })
+            };
+        }
     }
 }
