@@ -7,6 +7,11 @@ namespace BGPViewerCore.Service
         public JsonDocument RetrieveAsnDetails(int asNumber)
             => JsonDocument.Parse(CallApi($"https://api.bgpview.io/asn/{asNumber}"));
 
+        public JsonDocument RetrieveAsnDownstreams(int asNumber)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public JsonDocument RetrieveAsnPeers(int asNumber)
             => JsonDocument.Parse(CallApi($"https://api.bgpview.io/asn/{asNumber}/peers"));
 

@@ -7,16 +7,16 @@ namespace BGPViewerCore.Service
 {
     public class BGPViewerService
     {
-        private IBGPViewerApi _api;
+        private IBGPViewerApi _jsonApi;
 
         public BGPViewerService(IBGPViewerApi api)
         {
-            _api = api;
+            _jsonApi = api;
         }
 
         public AsnDetailsModel GetAsnDetails(int asNumber)
         {
-            var jsonData = _api.RetrieveAsnDetails(asNumber).RootElement.GetProperty("data");   
+            var jsonData = _jsonApi.RetrieveAsnDetails(asNumber).RootElement.GetProperty("data");   
             return new AsnDetailsModel 
             {
                 Info = new AsnInfo 
@@ -40,7 +40,7 @@ namespace BGPViewerCore.Service
 
         public AsnPrefixesModel GetAsnPrefixes(int asNumber)
         {
-            var jsonData = _api.RetrieveAsnPrefixes(asNumber).RootElement.GetProperty("data");
+            var jsonData = _jsonApi.RetrieveAsnPrefixes(asNumber).RootElement.GetProperty("data");
             return new AsnPrefixesModel
             {
                 ASN = asNumber,
@@ -57,7 +57,7 @@ namespace BGPViewerCore.Service
 
         public AsnPeersModel GetAsnPeers(int asNumber)
         {
-            var jsonData = _api.RetrieveAsnPeers(asNumber).RootElement.GetProperty("data");
+            var jsonData = _jsonApi.RetrieveAsnPeers(asNumber).RootElement.GetProperty("data");
             return new AsnPeersModel 
             {
                 ASN = asNumber,
@@ -68,12 +68,23 @@ namespace BGPViewerCore.Service
 
         public AsnUpstreamsModel GetAsnUpstreams(int asNumber)
         {
-            var jsonData = _api.RetrieveAsnUpstreams(asNumber).RootElement.GetProperty("data");
+            var jsonData = _jsonApi.RetrieveAsnUpstreams(asNumber).RootElement.GetProperty("data");
             return new AsnUpstreamsModel 
             {
                 ASN = asNumber,
                 IPv4 = ExtractInfoFromArray(jsonData.GetProperty("ipv4_upstreams")),
                 IPv6 = ExtractInfoFromArray(jsonData.GetProperty("ipv6_upstreams"))
+            };
+        }
+
+        public AsnDownstreamsModel GetAsnDownstreams(int asNumber)
+        {
+            var jsonData = _jsonApi.RetrieveAsnDownstreams(asNumber).RootElement.GetProperty("data");
+            return new AsnDownstreamsModel 
+            {
+                ASN = asNumber,
+                IPv4 = ExtractInfoFromArray(jsonData.GetProperty("ipv4_downstreams")),
+                IPv6 = ExtractInfoFromArray(jsonData.GetProperty("ipv6_downstreams"))
             };
         }
 

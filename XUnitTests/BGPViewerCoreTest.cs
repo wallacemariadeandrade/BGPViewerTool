@@ -96,5 +96,15 @@ namespace Xunit
             Assert.True(asn52575Upstreams.IPv6.Count() == 0);
             Assert.Equal(asn52575Upstreams.IPv4.First().ASN, 265185);
         }
+
+        [Fact]
+        public void GettingAsnDownstreams()
+        {
+            var asn52908Downstreams = GetService().GetAsnDownstreams(52908);
+            Assert.True(asn52908Downstreams.IPv4.Count() == 2);
+            Assert.True(asn52908Downstreams.IPv6.Count() == 0);
+            Assert.Equal(asn52908Downstreams.IPv4.First().ASN, 267360);
+            Assert.Equal(asn52908Downstreams.IPv4.Last().ASN, 268699);
+        }
     }
 }

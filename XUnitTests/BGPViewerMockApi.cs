@@ -13,6 +13,13 @@ namespace Xunit
             return JsonDocument.Parse(@"{""status"":""ok"",""status_message"":""Query was successful"",""data"":{""asn"":53181,""name"":null,""description_short"":null,""description_full"":[],""country_code"":"""",""website"":null,""email_contacts"":[],""abuse_contacts"":[],""looking_glass"":null,""traffic_estimation"":null,""traffic_ratio"":null,""owner_address"":[],""rir_allocation"":{""rir_name"":""Lacnic"",""country_code"":""BR"",""date_allocated"":""2010-08-18 00:00:00"",""allocation_status"":""allocated""},""iana_assignment"":{""assignment_status"":null,""description"":null,""whois_server"":null,""date_assigned"":null},""date_updated"":""2020-08-22 04:57:28""},""@meta"":{""time_zone"":""UTC"",""api_version"":1,""execution_time"":""307.7 ms""}}");
         }
 
+        public JsonDocument RetrieveAsnDownstreams(int asNumber)
+        {
+            if(asNumber == 52908)
+                return JsonDocument.Parse(@"{""status"":""ok"",""status_message"":""Query was successful"",""data"":{""ipv4_downstreams"":[{""asn"":267360,""name"":null,""description"":null,""country_code"":""""},{""asn"":268699,""name"":null,""description"":null,""country_code"":""""}],""ipv6_downstreams"":[]},""@meta"":{""time_zone"":""UTC"",""api_version"":1,""execution_time"":""98.38 ms""}}");
+            throw new System.Exception("Out of testing scope.");
+        }
+
         public JsonDocument RetrieveAsnPeers(int asNumber)
         {
             if(asNumber == 268374)
