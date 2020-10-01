@@ -13,6 +13,9 @@ namespace BGPViewerCore.Service
         public JsonDocument RetrieveAsnPrefixes(int asNumber)
             => JsonDocument.Parse(CallApi($"https://api.bgpview.io/asn/{asNumber}/prefixes"));
 
+        public JsonDocument RetrieveAsnUpstreams(int asNumber)
+            => JsonDocument.Parse(CallApi($"https://api.bgpview.io/asn/{asNumber}/upstreams"));
+
         private string CallApi(string url) => WebService.GetContentFrom(url);
     }
 }

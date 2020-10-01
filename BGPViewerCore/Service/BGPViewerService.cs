@@ -1,5 +1,7 @@
 using BGPViewerCore.Model;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 
 namespace BGPViewerCore.Service
 {
@@ -42,11 +44,11 @@ namespace BGPViewerCore.Service
             return new AsnPrefixesModel
             {
                 ASN = asNumber,
-                IPv4Prefixes = jsonData
+                IPv4 = jsonData
                 .GetProperty("ipv4_prefixes")
                 .EnumerateArray()
                 .Select(prefix => prefix.GetProperty("prefix").GetString()),
-                IPv6Prefixes = jsonData
+                IPv6 = jsonData
                 .GetProperty("ipv6_prefixes")
                 .EnumerateArray()
                 .Select(prefix => prefix.GetProperty("prefix").GetString()),
@@ -59,25 +61,30 @@ namespace BGPViewerCore.Service
             return new AsnPeersModel 
             {
                 ASN = asNumber,
-                IPv4Peers = jsonData
-                .GetProperty("ipv4_peers")
-                .EnumerateArray()
-                .Select(peer => new AsnInfo {
-                    ASN = peer.GetProperty("asn").GetInt32(),
-                    Name = peer.GetProperty("name").GetString(),
-                    Description = peer.GetProperty("description").GetString(),
-                    CountryCode = peer.GetProperty("country_code").GetString()
-                }),
-                IPv6Peers = jsonData
-                .GetProperty("ipv6_peers")
-                .EnumerateArray()
-                .Select(peer => new AsnInfo {
-                    ASN = peer.GetProperty("asn").GetInt32(),
-                    Name = peer.GetProperty("name").GetString(),
-                    Description = peer.GetProperty("description").GetString(),
-                    CountryCode = peer.GetProperty("country_code").GetString()
-                })
+                IPv4 = ExtractInfoFromArray(jsonData.GetProperty("ipv4_peers")),
+                IPv6 = ExtractInfoFromArray(jsonData.GetProperty("ipv6_peers")),
             };
         }
+
+        public AsnUpstreamsModel GetAsnUpstreams(int asNumber)
+        {
+            var jsonData = _api.RetrieveAsnUpstreams(asNumber).RootElement.GetProperty("data");
+            return new AsnUpstreamsModel 
+            {
+                ASN = asNumber,
+                IPv4 = ExtractInfoFromArray(jsonData.GetProperty("ipv4_upstreams")),
+                IPv6 = ExtractInfoFromArray(jsonData.GetProperty("ipv6_upstreams"))
+            };
+        }
+
+        private IEnumerable<AsnInfo> ExtractInfoFromArray(JsonElement jsonArrayElement)
+            => jsonArrayElement.EnumerateArray()
+                .Select(peer => new AsnInfo {
+                    ASN = peer.GetProperty("asn").GetInt32(),
+                    Name = peer.GetProperty("name").GetString(),
+                    Description = peer.GetProperty("description").GetString(),
+                    CountryCode = peer.GetProperty("country_code").GetString()
+                }
+            );
     }
 }

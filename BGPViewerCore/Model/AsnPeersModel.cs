@@ -5,7 +5,7 @@ namespace BGPViewerCore.Model
     public class AsnPeersModel
     {
         public int ASN { get; set; }
-        public IEnumerable<AsnInfo> IPv4Peers { get; set; }
-        public IEnumerable<AsnInfo> IPv6Peers { get; set; }
+        public IEnumerable<AsnInfo> IPv4 { get; set; }
+        public IEnumerable<AsnInfo> IPv6 { get; set; }
     }
 }

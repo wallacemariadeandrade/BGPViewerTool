@@ -51,30 +51,30 @@ namespace Xunit
             var asn268374Prefixes = GetService().GetAsnPrefixes(268374);
             var asn131630Prefixes = GetService().GetAsnPrefixes(131630);
             
-            Assert.True(asn264075Prefixes.IPv4Prefixes.Count() == 1, $"Error: AS{asn264075Prefixes.ASN} shoud have only one IPv4 prefix");
-            Assert.True(asn264075Prefixes.IPv6Prefixes.Count() == 1, $"Error: AS{asn264075Prefixes.ASN} shoud have only one IPv6 prefix");
+            Assert.True(asn264075Prefixes.IPv4.Count() == 1, $"Error: AS{asn264075Prefixes.ASN} shoud have only one IPv4 prefix");
+            Assert.True(asn264075Prefixes.IPv6.Count() == 1, $"Error: AS{asn264075Prefixes.ASN} shoud have only one IPv6 prefix");
 
-            Assert.True(asn268374Prefixes.IPv4Prefixes.Count() == 7, $"Error: AS{asn268374Prefixes.ASN} shoud have 7 IPv4 prefixes");
-            Assert.True(asn268374Prefixes.IPv6Prefixes.Count() == 1, $"Error: AS{asn268374Prefixes.ASN} shoud have only one IPv6 prefix");
+            Assert.True(asn268374Prefixes.IPv4.Count() == 7, $"Error: AS{asn268374Prefixes.ASN} shoud have 7 IPv4 prefixes");
+            Assert.True(asn268374Prefixes.IPv6.Count() == 1, $"Error: AS{asn268374Prefixes.ASN} shoud have only one IPv6 prefix");
 
-            Assert.True(asn131630Prefixes.IPv4Prefixes.Count() == 3, $"Error: AS{asn131630Prefixes.ASN} shoud have 3 IPv4 prefixes");
-            Assert.True(asn131630Prefixes.IPv6Prefixes.Count() == 0, $"Error: AS{asn131630Prefixes.ASN} shoudn't IPv6 prefix");
+            Assert.True(asn131630Prefixes.IPv4.Count() == 3, $"Error: AS{asn131630Prefixes.ASN} shoud have 3 IPv4 prefixes");
+            Assert.True(asn131630Prefixes.IPv6.Count() == 0, $"Error: AS{asn131630Prefixes.ASN} shoudn't IPv6 prefix");
         }
 
         [Fact]
         public void VerifyAsnPrefixes()
         {
             var asn264075Prefixes = GetService().GetAsnPrefixes(264075);
-            Assert.Equal("143.208.20.0/22", asn264075Prefixes.IPv4Prefixes.First());
-            Assert.Equal("2804:2a7c::/32", asn264075Prefixes.IPv6Prefixes.First());
+            Assert.Equal("143.208.20.0/22", asn264075Prefixes.IPv4.First());
+            Assert.Equal("2804:2a7c::/32", asn264075Prefixes.IPv6.First());
         }
 
         [Fact]
         public void CountAsnPeers()
         {
             var asn268374Peers = GetService().GetAsnPeers(268374);
-            Assert.True(asn268374Peers.IPv4Peers.Count() == 13);
-            Assert.True(asn268374Peers.IPv6Peers.Count() == 8);
+            Assert.True(asn268374Peers.IPv4.Count() == 13);
+            Assert.True(asn268374Peers.IPv6.Count() == 8);
         }
 
         [Fact]
@@ -82,10 +82,19 @@ namespace Xunit
         {
             var asn268374Peers = GetService().GetAsnPeers(268374);
 
-            Assert.Equal(asn268374Peers.IPv4Peers.First().ASN, 53181);
-            Assert.Equal(asn268374Peers.IPv4Peers.Last().ASN, 57463);
-            Assert.Equal(asn268374Peers.IPv6Peers.First().ASN, 53181);
-            Assert.Equal(asn268374Peers.IPv6Peers.Last().ASN, 267613);
+            Assert.Equal(asn268374Peers.IPv4.First().ASN, 53181);
+            Assert.Equal(asn268374Peers.IPv4.Last().ASN, 57463);
+            Assert.Equal(asn268374Peers.IPv6.First().ASN, 53181);
+            Assert.Equal(asn268374Peers.IPv6.Last().ASN, 267613);
+        }
+
+        [Fact]
+        public void GettingAsnUpstreams()
+        {
+            var asn52575Upstreams = GetService().GetAsnUpstreams(52575);
+            Assert.True(asn52575Upstreams.IPv4.Count() == 1);
+            Assert.True(asn52575Upstreams.IPv6.Count() == 0);
+            Assert.Equal(asn52575Upstreams.IPv4.First().ASN, 265185);
         }
     }
 }

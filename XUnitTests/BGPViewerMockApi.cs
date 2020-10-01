@@ -36,5 +36,12 @@ namespace Xunit
                 @"{""status"":""ok"",""status_message"":""Query was successful"",""data"":{""ipv4_prefixes"":[{""prefix"":""103.121.176.0\/24"",""ip"":""103.121.176.0"",""cidr"":24,""roa_status"":""None"",""name"":""GARENATW-NET"",""description"":""Garena (TAIWAN) CO. LTD."",""country_code"":""TW"",""parent"":{""prefix"":""103.121.176.0\/22"",""ip"":""103.121.176.0"",""cidr"":22,""rir_name"":""APNIC"",""allocation_status"":""unknown""}},{""prefix"":""103.121.177.0\/24"",""ip"":""103.121.177.0"",""cidr"":24,""roa_status"":""None"",""name"":""GARENATW-NET"",""description"":""Garena (TAIWAN) CO. LTD."",""country_code"":""TW"",""parent"":{""prefix"":""103.121.176.0\/22"",""ip"":""103.121.176.0"",""cidr"":22,""rir_name"":""APNIC"",""allocation_status"":""unknown""}},{""prefix"":""103.121.178.0\/24"",""ip"":""103.121.178.0"",""cidr"":24,""roa_status"":""None"",""name"":""GARENATW-NET"",""description"":""Garena (TAIWAN) CO. LTD."",""country_code"":""TW"",""parent"":{""prefix"":""103.121.176.0\/22"",""ip"":""103.121.176.0"",""cidr"":22,""rir_name"":""APNIC"",""allocation_status"":""unknown""}}],""ipv6_prefixes"":[]},""@meta"":{""time_zone"":""UTC"",""api_version"":1,""execution_time"":""159.15 ms""}}"
             );
         }
+
+        public JsonDocument RetrieveAsnUpstreams(int asNumber)
+        {
+            if(asNumber == 52575) 
+                return JsonDocument.Parse(@"{""status"":""ok"",""status_message"":""Query was successful"",""data"":{""ipv4_upstreams"":[{""asn"":265185,""name"":null,""description"":null,""country_code"":""""}],""ipv6_upstreams"":[],""ipv4_graph"":""https:\/\/api.bgpview.io\/assets\/graphs\/AS52575_IPv4.svg"",""ipv6_graph"":""https:\/\/api.bgpview.io\/assets\/graphs\/AS52575_IPv6.svg"",""combined_graph"":""https:\/\/api.bgpview.io\/assets\/graphs\/AS52575_Combined.svg""},""@meta"":{""time_zone"":""UTC"",""api_version"":1,""execution_time"":""141 ms""}}");
+            throw new System.Exception("Out of testing scope.");
+        }
     }
 }
