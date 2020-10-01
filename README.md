@@ -9,12 +9,12 @@ There are a few ways to use this repo content, so scroll down and have fun! :smi
 ## .NET Developers
 If you're a .NET developer you can use the core library on your application. Download [BGPViewerCore](https://github.com/wallacemariadeandrade/BGPViewerTool/tree/development/BGPViewerCore), add a reference to it on your project and go code! :sunglasses:
 
-### Create the Service
+### Creating the Service
 ```c#
 var service = new BGPViewerService(new BGPViewerWebApi());
 ```
 
-### Get ASN Information
+### Getting ASN Information
 ```c#
 
 // AS Number, Name, Description, Email Contacts, Looking Glass URL and Country Code
@@ -22,7 +22,7 @@ var details = service.GetAsnDetails(6762);
 
 ```
 
-### Get ASN Prefixes
+### Getting ASN Prefixes
 ```c#
 
 // AS Number, IPv4 Prefixes, IPv6 Prefixes
@@ -30,11 +30,13 @@ var prefixes = service.GetAsnPrefixes(131630);
 
 ```
 
-### Get ASN Peers
+### Getting ASN Peers, Upstreams and Downstreams
 ```c#
 
 // AS Number, Name, Description and Country Code for IPv4 and IPv6 peers
 var prefixes = service.GetAsnPeers(131630);
+var upstreams = service.GetAsnUpstreams(131630);
+var downstreams = service.GetAsnDownstreams(131630);
 
 ```
 
