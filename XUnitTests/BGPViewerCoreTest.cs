@@ -18,16 +18,16 @@ namespace Xunit
             // Mocked Data
             var asnDetails = GetService().GetAsnDetails(6762);
             
-            Assert.Equal(6762, asnDetails.Info.ASN);
-            Assert.Equal("TELECOM ITALIA SPARKLE S.p.A.", asnDetails.Info.Description);
-            Assert.Equal("SEABONE-NET", asnDetails.Info.Name);
+            Assert.Equal(6762, asnDetails.ASN);
+            Assert.Equal("TELECOM ITALIA SPARKLE S.p.A.", asnDetails.Description);
+            Assert.Equal("SEABONE-NET", asnDetails.Name);
             Assert.Equal("abuse@seabone.net", asnDetails.EmailContacts.ElementAt(0));
             Assert.Equal("peering@seabone.net", asnDetails.EmailContacts.ElementAt(1));
             Assert.Equal("tech@seabone.net", asnDetails.EmailContacts.ElementAt(2));
             Assert.Equal("francesco.chiappini@telecomitalia.it", asnDetails.EmailContacts.ElementAt(3));
             Assert.Equal("abuse@seabone.net", asnDetails.AbuseContacts.ElementAt(0));
             Assert.Equal("https://gambadilegno.noc.seabone.net/lg/", asnDetails.LookingGlassUrl);
-            Assert.Equal("IT", asnDetails.Info.CountryCode);
+            Assert.Equal("IT", asnDetails.CountryCode);
         }
 
         [Fact]
@@ -36,12 +36,12 @@ namespace Xunit
             // Mocked Data
             var asnDetails = GetService().GetAsnDetails(53181);
             
-            Assert.Equal(53181, asnDetails.Info.ASN);
-            Assert.Equal(null, asnDetails.Info.Description);
-            Assert.Equal(null, asnDetails.Info.Name);
+            Assert.Equal(53181, asnDetails.ASN);
+            Assert.Equal(null, asnDetails.Description);
+            Assert.Equal(null, asnDetails.Name);
             Assert.Equal(0, asnDetails.EmailContacts.Count());
             Assert.Equal(null, asnDetails.LookingGlassUrl);
-            Assert.Equal("BR", asnDetails.Info.CountryCode);
+            Assert.Equal("BR", asnDetails.CountryCode);
         }
 
         [Fact]
@@ -73,8 +73,8 @@ namespace Xunit
         public void CountAsnPeers()
         {
             var asn268374Peers = GetService().GetAsnPeers(268374);
-            Assert.True(asn268374Peers.IPv4.Count() == 13);
-            Assert.True(asn268374Peers.IPv6.Count() == 8);
+            Assert.True(asn268374Peers.Item1.Count() == 13);
+            Assert.True(asn268374Peers.Item2.Count() == 8);
         }
 
         [Fact]
@@ -82,29 +82,29 @@ namespace Xunit
         {
             var asn268374Peers = GetService().GetAsnPeers(268374);
 
-            Assert.Equal(asn268374Peers.IPv4.First().ASN, 53181);
-            Assert.Equal(asn268374Peers.IPv4.Last().ASN, 57463);
-            Assert.Equal(asn268374Peers.IPv6.First().ASN, 53181);
-            Assert.Equal(asn268374Peers.IPv6.Last().ASN, 267613);
+            Assert.Equal(asn268374Peers.Item1.First().ASN, 53181);
+            Assert.Equal(asn268374Peers.Item1.Last().ASN, 57463);
+            Assert.Equal(asn268374Peers.Item2.First().ASN, 53181);
+            Assert.Equal(asn268374Peers.Item2.Last().ASN, 267613);
         }
 
         [Fact]
         public void GettingAsnUpstreams()
         {
             var asn52575Upstreams = GetService().GetAsnUpstreams(52575);
-            Assert.True(asn52575Upstreams.IPv4.Count() == 1);
-            Assert.True(asn52575Upstreams.IPv6.Count() == 0);
-            Assert.Equal(asn52575Upstreams.IPv4.First().ASN, 265185);
+            Assert.True(asn52575Upstreams.Item1.Count() == 1);
+            Assert.True(asn52575Upstreams.Item2.Count() == 0);
+            Assert.Equal(asn52575Upstreams.Item1.First().ASN, 265185);
         }
 
         [Fact]
         public void GettingAsnDownstreams()
         {
             var asn52908Downstreams = GetService().GetAsnDownstreams(52908);
-            Assert.True(asn52908Downstreams.IPv4.Count() == 2);
-            Assert.True(asn52908Downstreams.IPv6.Count() == 0);
-            Assert.Equal(asn52908Downstreams.IPv4.First().ASN, 267360);
-            Assert.Equal(asn52908Downstreams.IPv4.Last().ASN, 268699);
+            Assert.True(asn52908Downstreams.Item1.Count() == 2);
+            Assert.True(asn52908Downstreams.Item2.Count() == 0);
+            Assert.Equal(asn52908Downstreams.Item1.First().ASN, 267360);
+            Assert.Equal(asn52908Downstreams.Item1.Last().ASN, 268699);
         }
 
         [Fact]

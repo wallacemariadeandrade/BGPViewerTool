@@ -1,6 +1,6 @@
 namespace BGPViewerCore.Model
 {
-    public class AsnInfo
+    public class AsnModel
     {
         public int ASN { get; set; }
         public string Name { get; set; }
