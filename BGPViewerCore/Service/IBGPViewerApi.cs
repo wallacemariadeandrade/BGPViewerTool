@@ -10,5 +10,6 @@ namespace BGPViewerCore.Service
         JsonDocument RetrieveAsnPeers(int asNumber);
         JsonDocument RetrieveAsnUpstreams(int asNumber);
         JsonDocument RetrieveAsnDownstreams(int asNumber);
+        JsonDocument RetrieveAsnIxs(int asNumber);
     }
 }

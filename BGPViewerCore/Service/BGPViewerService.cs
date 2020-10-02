@@ -88,6 +88,20 @@ namespace BGPViewerCore.Service
             };
         }
 
+        public IEnumerable<IxModel> GetAsnIxs(int asNumber)
+        {
+            var jsonData = _jsonApi.RetrieveAsnIxs(asNumber).RootElement.GetProperty("data");
+            foreach(var ixJson in jsonData.EnumerateArray())
+                yield return new IxModel {
+                    Name = ixJson.GetProperty("name").GetString(),
+                    FullName = ixJson.GetProperty("name_full").GetString(),
+                    CountryCode = ixJson.GetProperty("country_code").GetString(),
+                    IPv4 = ixJson.GetProperty("ipv4_address").GetString(),
+                    IPv6 = ixJson.GetProperty("ipv6_address").GetString(),
+                    AsnSpeed = ixJson.GetProperty("speed").GetInt32()
+                };
+        }
+
         private IEnumerable<AsnInfo> ExtractInfoFromArray(JsonElement jsonArrayElement)
             => jsonArrayElement.EnumerateArray()
                 .Select(peer => new AsnInfo {

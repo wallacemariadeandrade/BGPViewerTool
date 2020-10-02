@@ -106,5 +106,17 @@ namespace Xunit
             Assert.Equal(asn52908Downstreams.IPv4.First().ASN, 267360);
             Assert.Equal(asn52908Downstreams.IPv4.Last().ASN, 268699);
         }
+
+        [Fact]
+        public void GettinsAnsIxs()
+        {
+            var asn53181Ixs = GetService().GetAsnIxs(53181);
+            var ixSp = asn53181Ixs.Where(ix => ix.Name.Contains("São Paulo")).Count();
+            var ixRj = asn53181Ixs.Where(ix => ix.Name.Contains("Rio de Janeiro")).Count();
+            
+            Assert.True(asn53181Ixs.Count() == 4, $"Error: expected 4, got {asn53181Ixs.Count()}");
+            Assert.True(ixSp == 1, $"Error: expected 1 for São Paulo, got {ixSp}");
+            Assert.True(ixRj == 3, $"Error: expected 3 for Rio de Janeiro, got {ixRj}");
+        }
     }
 }
