@@ -94,6 +94,33 @@ namespace BGPViewerCore.Service
                 };
         }
 
+        public IpDetailModel GetIpDetails(string ipAddress)
+        {
+            var jsonData = _jsonApi.RetrieveIpDetails(ipAddress).RootElement.GetProperty("data");
+            return new IpDetailModel 
+            {
+                IPAddress = ipAddress,
+                RIRAllocationPrefix = jsonData.GetProperty("rir_allocation").GetProperty("prefix").GetString(),
+                CountryCode = jsonData.GetProperty("rir_allocation").GetProperty("country_code").GetString(),
+                PtrRecord = jsonData.GetProperty("ptr_record").GetString(),
+                RelatedPrefixes = jsonData.GetProperty("prefixes")
+                    .EnumerateArray()
+                    .Select(x => new PrefixDetailModel {
+                        Prefix = x.GetProperty("prefix").GetString(),
+                        Name = x.GetProperty("name").GetString(),
+                        Description = x.GetProperty("description").GetString(),
+                        ParentAsns = new AsnModel[] {
+                            new AsnModel {
+                                ASN = x.GetProperty("asn").GetProperty("asn").GetInt32(),
+                                Name = x.GetProperty("asn").GetProperty("name").GetString(),
+                                Description = x.GetProperty("asn").GetProperty("name").GetString(),
+                                CountryCode = x.GetProperty("asn").GetProperty("country_code").GetString(),
+                            }
+                        }
+                    })
+            };
+        }
+
         private IEnumerable<AsnModel> ExtractInfoFromArray(JsonElement jsonArrayElement)
             => jsonArrayElement.EnumerateArray()
                 .Select(peer => new AsnModel {

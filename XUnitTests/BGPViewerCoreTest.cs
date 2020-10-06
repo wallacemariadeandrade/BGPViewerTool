@@ -65,6 +65,7 @@ namespace Xunit
         public void VerifyAsnPrefixes()
         {
             var asn264075Prefixes = GetService().GetAsnPrefixes(264075);
+          
             Assert.Equal("143.208.20.0/22", asn264075Prefixes.IPv4.First());
             Assert.Equal("2804:2a7c::/32", asn264075Prefixes.IPv6.First());
         }
@@ -73,6 +74,7 @@ namespace Xunit
         public void CountAsnPeers()
         {
             var asn268374Peers = GetService().GetAsnPeers(268374);
+          
             Assert.True(asn268374Peers.Item1.Count() == 13);
             Assert.True(asn268374Peers.Item2.Count() == 8);
         }
@@ -81,7 +83,7 @@ namespace Xunit
         public void VerifyAsnPeers()
         {
             var asn268374Peers = GetService().GetAsnPeers(268374);
-
+          
             Assert.Equal(asn268374Peers.Item1.First().ASN, 53181);
             Assert.Equal(asn268374Peers.Item1.Last().ASN, 57463);
             Assert.Equal(asn268374Peers.Item2.First().ASN, 53181);
@@ -92,6 +94,7 @@ namespace Xunit
         public void GettingAsnUpstreams()
         {
             var asn52575Upstreams = GetService().GetAsnUpstreams(52575);
+          
             Assert.True(asn52575Upstreams.Item1.Count() == 1);
             Assert.True(asn52575Upstreams.Item2.Count() == 0);
             Assert.Equal(asn52575Upstreams.Item1.First().ASN, 265185);
@@ -101,6 +104,7 @@ namespace Xunit
         public void GettingAsnDownstreams()
         {
             var asn52908Downstreams = GetService().GetAsnDownstreams(52908);
+          
             Assert.True(asn52908Downstreams.Item1.Count() == 2);
             Assert.True(asn52908Downstreams.Item2.Count() == 0);
             Assert.Equal(asn52908Downstreams.Item1.First().ASN, 267360);
@@ -108,7 +112,7 @@ namespace Xunit
         }
 
         [Fact]
-        public void GettinsAnsIxs()
+        public void GettingAnsIxs()
         {
             var asn53181Ixs = GetService().GetAsnIxs(53181);
             var ixSp = asn53181Ixs.Where(ix => ix.Name.Contains("São Paulo")).Count();
@@ -117,6 +121,29 @@ namespace Xunit
             Assert.True(asn53181Ixs.Count() == 4, $"Error: expected 4, got {asn53181Ixs.Count()}");
             Assert.True(ixSp == 1, $"Error: expected 1 for São Paulo, got {ixSp}");
             Assert.True(ixRj == 3, $"Error: expected 3 for Rio de Janeiro, got {ixRj}");
+        }
+
+        [Fact]
+        public void GettingIpAddressDetails()
+        {
+            var ipDetails = GetService().GetIpDetails("143.208.20.0");
+          
+            Assert.Equal(ipDetails.CountryCode, "BR");
+            Assert.Equal(ipDetails.RIRAllocationPrefix, "143.208.20.0/22");
+            Assert.Equal(ipDetails.PtrRecord, "143-208-20-0.k1fibra.net.br");
+            Assert.True(ipDetails.RelatedPrefixes.First().ParentAsns.First().ASN == 264075);
+        }
+
+        [Fact]
+        public void GettingIpAddressDetailsWithSomeNullProperties()
+        {
+            var ipDetails = GetService().GetIpDetails("170.245.37.10");
+            
+            Assert.Null(ipDetails.PtrRecord);
+            Assert.Null(ipDetails.RelatedPrefixes.First().ParentAsns.First().CountryCode);
+            Assert.Null(ipDetails.RelatedPrefixes.First().Name);
+            Assert.Null(ipDetails.RelatedPrefixes.First().Description);
+            Assert.Null(ipDetails.RelatedPrefixes.Last().ParentAsns.First().CountryCode);
         }
     }
 }
