@@ -17,36 +17,40 @@ namespace BGPViewerCore.Service
 
         public AsnDetailsModel GetAsnDetails(int asNumber)
         {
-            var jsonData = _jsonApi.RetrieveAsnDetails(asNumber).RootElement.GetProperty("data");   
+            var jsonData = _jsonApi.RetrieveAsnDetails(asNumber);
+            ValidateStatus(jsonData);
+            var dataElement = jsonData.RootElement.GetProperty("data");   
             return new AsnDetailsModel 
             {
                 ASN = asNumber,
-                Name = jsonData.GetProperty("name").GetString(),
-                Description = jsonData.GetProperty("description_short").GetString(),
-                CountryCode = jsonData.GetProperty("rir_allocation").GetProperty("country_code").GetString(),
-                EmailContacts = jsonData
+                Name = dataElement.GetProperty("name").GetString(),
+                Description = dataElement.GetProperty("description_short").GetString(),
+                CountryCode = dataElement.GetProperty("rir_allocation").GetProperty("country_code").GetString(),
+                EmailContacts = dataElement
                     .GetProperty("email_contacts")
                     .EnumerateArray()
                     .Select(email => email.GetString()),
-                AbuseContacts = jsonData
+                AbuseContacts = dataElement
                     .GetProperty("abuse_contacts")
                     .EnumerateArray()
                     .Select(email => email.GetString()),
-                LookingGlassUrl = jsonData.GetProperty("looking_glass").GetString(),
+                LookingGlassUrl = dataElement.GetProperty("looking_glass").GetString(),
             };
         }
 
         public AsnPrefixesModel GetAsnPrefixes(int asNumber)
         {
-            var jsonData = _jsonApi.RetrieveAsnPrefixes(asNumber).RootElement.GetProperty("data");
+            var jsonData = _jsonApi.RetrieveAsnPrefixes(asNumber);
+            ValidateStatus(jsonData);
+            var dataElement = jsonData.RootElement.GetProperty("data");
             return new AsnPrefixesModel
             {
                 ASN = asNumber,
-                IPv4 = jsonData
+                IPv4 = dataElement
                 .GetProperty("ipv4_prefixes")
                 .EnumerateArray()
                 .Select(prefix => prefix.GetProperty("prefix").GetString()),
-                IPv6 = jsonData
+                IPv6 = dataElement
                 .GetProperty("ipv6_prefixes")
                 .EnumerateArray()
                 .Select(prefix => prefix.GetProperty("prefix").GetString()),
@@ -55,35 +59,43 @@ namespace BGPViewerCore.Service
 
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnPeers(int asNumber)
         {
-            var jsonData = _jsonApi.RetrieveAsnPeers(asNumber).RootElement.GetProperty("data");
+            var jsonData = _jsonApi.RetrieveAsnPeers(asNumber);
+            ValidateStatus(jsonData);
+            var dataElement = jsonData.RootElement.GetProperty("data");
             return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(
-                item1: ExtractInfoFromArray(jsonData.GetProperty("ipv4_peers")),
-                item2: ExtractInfoFromArray(jsonData.GetProperty("ipv6_peers"))
+                item1: ExtractInfoFromArray(dataElement.GetProperty("ipv4_peers")),
+                item2: ExtractInfoFromArray(dataElement.GetProperty("ipv6_peers"))
             );
         }
 
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnUpstreams(int asNumber)
         {
-            var jsonData = _jsonApi.RetrieveAsnUpstreams(asNumber).RootElement.GetProperty("data");
+            var jsonData = _jsonApi.RetrieveAsnUpstreams(asNumber);
+            ValidateStatus(jsonData);
+            var dataElement = jsonData.RootElement.GetProperty("data");
             return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(
-                item1: ExtractInfoFromArray(jsonData.GetProperty("ipv4_upstreams")),
-                item2: ExtractInfoFromArray(jsonData.GetProperty("ipv6_upstreams"))
+                item1: ExtractInfoFromArray(dataElement.GetProperty("ipv4_upstreams")),
+                item2: ExtractInfoFromArray(dataElement.GetProperty("ipv6_upstreams"))
             );
         }
 
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnDownstreams(int asNumber)
         {
-            var jsonData = _jsonApi.RetrieveAsnDownstreams(asNumber).RootElement.GetProperty("data");
+            var jsonData = _jsonApi.RetrieveAsnDownstreams(asNumber);
+            ValidateStatus(jsonData);
+            var dataElement = jsonData.RootElement.GetProperty("data");
             return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(
-                item1: ExtractInfoFromArray(jsonData.GetProperty("ipv4_downstreams")),
-                item2: ExtractInfoFromArray(jsonData.GetProperty("ipv6_downstreams"))
+                item1: ExtractInfoFromArray(dataElement.GetProperty("ipv4_downstreams")),
+                item2: ExtractInfoFromArray(dataElement.GetProperty("ipv6_downstreams"))
             );
         }
 
         public IEnumerable<IxModel> GetAsnIxs(int asNumber)
         {
-            var jsonData = _jsonApi.RetrieveAsnIxs(asNumber).RootElement.GetProperty("data");
-            foreach(var ixJson in jsonData.EnumerateArray())
+            var jsonData =  _jsonApi.RetrieveAsnIxs(asNumber);
+            ValidateStatus(jsonData);
+            var dataElement = jsonData.RootElement.GetProperty("data");
+            foreach(var ixJson in dataElement.EnumerateArray())
                 yield return new IxModel {
                     Name = ixJson.GetProperty("name").GetString(),
                     FullName = ixJson.GetProperty("name_full").GetString(),
@@ -96,14 +108,16 @@ namespace BGPViewerCore.Service
 
         public IpDetailModel GetIpDetails(string ipAddress)
         {
-            var jsonData = _jsonApi.RetrieveIpDetails(ipAddress).RootElement.GetProperty("data");
+            var jsonData = _jsonApi.RetrieveIpDetails(ipAddress);
+            ValidateStatus(jsonData);
+            var dataElement = jsonData.RootElement.GetProperty("data");
             return new IpDetailModel 
             {
                 IPAddress = ipAddress,
-                RIRAllocationPrefix = jsonData.GetProperty("rir_allocation").GetProperty("prefix").GetString(),
-                CountryCode = jsonData.GetProperty("rir_allocation").GetProperty("country_code").GetString(),
-                PtrRecord = jsonData.GetProperty("ptr_record").GetString(),
-                RelatedPrefixes = jsonData.GetProperty("prefixes")
+                RIRAllocationPrefix = dataElement.GetProperty("rir_allocation").GetProperty("prefix").GetString(),
+                CountryCode = dataElement.GetProperty("rir_allocation").GetProperty("country_code").GetString(),
+                PtrRecord = dataElement.GetProperty("ptr_record").GetString(),
+                RelatedPrefixes = dataElement.GetProperty("prefixes")
                     .EnumerateArray()
                     .Select(x => new PrefixDetailModel {
                         Prefix = x.GetProperty("prefix").GetString(),
@@ -123,13 +137,15 @@ namespace BGPViewerCore.Service
 
         public PrefixDetailModel GetPrefixDetails(string prefix, byte cidr)
         {
-            var jsonData = _jsonApi.RetrievePrefixDetails(prefix, cidr).RootElement.GetProperty("data");
+            var jsonData = _jsonApi.RetrievePrefixDetails(prefix, cidr);
+            ValidateStatus(jsonData);
+            var dataElement = jsonData.RootElement.GetProperty("data");
             return new PrefixDetailModel 
             {
-                Name = jsonData.GetProperty("name").GetString(),
-                Description = jsonData.GetProperty("description_short").GetString(),
+                Name = dataElement.GetProperty("name").GetString(),
+                Description = dataElement.GetProperty("description_short").GetString(),
                 Prefix = $"{prefix}/{cidr}",
-                ParentAsns = jsonData.GetProperty("asns")
+                ParentAsns = dataElement.GetProperty("asns")
                     .EnumerateArray()
                     .Select(asn => new AsnModel {
                         ASN = asn.GetProperty("asn").GetInt32(),
@@ -149,5 +165,11 @@ namespace BGPViewerCore.Service
                     CountryCode = peer.GetProperty("country_code").GetString()
                 }
             );
+    
+        private void ValidateStatus(JsonDocument rawJson)
+        {
+            if(rawJson.RootElement.GetProperty("status").GetString() != "ok")
+                throw new ArgumentException(rawJson.RootElement.GetProperty("status_message").GetString());
+        }
     }
 }

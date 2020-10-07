@@ -1,4 +1,5 @@
 using BGPViewerCore.Service;
+using System;
 using System.Linq;
 
 namespace Xunit
@@ -42,6 +43,15 @@ namespace Xunit
             Assert.Equal(0, asnDetails.EmailContacts.Count());
             Assert.Equal(null, asnDetails.LookingGlassUrl);
             Assert.Equal("BR", asnDetails.CountryCode);
+        }
+
+        [Fact]
+        public void TryGettingInvalidAsnDetails()
+        {
+            Assert.Throws<ArgumentException>(() => 
+            {
+                GetService().GetAsnDetails(101010101);
+            });
         }
 
         [Fact]
@@ -147,6 +157,25 @@ namespace Xunit
         }
         
         [Fact]
+        public void TryGetIpAddressDetailsWithMalformedInput()
+        {
+            Assert.Throws<ArgumentException>(() => 
+            {
+                GetService().GetIpDetails("192.168");
+            });
+
+            Assert.Throws<ArgumentException>(() => 
+            {
+                GetService().GetIpDetails("177.75.40.256");
+            });
+
+            Assert.Throws<ArgumentException>(() => 
+            {
+                GetService().GetIpDetails("192.168.10.10.1");
+            });
+        }
+
+        [Fact]
         public void GetPrefixDetails()
         {
             var prefixDetails = GetService().GetPrefixDetails("143.208.20.0", 22);
@@ -165,6 +194,15 @@ namespace Xunit
             Assert.Null(prefixDetails.Description);
             Assert.Null(prefixDetails.ParentAsns.First().Description);
             Assert.Null(prefixDetails.ParentAsns.First().CountryCode);
+        }
+
+        [Fact]
+        public void TryGetPrefixDetailsWithWrongCIDR()
+        {
+            Assert.Throws<ArgumentException>(() => 
+            {
+                GetService().GetPrefixDetails("143.208.20.0", 20); // Should be 143.208.20.0/22 or lesser
+            });
         }
     }
 }
