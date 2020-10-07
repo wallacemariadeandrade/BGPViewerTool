@@ -84,10 +84,10 @@ namespace Xunit
         {
             var asn268374Peers = GetService().GetAsnPeers(268374);
           
-            Assert.Equal(asn268374Peers.Item1.First().ASN, 53181);
-            Assert.Equal(asn268374Peers.Item1.Last().ASN, 57463);
-            Assert.Equal(asn268374Peers.Item2.First().ASN, 53181);
-            Assert.Equal(asn268374Peers.Item2.Last().ASN, 267613);
+            Assert.Equal(53181, asn268374Peers.Item1.First().ASN);
+            Assert.Equal(57463, asn268374Peers.Item1.Last().ASN);
+            Assert.Equal(53181, asn268374Peers.Item2.First().ASN);
+            Assert.Equal(267613, asn268374Peers.Item2.Last().ASN);
         }
 
         [Fact]
@@ -97,7 +97,7 @@ namespace Xunit
           
             Assert.True(asn52575Upstreams.Item1.Count() == 1);
             Assert.True(asn52575Upstreams.Item2.Count() == 0);
-            Assert.Equal(asn52575Upstreams.Item1.First().ASN, 265185);
+            Assert.Equal(265185, asn52575Upstreams.Item1.First().ASN);
         }
 
         [Fact]
@@ -107,8 +107,8 @@ namespace Xunit
           
             Assert.True(asn52908Downstreams.Item1.Count() == 2);
             Assert.True(asn52908Downstreams.Item2.Count() == 0);
-            Assert.Equal(asn52908Downstreams.Item1.First().ASN, 267360);
-            Assert.Equal(asn52908Downstreams.Item1.Last().ASN, 268699);
+            Assert.Equal(267360, asn52908Downstreams.Item1.First().ASN);
+            Assert.Equal(268699, asn52908Downstreams.Item1.Last().ASN);
         }
 
         [Fact]
@@ -128,9 +128,9 @@ namespace Xunit
         {
             var ipDetails = GetService().GetIpDetails("143.208.20.0");
           
-            Assert.Equal(ipDetails.CountryCode, "BR");
-            Assert.Equal(ipDetails.RIRAllocationPrefix, "143.208.20.0/22");
-            Assert.Equal(ipDetails.PtrRecord, "143-208-20-0.k1fibra.net.br");
+            Assert.Equal("BR", ipDetails.CountryCode);
+            Assert.Equal("143.208.20.0/22", ipDetails.RIRAllocationPrefix);
+            Assert.Equal("143-208-20-0.k1fibra.net.br", ipDetails.PtrRecord);
             Assert.True(ipDetails.RelatedPrefixes.First().ParentAsns.First().ASN == 264075);
         }
 
@@ -144,6 +144,27 @@ namespace Xunit
             Assert.Null(ipDetails.RelatedPrefixes.First().Name);
             Assert.Null(ipDetails.RelatedPrefixes.First().Description);
             Assert.Null(ipDetails.RelatedPrefixes.Last().ParentAsns.First().CountryCode);
+        }
+        
+        [Fact]
+        public void GetPrefixDetails()
+        {
+            var prefixDetails = GetService().GetPrefixDetails("143.208.20.0", 22);
+            
+            Assert.Equal(264075, prefixDetails.ParentAsns.First().ASN);
+            Assert.Equal("K1 Telecom e Multimidia LTDA", prefixDetails.Name);
+        }
+
+        [Fact]
+        public void GetPrefixDetailsWithSomeNullProperties()
+        {
+            var prefixDetails = GetService().GetPrefixDetails("177.75.40.0", 21);
+            
+            Assert.Equal(53040, prefixDetails.ParentAsns.First().ASN);
+            Assert.Null(prefixDetails.Name);
+            Assert.Null(prefixDetails.Description);
+            Assert.Null(prefixDetails.ParentAsns.First().Description);
+            Assert.Null(prefixDetails.ParentAsns.First().CountryCode);
         }
     }
 }

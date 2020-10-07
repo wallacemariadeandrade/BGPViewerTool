@@ -23,7 +23,10 @@ namespace BGPViewerCore.Service
             => JsonDocument.Parse(CallApi($"https://api.bgpview.io/asn/{asNumber}/upstreams"));
 
         public JsonDocument RetrieveIpDetails(string ipAddress)
-            => JsonDocument.Parse("https://api.bgpview.io/ip/{ipAddress}");
+            => JsonDocument.Parse(CallApi($"https://api.bgpview.io/ip/{ipAddress}"));
+
+        public JsonDocument RetrievePrefixDetails(string prefix, byte cidr)
+            => JsonDocument.Parse(CallApi($"https://api.bgpview.io/prefix/{prefix}/{cidr}"));
 
         private string CallApi(string url) => WebService.GetContentFrom(url);
     }

@@ -121,6 +121,25 @@ namespace BGPViewerCore.Service
             };
         }
 
+        public PrefixDetailModel GetPrefixDetails(string prefix, byte cidr)
+        {
+            var jsonData = _jsonApi.RetrievePrefixDetails(prefix, cidr).RootElement.GetProperty("data");
+            return new PrefixDetailModel 
+            {
+                Name = jsonData.GetProperty("name").GetString(),
+                Description = jsonData.GetProperty("description_short").GetString(),
+                Prefix = $"{prefix}/{cidr}",
+                ParentAsns = jsonData.GetProperty("asns")
+                    .EnumerateArray()
+                    .Select(asn => new AsnModel {
+                        ASN = asn.GetProperty("asn").GetInt32(),
+                        Name = asn.GetProperty("name").GetString(),
+                        Description = asn.GetProperty("description").GetString(),
+                        CountryCode = asn.GetProperty("country_code").GetString()
+                    })
+            };
+        }
+
         private IEnumerable<AsnModel> ExtractInfoFromArray(JsonElement jsonArrayElement)
             => jsonArrayElement.EnumerateArray()
                 .Select(peer => new AsnModel {
