@@ -28,6 +28,9 @@ namespace BGPViewerCore.Service
         public JsonDocument RetrievePrefixDetails(string prefix, byte cidr)
             => JsonDocument.Parse(CallApi($"https://api.bgpview.io/prefix/{prefix}/{cidr}"));
 
+        public JsonDocument RetrieveSearchBy(string queryTerm)
+            => JsonDocument.Parse(CallApi($"https://api.bgpview.io/search?query_term={queryTerm}"));
+
         private string CallApi(string url) => WebService.GetContentFrom(url);
     }
 }

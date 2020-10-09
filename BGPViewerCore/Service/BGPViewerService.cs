@@ -156,6 +156,46 @@ namespace BGPViewerCore.Service
             };
         }
 
+        public SearchModel SearchBy(string queryTerm)
+        {
+            var jsonData = _jsonApi.RetrieveSearchBy(queryTerm);
+            ValidateStatus(jsonData);
+            var dataElement = jsonData.RootElement.GetProperty("data");
+            return new SearchModel
+            {
+                RelatedAsns = dataElement.GetProperty("asns")
+                    .EnumerateArray()
+                    .Select(asn => new AsnWithContactsModel {
+                        ASN = asn.GetProperty("asn").GetInt32(),
+                        Name = asn.GetProperty("name").GetString(),
+                        Description = asn.GetProperty("description").GetString(),
+                        CountryCode = asn.GetProperty("country_code").GetString(),
+                        EmailContacts = asn
+                            .GetProperty("email_contacts")
+                            .EnumerateArray()
+                            .Select(email => email.GetString()),
+                        AbuseContacts = asn
+                            .GetProperty("abuse_contacts")
+                            .EnumerateArray()
+                            .Select(email => email.GetString()),
+                    }),
+                IPv4 = dataElement.GetProperty("ipv4_prefixes")
+                    .EnumerateArray()
+                    .Select(x => new PrefixModel {
+                        Prefix = x.GetProperty("prefix").GetString(),
+                        Name = x.GetProperty("name").GetString(),
+                        Description = x.GetProperty("description").GetString()
+                    }),
+                IPv6 = dataElement.GetProperty("ipv6_prefixes")
+                    .EnumerateArray()
+                    .Select(x => new PrefixModel {
+                        Prefix = x.GetProperty("prefix").GetString(),
+                        Name = x.GetProperty("name").GetString(),
+                        Description = x.GetProperty("description").GetString()
+                    }) 
+            };
+        }
+
         private IEnumerable<AsnModel> ExtractInfoFromArray(JsonElement jsonArrayElement)
             => jsonArrayElement.EnumerateArray()
                 .Select(peer => new AsnModel {

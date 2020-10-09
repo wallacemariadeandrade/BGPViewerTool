@@ -13,5 +13,6 @@ namespace BGPViewerCore.Service
         JsonDocument RetrieveAsnIxs(int asNumber);
         JsonDocument RetrieveIpDetails(string ipAddress);
         JsonDocument RetrievePrefixDetails(string prefix, byte cidr);
+        JsonDocument RetrieveSearchBy(string queryTerm);
     }
 }
