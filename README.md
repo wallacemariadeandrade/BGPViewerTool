@@ -64,6 +64,14 @@ var ip = service.GetPrefixDetails("10.100.100.20", 20);
 
 ```
 
+### Searching by ASN, prefix, IP, name, description
+```c#
+
+// IPv4 and IPv6 Prefixes, Related ASNs
+var searchResult = service.SearchBy("Google");
+
+```
+
 
 ## Normal Human User
 If you're a normal human (maybe not so normal cause you probably work with telecom :laughing::sweat_smile:) and likes Powershell, then you can use [BGPViewerPowerTool](https://github.com/wallacemariadeandrade/BGPViewerTool/tree/development/BGPViewerPowerTool)! It's a bunch of PowerShell scripts that do all the work for you. Download the folder and call the scripts from PowerShell prompt at scripts directory.

@@ -238,5 +238,15 @@ namespace Xunit
             Assert.Equal("65.51.86.0/24", searchResultForAsn3356.IPv4.Last().Prefix);
             Assert.Equal(0, searchResultForAsn3356.IPv6.Count());
         }
+
+        [Fact]
+        public void SearchByInexistantThing()
+        {
+            var result = GetService().SearchBy("empty");
+
+            Assert.Empty(result.RelatedAsns);
+            Assert.Empty(result.IPv4);
+            Assert.Empty(result.IPv6);
+        }
     }
 }
