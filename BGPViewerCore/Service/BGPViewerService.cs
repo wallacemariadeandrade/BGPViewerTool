@@ -6,15 +6,29 @@ using System.Text.Json;
 
 namespace BGPViewerCore.Service
 {
+    /// <summary>
+    /// Provides methods to get relevant data about Autonomous Systems (AS's), prefixes and IP addresses.
+    /// </summary>
     public class BGPViewerService
     {
         private IBGPViewerApi _jsonApi;
 
+        /// <summary>
+        /// Constructs the service.
+        /// </summary>
+        /// <param name="api">Data provider JSON API.</param>
         public BGPViewerService(IBGPViewerApi api)
         {
             _jsonApi = api;
         }
 
+        /// <summary>
+        /// Retrieve some personal data about ASN provided.
+        /// </summary>
+        /// <param name="asNumber">The AS number to get details about.</param>
+        /// <returns> 
+        /// An AsnDetailsModel containg some data like description, name, contacts, etc.
+         /// </returns>
         public AsnDetailsModel GetAsnDetails(int asNumber)
         {
             var jsonData = _jsonApi.RetrieveAsnDetails(asNumber);
@@ -38,6 +52,13 @@ namespace BGPViewerCore.Service
             };
         }
 
+        /// <summary>
+        /// Retrieve provided AS's known prefixes.
+        /// </summary>
+        /// <param name="asNumber">The AS number that prefixes are being looked for.</param>
+        /// <returns> 
+        /// Known IPv4 and IPv6 prefixes.
+        /// </returns>
         public AsnPrefixesModel GetAsnPrefixes(int asNumber)
         {
             var jsonData = _jsonApi.RetrieveAsnPrefixes(asNumber);
@@ -57,6 +78,16 @@ namespace BGPViewerCore.Service
             };
         } 
 
+        /// <summary>
+        /// Retrieve provided AS peers.
+        /// </summary>
+        /// <param name="asNumber">The AS number that is being looked for.</param>
+        /// <returns> 
+        /// Known IPv4 and IPv6 peers.
+        /// </returns>
+        /// <remarks>
+        /// Tuple item1 contains IPv4 peers and item2 IPv6 peers.
+        /// </remarks>
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnPeers(int asNumber)
         {
             var jsonData = _jsonApi.RetrieveAsnPeers(asNumber);
@@ -68,6 +99,16 @@ namespace BGPViewerCore.Service
             );
         }
 
+        /// <summary>
+        /// Retrieve provided AS upstreams.
+        /// </summary>
+        /// <param name="asNumber">The AS number that is being looked for.</param>
+        /// <returns> 
+        /// Known IPv4 and IPv6 upstreams.
+        /// </returns>
+        /// <remarks>
+        /// Tuple item1 contains IPv4 upstreams and item2 IPv6 upstreams.
+        /// </remarks>
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnUpstreams(int asNumber)
         {
             var jsonData = _jsonApi.RetrieveAsnUpstreams(asNumber);
@@ -79,6 +120,16 @@ namespace BGPViewerCore.Service
             );
         }
 
+        /// <summary>
+        /// Retrieve provided AS peers.
+        /// </summary>
+        /// <param name="asNumber">The AS number that is being looked for.</param>
+        /// <returns> 
+        /// Known IPv4 and IPv6 peers.
+        /// </returns>
+        /// <remarks>
+        /// Tuple item1 contains IPv4 peers and item2 IPv6 peers.
+        /// </remarks>
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnDownstreams(int asNumber)
         {
             var jsonData = _jsonApi.RetrieveAsnDownstreams(asNumber);
@@ -90,6 +141,13 @@ namespace BGPViewerCore.Service
             );
         }
 
+        /// <summary>
+        /// Retrieve IX's where provided AS is present.
+        /// </summary>
+        /// <param name="asNumber">The IX's AS number participant.</param>
+        /// <returns> 
+        /// A collection containg known IX's where provided AS is present.
+        /// </returns>
         public IEnumerable<IxModel> GetAsnIxs(int asNumber)
         {
             var jsonData =  _jsonApi.RetrieveAsnIxs(asNumber);
@@ -106,6 +164,13 @@ namespace BGPViewerCore.Service
                 };
         }
 
+        /// <summary>
+        /// Retrieve provided IP details.
+        /// </summary>
+        /// <param name="ipAddress">The IP address that is being looked for.</param>
+        /// <returns> 
+        /// Details about provided IP address like PTR record, country code, allocation prefix and so on.
+        /// </returns>
         public IpDetailModel GetIpDetails(string ipAddress)
         {
             var jsonData = _jsonApi.RetrieveIpDetails(ipAddress);
@@ -135,6 +200,14 @@ namespace BGPViewerCore.Service
             };
         }
 
+        /// <summary>
+        /// Retrieve provided prefix details.
+        /// </summary>
+        /// <param name="prefix">The prefix that is being looked for.</param>
+        /// <param name="cidr">The prefix cidr.</param>
+        /// <returns> 
+        /// Details about provided prefix like parent AS numbers, name, description and so on.
+        /// </returns>
         public PrefixDetailModel GetPrefixDetails(string prefix, byte cidr)
         {
             var jsonData = _jsonApi.RetrievePrefixDetails(prefix, cidr);
@@ -156,6 +229,16 @@ namespace BGPViewerCore.Service
             };
         }
 
+        /// <summary>
+        /// Searches data on API based on provided term.
+        /// </summary>
+        /// <param name="queryTerm">The query term that will be used to look for.</param>
+        /// <returns> 
+        /// Details about provided prefix like parent AS numbers, name, description and so on.
+        /// </returns>
+        /// <remarks>
+        /// Common query terms are AS number, name, description, IP address and prefix.
+        /// </remarks>
         public SearchModel SearchBy(string queryTerm)
         {
             var jsonData = _jsonApi.RetrieveSearchBy(queryTerm);
