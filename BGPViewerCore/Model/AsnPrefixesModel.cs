@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace BGPViewerCore.Service
+namespace BGPViewerCore.Model
 {
     public class AsnPrefixesModel
     {
