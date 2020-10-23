@@ -107,13 +107,13 @@ set-executionpolicy remotesigned
     - ```.\search.ps1 "Century Link" or .\search.ps1 CenturyLink or .\search.ps1 3356 ```
 
 ## NET Core User
-Another option for you is to use the BGPViewerConsoleTool. It's a command line client built on NET Core, a cross-platform version of .NET for building websites, services, and console apps.
+Another option for you is to use the [BGPViewerConsoleTool](https://github.com/wallacemariadeandrade/BGPViewerTool/tree/development/BGPViewerConsoleTool). It's a command line client built on NET Core, a cross-platform version of .NET for building websites, services, and console apps.
 
 To use this tool you'll must have installed NET Core Runtime, whitch one you can get [here](https://dotnet.microsoft.com/download).
 
 
 ### Help
-Here you get get some help about supported commands. Take a look!
+Here you get get some help about supported commands. Take a look! :mag:
 
 ```
 Usage: dotnet BGPViewerConsoleTool [options] <value> [command]
