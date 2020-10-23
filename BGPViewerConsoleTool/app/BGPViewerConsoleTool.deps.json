@@ -1,0 +1,104 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v2.1",
+    "signature": "4121c296afa26534e637effee21d0158a822dd6f"
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v2.1": {
+      "BGPViewerConsoleTool/1.0.0": {
+        "dependencies": {
+          "BGPViewerCore": "1.0.0"
+        },
+        "runtime": {
+          "BGPViewerConsoleTool.dll": {}
+        }
+      },
+      "Microsoft.Bcl.AsyncInterfaces/5.0.0-rc.1.20451.14": {
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Bcl.AsyncInterfaces.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.20.45114"
+          }
+        }
+      },
+      "System.Runtime.CompilerServices.Unsafe/5.0.0-rc.1.20451.14": {
+        "runtime": {
+          "lib/netcoreapp2.0/System.Runtime.CompilerServices.Unsafe.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.20.45114"
+          }
+        }
+      },
+      "System.Text.Encodings.Web/5.0.0-rc.1.20451.14": {
+        "runtime": {
+          "lib/netstandard2.0/System.Text.Encodings.Web.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.20.45114"
+          }
+        }
+      },
+      "System.Text.Json/5.0.0-rc.1.20451.14": {
+        "dependencies": {
+          "Microsoft.Bcl.AsyncInterfaces": "5.0.0-rc.1.20451.14",
+          "System.Runtime.CompilerServices.Unsafe": "5.0.0-rc.1.20451.14",
+          "System.Text.Encodings.Web": "5.0.0-rc.1.20451.14"
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.Text.Json.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.20.45114"
+          }
+        }
+      },
+      "BGPViewerCore/1.0.0": {
+        "dependencies": {
+          "System.Text.Json": "5.0.0-rc.1.20451.14"
+        },
+        "runtime": {
+          "BGPViewerCore.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "BGPViewerConsoleTool/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.Bcl.AsyncInterfaces/5.0.0-rc.1.20451.14": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-NEWaKzTvKJPheVdq2bw4TtQl4424nJZVbXIy9inOkDXwcUeo4jZTZ6Wkqp6D2zd7DnINYonBvfgG62m5NC1AgQ==",
+      "path": "microsoft.bcl.asyncinterfaces/5.0.0-rc.1.20451.14",
+      "hashPath": "microsoft.bcl.asyncinterfaces.5.0.0-rc.1.20451.14.nupkg.sha512"
+    },
+    "System.Runtime.CompilerServices.Unsafe/5.0.0-rc.1.20451.14": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-5toStE2YO7l2OONY1OryEeplmiLkrxgsfiqBDZM1GYklDz9o55g7b/CzLnhLImnG2zxmt+WiUT3LE0HgyrhELw==",
+      "path": "system.runtime.compilerservices.unsafe/5.0.0-rc.1.20451.14",
+      "hashPath": "system.runtime.compilerservices.unsafe.5.0.0-rc.1.20451.14.nupkg.sha512"
+    },
+    "System.Text.Encodings.Web/5.0.0-rc.1.20451.14": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-NI1IMSekouolCuynUq3mo/APe4YrArWaw/pPkP5DmroZGAVMlR28qY0vhGHRMTgAQeSrr22z+9u0K/hWexfgUA==",
+      "path": "system.text.encodings.web/5.0.0-rc.1.20451.14",
+      "hashPath": "system.text.encodings.web.5.0.0-rc.1.20451.14.nupkg.sha512"
+    },
+    "System.Text.Json/5.0.0-rc.1.20451.14": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-62dQ5Rmz+hHR1ReARJQf53AqC+D+zTijQq9Oik+VTJcPJJy44uZqJC7/GSv03I5nHjzNxcjogmngpkk0vu0QJQ==",
+      "path": "system.text.json/5.0.0-rc.1.20451.14",
+      "hashPath": "system.text.json.5.0.0-rc.1.20451.14.nupkg.sha512"
+    },
+    "BGPViewerCore/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
