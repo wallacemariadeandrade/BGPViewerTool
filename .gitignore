@@ -1,5 +1,6 @@
 .vscode/
 BGPViewerConsoleTool/obj/
+BGPViewerConsoleTool/bin/
 BGPViewerCore/bin/
 BGPViewerCore/obj/
 xUnitTests/bin/

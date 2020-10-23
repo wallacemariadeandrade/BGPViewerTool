@@ -112,18 +112,20 @@ Another option for you is to use the [BGPViewerConsoleTool](https://github.com/w
 To use this tool you'll must have installed NET Core Runtime, whitch one you can get [here](https://dotnet.microsoft.com/download).
 
 
-### Help
-To run the app you just call the BGPViewerConsoleTool.dll with dotnet and some other parameters, as shown bellow. Take a look! :mag:
+### Use
+Download the app folder and call BGPViewerConsoleTool.dll from it as shown below. Take a look! :mag:
 
 ```
 Usage: dotnet BGPViewerConsoleTool [options] <value> [command]
 Usage: dotnet BGPViewerConsoleTool -s <search_value>
+Usage: dotnet BGPViewerConsoleTool -h
 
 Options:
     -a          AS number       (e.g. -a 53181)
     -p          Prefix          (e.g  -p 8.8.8.8/24)
     -i          IP              (e.g  -i 8.8.8.8)
     -s          Search by       (e.g  -s 8.8.8.8 or -s 6762 or -s ""Century Link"")
+    -h          Help
 
 Commands: 
     
