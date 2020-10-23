@@ -73,7 +73,7 @@ var searchResult = service.SearchBy("Google");
 ```
 
 
-## Normal Human User
+## Powershell User
 If you're a normal human (maybe not so normal cause you probably work with telecom :laughing::sweat_smile:) and likes Powershell, then you can use [BGPViewerPowerTool](https://github.com/wallacemariadeandrade/BGPViewerTool/tree/development/BGPViewerPowerTool)! It's a bunch of PowerShell scripts that do all the work for you. Download the folder and call the scripts from PowerShell prompt at scripts directory.
 
 > [PowerShell](https://docs.microsoft.com/pt-br/powershell/scripting/overview?view=powershell-7) is a cross-platform task automation and configuration management framework, consisting of a command-line shell and scripting language. Unlike most shells, which accept and return text, PowerShell is built on top of the .NET Common Language Runtime (CLR), and accepts and returns .NET objects. This fundamental change brings entirely new tools and methods for automation.
@@ -105,3 +105,42 @@ set-executionpolicy remotesigned
     - ```.\get_ip_details.ps1 4.55.0.0 ```
 - Search by ASN, Prefix, IP Address, Name
     - ```.\search.ps1 "Century Link" or .\search.ps1 CenturyLink or .\search.ps1 3356 ```
+
+## NET Core User
+Another option for you is to use the BGPViewerConsoleTool. It's a command line client built on NET Core, a cross-platform version of .NET for building websites, services, and console apps.
+
+To use this tool you'll must have installed NET Core Runtime, whitch one you can get [here](https://dotnet.microsoft.com/download).
+
+
+### Help
+Here you get get some help about supported commands. Take a look!
+
+```
+Usage: dotnet BGPViewerConsoleTool [options] <value> [command]
+Usage: dotnet BGPViewerConsoleTool -s <search_value>
+
+Options:
+    -a          AS number       (e.g. -a 53181)
+    -p          Prefix          (e.g  -p 8.8.8.8/24)
+    -i          IP              (e.g  -i 8.8.8.8)
+    -s          Search by       (e.g  -s 8.8.8.8 or -s 6762 or -s ""Century Link"")
+
+Commands: 
+    
+With -a option:
+
+    -d          AS details
+    -px         AS prefixes
+    -pr         AS peers
+    -up         AS upstreams
+    -dw         AS downstreams
+    -ix         AS IXs
+
+With -p option:
+
+    -d          Prefix details
+
+With -i option:
+
+    -d          IP details
+```

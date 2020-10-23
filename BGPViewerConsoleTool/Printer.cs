@@ -12,6 +12,7 @@ namespace BGPViewerConsoleTool
 
         private static string PrintAsnModelWithPadding(AsnModel model, int padding)
             => new StringBuilder()
+                .AppendLine()
                 .AppendLine($"{new string(' ', padding)}ASN: {model.ASN}")
                 .AppendLine($"{new string(' ', padding)}Name: {model.Name}")
                 .AppendLine($"{new string(' ', padding)}Description: {model.Description}")
