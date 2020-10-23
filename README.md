@@ -113,7 +113,7 @@ To use this tool you'll must have installed NET Core Runtime, whitch one you can
 
 
 ### Use
-Download the app folder and call BGPViewerConsoleTool.dll from it as shown below. Take a look! :mag:
+Download the [app](https://github.com/wallacemariadeandrade/BGPViewerTool/tree/development/BGPViewerConsoleTool/app) folder and call BGPViewerConsoleTool.dll from it as shown below. Take a look! :mag:
 
 ```
 Usage: dotnet BGPViewerConsoleTool [options] <value> [command]
