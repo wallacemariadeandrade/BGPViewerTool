@@ -6017,23 +6017,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Wallace-K2 Telecom\\.nuget\\packages\\": {},
+    "C:\\Users\\Wallace K2 Telecom\\.nuget\\packages\\": {},
     "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\Users\\Wallace-K2 Telecom\\source\\repos\\BGPViewerTool\\XUnitTests\\XUnitTests.csproj",
+      "projectUniqueName": "c:\\Users\\Wallace K2 Telecom\\Documents\\BGPViewerTool\\XUnitTests\\XUnitTests.csproj",
       "projectName": "XUnitTests",
-      "projectPath": "c:\\Users\\Wallace-K2 Telecom\\source\\repos\\BGPViewerTool\\XUnitTests\\XUnitTests.csproj",
-      "packagesPath": "C:\\Users\\Wallace-K2 Telecom\\.nuget\\packages\\",
-      "outputPath": "c:\\Users\\Wallace-K2 Telecom\\source\\repos\\BGPViewerTool\\XUnitTests\\obj\\",
+      "projectPath": "c:\\Users\\Wallace K2 Telecom\\Documents\\BGPViewerTool\\XUnitTests\\XUnitTests.csproj",
+      "packagesPath": "C:\\Users\\Wallace K2 Telecom\\.nuget\\packages\\",
+      "outputPath": "c:\\Users\\Wallace K2 Telecom\\Documents\\BGPViewerTool\\XUnitTests\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
-        "C:\\Users\\Wallace-K2 Telecom\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Wallace K2 Telecom\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -6046,8 +6046,8 @@
       "frameworks": {
         "netcoreapp2.1": {
           "projectReferences": {
-            "c:\\Users\\Wallace-K2 Telecom\\source\\repos\\BGPViewerTool\\BGPViewerCore\\BGPViewerCore.csproj": {
-              "projectPath": "c:\\Users\\Wallace-K2 Telecom\\source\\repos\\BGPViewerTool\\BGPViewerCore\\BGPViewerCore.csproj"
+            "c:\\Users\\Wallace K2 Telecom\\Documents\\BGPViewerTool\\BGPViewerCore\\BGPViewerCore.csproj": {
+              "projectPath": "c:\\Users\\Wallace K2 Telecom\\Documents\\BGPViewerTool\\BGPViewerCore\\BGPViewerCore.csproj"
             }
           }
         }
@@ -6081,10 +6081,16 @@
           }
         },
         "imports": [
-          "net461"
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48"
         ],
         "assetTargetFallback": true,
-        "warn": true
+        "warn": true,
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.403\\RuntimeIdentifierGraph.json"
       }
     }
   }

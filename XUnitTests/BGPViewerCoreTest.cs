@@ -134,6 +134,13 @@ namespace Xunit
         }
 
         [Fact]
+        public void GettingAsnWithoutIxs()
+        {
+            var asn268003Ixs = GetService().GetAsnIxs(268003);
+            Assert.Empty(asn268003Ixs);
+        }
+
+        [Fact]
         public void GettingIpAddressDetails()
         {
             var ipDetails = GetService().GetIpDetails("143.208.20.0");
