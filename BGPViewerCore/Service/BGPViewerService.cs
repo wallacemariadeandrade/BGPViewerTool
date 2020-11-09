@@ -9,7 +9,7 @@ namespace BGPViewerCore.Service
     /// <summary>
     /// Provides methods to get relevant data about Autonomous Systems (AS's), prefixes and IP addresses.
     /// </summary>
-    public class BGPViewerService
+    public class BGPViewerService : IBGPViewerService
     {
         private IBGPViewerApi _jsonApi;
 
