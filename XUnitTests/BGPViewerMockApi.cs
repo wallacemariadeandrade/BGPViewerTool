@@ -25,6 +25,8 @@ namespace Xunit
         {
             if(asNumber == 53181)
                 return JsonDocument.Parse(@"{""status"":""ok"",""status_message"":""Query was successful"",""data"":[{""ix_id"":94,""name"":""IX.br (PTT.br) São Paulo"",""name_full"":""IX.br (PTT.br) São Paulo"",""country_code"":""BR"",""city"":""São Paulo\/SP"",""ipv4_address"":""187.16.222.222"",""ipv6_address"":""2001:12f8::222:222"",""speed"":10000},{""ix_id"":100,""name"":""IX.br (PTT.br) Rio de Janeiro"",""name_full"":""IX.br (PTT.br) Rio de Janeiro"",""country_code"":""BR"",""city"":""Rio de Janeiro\/RJ"",""ipv4_address"":""45.6.52.153"",""ipv6_address"":""2001:12f8:0:2::153"",""speed"":20000},{""ix_id"":100,""name"":""IX.br (PTT.br) Rio de Janeiro"",""name_full"":""IX.br (PTT.br) Rio de Janeiro"",""country_code"":""BR"",""city"":""Rio de Janeiro\/RJ"",""ipv4_address"":""45.6.52.210"",""ipv6_address"":""2001:12f8:0:2::210"",""speed"":20000},{""ix_id"":100,""name"":""IX.br (PTT.br) Rio de Janeiro"",""name_full"":""IX.br (PTT.br) Rio de Janeiro"",""country_code"":""BR"",""city"":""Rio de Janeiro\/RJ"",""ipv4_address"":""45.6.53.32"",""ipv6_address"":""2001:12f8:0:2::53:32"",""speed"":100000}],""@meta"":{""time_zone"":""UTC"",""api_version"":1,""execution_time"":""37.86 ms""}}");
+            if(asNumber == 268003)
+                return JsonDocument.Parse(@"{""status"":""ok"",""status_message"":""Query was successful"",""data"":[]}");
             return JsonDocument.Parse(@"{""status"":""error"",""status_message"":""Could not find ASN"",""@meta"":{""time_zone"":""UTC"",""api_version"":1,""execution_time"":""5027.25 ms""}}");
         }
 

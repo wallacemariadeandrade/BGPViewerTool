@@ -12,3 +12,18 @@ C:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\BGPViewerConsoleTool\obj\
 C:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\BGPViewerConsoleTool\obj\Debug\netcoreapp2.1\BGPViewerConsoleTool.csproj.CopyComplete
 C:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\BGPViewerConsoleTool\obj\Debug\netcoreapp2.1\BGPViewerConsoleTool.dll
 C:\Users\Wallace-K2 Telecom\source\repos\BGPViewerTool\BGPViewerConsoleTool\obj\Debug\netcoreapp2.1\BGPViewerConsoleTool.pdb
+C:\Users\Wallace K2 Telecom\Documents\BGPViewerTool\BGPViewerConsoleTool\bin\Debug\netcoreapp2.1\BGPViewerConsoleTool.deps.json
+C:\Users\Wallace K2 Telecom\Documents\BGPViewerTool\BGPViewerConsoleTool\bin\Debug\netcoreapp2.1\BGPViewerConsoleTool.runtimeconfig.json
+C:\Users\Wallace K2 Telecom\Documents\BGPViewerTool\BGPViewerConsoleTool\bin\Debug\netcoreapp2.1\BGPViewerConsoleTool.runtimeconfig.dev.json
+C:\Users\Wallace K2 Telecom\Documents\BGPViewerTool\BGPViewerConsoleTool\bin\Debug\netcoreapp2.1\BGPViewerConsoleTool.dll
+C:\Users\Wallace K2 Telecom\Documents\BGPViewerTool\BGPViewerConsoleTool\bin\Debug\netcoreapp2.1\BGPViewerConsoleTool.pdb
+C:\Users\Wallace K2 Telecom\Documents\BGPViewerTool\BGPViewerConsoleTool\bin\Debug\netcoreapp2.1\BGPViewerCore.dll
+C:\Users\Wallace K2 Telecom\Documents\BGPViewerTool\BGPViewerConsoleTool\bin\Debug\netcoreapp2.1\BGPViewerCore.pdb
+C:\Users\Wallace K2 Telecom\Documents\BGPViewerTool\BGPViewerConsoleTool\obj\Debug\netcoreapp2.1\BGPViewerConsoleTool.csprojAssemblyReference.cache
+C:\Users\Wallace K2 Telecom\Documents\BGPViewerTool\BGPViewerConsoleTool\obj\Debug\netcoreapp2.1\BGPViewerConsoleTool.AssemblyInfoInputs.cache
+C:\Users\Wallace K2 Telecom\Documents\BGPViewerTool\BGPViewerConsoleTool\obj\Debug\netcoreapp2.1\BGPViewerConsoleTool.AssemblyInfo.cs
+C:\Users\Wallace K2 Telecom\Documents\BGPViewerTool\BGPViewerConsoleTool\obj\Debug\netcoreapp2.1\BGPViewerConsoleTool.csproj.CoreCompileInputs.cache
+C:\Users\Wallace K2 Telecom\Documents\BGPViewerTool\BGPViewerConsoleTool\obj\Debug\netcoreapp2.1\BGPViewerConsoleTool.csproj.CopyComplete
+C:\Users\Wallace K2 Telecom\Documents\BGPViewerTool\BGPViewerConsoleTool\obj\Debug\netcoreapp2.1\BGPViewerConsoleTool.dll
+C:\Users\Wallace K2 Telecom\Documents\BGPViewerTool\BGPViewerConsoleTool\obj\Debug\netcoreapp2.1\BGPViewerConsoleTool.pdb
+C:\Users\Wallace K2 Telecom\Documents\BGPViewerTool\BGPViewerConsoleTool\obj\Debug\netcoreapp2.1\BGPViewerConsoleTool.genruntimeconfig.cache
