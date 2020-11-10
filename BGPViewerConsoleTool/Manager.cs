@@ -15,7 +15,7 @@ namespace BGPViewerConsoleTool
         private readonly IDictionary<string, Func<string, string>> ipCommands;
         private readonly IDictionary<string, Func<(string, byte), string>> prefixCommands;
         private readonly Func<string, string> searchCommand;
-        public Manager(BGPViewerService service)
+        public Manager(IBGPViewerService service)
         {
             asnCommands = BuildAsnCommands(service);
             ipCommands = BuildIpCommands(service);
@@ -63,7 +63,7 @@ namespace BGPViewerConsoleTool
 
         private Exception CommandNotFound(string option, string command) => new ArgumentOutOfRangeException(option, $"{option} option doesn't contains command {command}!");
 
-        private IDictionary<string, Func<int, string>> BuildAsnCommands(BGPViewerService service) => new Dictionary<string, Func<int, string>>
+        private IDictionary<string, Func<int, string>> BuildAsnCommands(IBGPViewerService service) => new Dictionary<string, Func<int, string>>
         {
             {
                 "-d", 
@@ -109,7 +109,7 @@ namespace BGPViewerConsoleTool
             }
         };
 
-        private IDictionary<string, Func<string, string>> BuildIpCommands(BGPViewerService service) => new Dictionary<string, Func<string, string>>
+        private IDictionary<string, Func<string, string>> BuildIpCommands(IBGPViewerService service) => new Dictionary<string, Func<string, string>>
         {
             {
                 "-d", 
@@ -119,7 +119,7 @@ namespace BGPViewerConsoleTool
             }
         };
 
-        private IDictionary<string, Func<(string, byte), string>> BuildPrefixCommands(BGPViewerService service) => new Dictionary<string, Func<(string, byte), string>>
+        private IDictionary<string, Func<(string, byte), string>> BuildPrefixCommands(IBGPViewerService service) => new Dictionary<string, Func<(string, byte), string>>
         {
             {
                 "-d",

@@ -1,8 +1,8 @@
 {
   "runtimeOptions": {
     "additionalProbingPaths": [
-      "C:\\Users\\Wallace-K2 Telecom\\.dotnet\\store\\|arch|\\|tfm|",
-      "C:\\Users\\Wallace-K2 Telecom\\.nuget\\packages",
+      "C:\\Users\\Wallace K2 Telecom\\.dotnet\\store\\|arch|\\|tfm|",
+      "C:\\Users\\Wallace K2 Telecom\\.nuget\\packages",
       "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
     ]
   }
