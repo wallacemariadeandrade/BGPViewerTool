@@ -1,3 +1,7 @@
 .vscode/
-bin/
-obj/Debug
+BGPViewerConsoleTool/bin/
+BGPViewerConsoleTool/obj/
+BGPViewerCore/bin/
+BGPViewerCore/obj/
+xUnitTests/obj/
+xUnitTests/bin/
