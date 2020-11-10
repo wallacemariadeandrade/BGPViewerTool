@@ -6023,11 +6023,19 @@
   "project": {
     "version": "1.0.0",
     "restore": {
+<<<<<<< HEAD
       "projectUniqueName": "c:\\Users\\Wallace K2 Telecom\\source\\repos\\BGPViewerTool\\XUnitTests\\XUnitTests.csproj",
       "projectName": "XUnitTests",
       "projectPath": "c:\\Users\\Wallace K2 Telecom\\source\\repos\\BGPViewerTool\\XUnitTests\\XUnitTests.csproj",
       "packagesPath": "C:\\Users\\Wallace K2 Telecom\\.nuget\\packages\\",
       "outputPath": "c:\\Users\\Wallace K2 Telecom\\source\\repos\\BGPViewerTool\\XUnitTests\\obj\\",
+=======
+      "projectUniqueName": "c:\\Users\\Wallace K2 Telecom\\Documents\\BGPViewerTool\\XUnitTests\\XUnitTests.csproj",
+      "projectName": "XUnitTests",
+      "projectPath": "c:\\Users\\Wallace K2 Telecom\\Documents\\BGPViewerTool\\XUnitTests\\XUnitTests.csproj",
+      "packagesPath": "C:\\Users\\Wallace K2 Telecom\\.nuget\\packages\\",
+      "outputPath": "c:\\Users\\Wallace K2 Telecom\\Documents\\BGPViewerTool\\XUnitTests\\obj\\",
+>>>>>>> 45cbe938c78ea0e8e6ab6b0325681a0e6900db65
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
@@ -6046,8 +6054,13 @@
       "frameworks": {
         "netcoreapp2.1": {
           "projectReferences": {
+<<<<<<< HEAD
             "c:\\Users\\Wallace K2 Telecom\\source\\repos\\BGPViewerTool\\BGPViewerCore\\BGPViewerCore.csproj": {
               "projectPath": "c:\\Users\\Wallace K2 Telecom\\source\\repos\\BGPViewerTool\\BGPViewerCore\\BGPViewerCore.csproj"
+=======
+            "c:\\Users\\Wallace K2 Telecom\\Documents\\BGPViewerTool\\BGPViewerCore\\BGPViewerCore.csproj": {
+              "projectPath": "c:\\Users\\Wallace K2 Telecom\\Documents\\BGPViewerTool\\BGPViewerCore\\BGPViewerCore.csproj"
+>>>>>>> 45cbe938c78ea0e8e6ab6b0325681a0e6900db65
             }
           }
         }
