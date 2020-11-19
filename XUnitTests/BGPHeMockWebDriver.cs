@@ -84,7 +84,9 @@ namespace Xunit
                         break;
 
                     default:
-                        throw new Exception($"URL {url} was not mocked for unit testing.");
+                        mockDriver.Navigate().GoToUrl($"file:///{testsProjectDirectory}/ASNotFoundMockData.html");
+                        mockDriver.Url = url;
+                        break;
                 }
             }
             public void GoToUrl(Uri url) => mockDriver.Navigate().GoToUrl(url);

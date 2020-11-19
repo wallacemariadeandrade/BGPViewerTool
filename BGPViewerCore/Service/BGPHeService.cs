@@ -31,12 +31,14 @@ namespace BGPViewerCore.Service
 
         #region Routines
 
-        private IWebDriver GetDriverWithResponseFrom(string url)
+        private IWebDriver GetDriverWithValidatedResponseFrom(string url)
         {
             // We've got to use a WebDriverWait to wait bgp.he.net page redirection
             var wb = new WebDriverWait(_driver, _timeout);
             _driver.Navigate().GoToUrl(url);
             wb.Until(x => x.Url == url);
+            if(CheckIfDataExists(_driver))
+                throw new KeyNotFoundException("Your query did not return any results.");
             return _driver;
         }
 
@@ -103,12 +105,14 @@ namespace BGPViewerCore.Service
                 };
             }
         }
-            
+
+        private bool CheckIfDataExists(IWebDriver driver) => driver.FindElements(By.Id("error")).Count > 0;
+
         #endregion
 
         public AsnDetailsModel GetAsnDetails(int asNumber)
         {
-            var driver = GetDriverWithResponseFrom($"https://bgp.he.net/AS{asNumber}");
+            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}");
 
             // h1 tag is always present and always contains the AS name/description
             var h1TitleElement = driver.FindElement(By.TagName("h1"));
@@ -149,12 +153,43 @@ namespace BGPViewerCore.Service
 
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnDownstreams(int asNumber)
         {
-            throw new NotImplementedException();
+            // https://bgp.he.net doesn't provide downstreams information,
+            // so we'll just return null object
+            return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(
+                new AsnDetailsModel[]{}, 
+                new AsnDetailsModel[]{}
+            );    
         }
 
         public IEnumerable<IxModel> GetAsnIxs(int asNumber)
         {
-            throw new NotImplementedException();
+            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}");
+            var brTagSplitArg = new string[]{"<br>"};
+            if(driver.PageSource.Contains("exchange_table"))
+            {
+                foreach(var item in driver.FindElement(By.Id("exchange_table"))
+                    .FindElement(By.TagName("tbody")).FindElements(By.TagName("tr")).Select(x => x.FindElements(By.TagName("td"))))
+                {
+                    var ixName = item.ElementAt(0).FindElement(By.TagName("a")).GetAttribute("innerHTML").TrimStart().TrimEnd();
+                    var ixCountryCode = item.ElementAt(1).GetAttribute("innerHTML").TrimStart().TrimEnd();
+                    var ixIpv4Addresses = item.ElementAt(3).GetAttribute("innerHTML").TrimStart().TrimEnd().Split(brTagSplitArg, StringSplitOptions.None);
+                    var ixIpv6Addresses = item.ElementAt(4).GetAttribute("innerHTML").TrimStart().TrimEnd().Split(brTagSplitArg, StringSplitOptions.None);
+                    var ixIpv6AddressesCount = ixIpv6Addresses.Count();
+                    // We loop by IPv4 cause it'll be always equal to or 
+                    // greater than IPv6
+                    for(int index=0; index<ixIpv4Addresses.Count(); index++)
+                    {
+                        yield return new IxModel {
+                            Name = ixName,
+                            FullName = ixName,
+                            CountryCode = ixCountryCode,
+                            AsnSpeed = 0, // Information not given by bgp.he.net
+                            IPv4 = ixIpv4Addresses.ElementAt(index),
+                            IPv6 = index < ixIpv6AddressesCount ? ixIpv6Addresses.ElementAt(index) : null
+                        };             
+                    }
+                }   
+            }
         }
 
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnPeers(int asNumber)
