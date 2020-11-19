@@ -58,6 +58,7 @@ namespace BGPViewerCore.Service
 
         // At bgp.he.net/ASxxx upstreams are inside two  
         // HTML tables (IPv4 and IPv6) styled with "toppeertable" class
+        // Each string array returned contains the as number (pos 0) and its name (pos 1)
         private IEnumerable<string[]> ExtractAsnsAndNamesFromToppertable(string toppeertableText)
         {            
             using(var reader = new StringReader(toppeertableText.Split(new string[]{"ASN Name"}, StringSplitOptions.None)[1].TrimStart()))
@@ -195,6 +196,7 @@ namespace BGPViewerCore.Service
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnPeers(int asNumber)
         {
             var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}");
+            
             var hasIPv4Peers = driver.PageSource.Contains("table_peers4");
             var hasIPv6Peers = driver.PageSource.Contains("table_peers6");
             
@@ -220,10 +222,13 @@ namespace BGPViewerCore.Service
         public AsnPrefixesModel GetAsnPrefixes(int asNumber)
         {
             var allHtmlTables = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}").FindElements(By.TagName("table"));
+            
             var hasIpv4Prefixes = allHtmlTables.Count(table => table.GetAttribute("id") == "table_prefixes4") == 1;
             var hasIpv6Prefixes = allHtmlTables.Count(table => table.GetAttribute("id") == "table_prefixes6") == 1;
+            
             var ipv4Prefixes = hasIpv4Prefixes ? ExtractPrefixesFromTablePrefixes(allHtmlTables.Single(table => table.GetAttribute("id") == "table_prefixes4"), IPV4_PREFIX_PATTERN) : new string[]{};
             var ipv6Prefixes = hasIpv6Prefixes ? ExtractPrefixesFromTablePrefixes(allHtmlTables.Single(table => table.GetAttribute("id") == "table_prefixes6"), IPV6_PREFIX_PATTERN) : new string[]{};
+            
             return new AsnPrefixesModel
             {
                 ASN = asNumber,
@@ -234,7 +239,30 @@ namespace BGPViewerCore.Service
 
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnUpstreams(int asNumber)
         {
-            throw new NotImplementedException();
+            var toppeertables = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}")
+                .FindElements(By.ClassName("toppeertable"))
+                .Select(table => table.Text);   
+            
+            var hasIpv4Upstreams = toppeertables.Count() >= 1;
+            var hasIpv6Upstreams = toppeertables.Count() >= 2;
+
+            var ipv4Upstreams = hasIpv4Upstreams ? ExtractAsnsAndNamesFromToppertable(toppeertables.ElementAt(0))
+                    .Select(x => new AsnModel{
+                        ASN = int.Parse(x[0]),
+                        Name = x[1],
+                        Description = x[1],
+                        CountryCode = null
+                    }) : new AsnModel[]{};
+
+            var ipv6Upstreams = hasIpv6Upstreams ? ExtractAsnsAndNamesFromToppertable(toppeertables.ElementAt(1))
+                    .Select(x => new AsnModel{
+                        ASN = int.Parse(x[0]),
+                        Name = x[1],
+                        Description = x[1],
+                        CountryCode = null
+                    }) : new AsnModel[]{};
+
+            return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(ipv4Upstreams, ipv6Upstreams);
         }
 
         public IpDetailModel GetIpDetails(string ipAddress)
