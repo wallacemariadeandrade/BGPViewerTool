@@ -219,7 +219,17 @@ namespace BGPViewerCore.Service
 
         public AsnPrefixesModel GetAsnPrefixes(int asNumber)
         {
-            throw new NotImplementedException();
+            var allHtmlTables = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}").FindElements(By.TagName("table"));
+            var hasIpv4Prefixes = allHtmlTables.Count(table => table.GetAttribute("id") == "table_prefixes4") == 1;
+            var hasIpv6Prefixes = allHtmlTables.Count(table => table.GetAttribute("id") == "table_prefixes6") == 1;
+            var ipv4Prefixes = hasIpv4Prefixes ? ExtractPrefixesFromTablePrefixes(allHtmlTables.Single(table => table.GetAttribute("id") == "table_prefixes4"), IPV4_PREFIX_PATTERN) : new string[]{};
+            var ipv6Prefixes = hasIpv6Prefixes ? ExtractPrefixesFromTablePrefixes(allHtmlTables.Single(table => table.GetAttribute("id") == "table_prefixes6"), IPV6_PREFIX_PATTERN) : new string[]{};
+            return new AsnPrefixesModel
+            {
+                ASN = asNumber,
+                IPv4 = ipv4Prefixes,
+                IPv6 = ipv6Prefixes
+            };
         }
 
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnUpstreams(int asNumber)
