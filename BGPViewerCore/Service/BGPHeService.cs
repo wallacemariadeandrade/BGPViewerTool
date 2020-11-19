@@ -194,7 +194,27 @@ namespace BGPViewerCore.Service
 
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnPeers(int asNumber)
         {
-            throw new NotImplementedException();
+            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}");
+            var hasIPv4Peers = driver.PageSource.Contains("table_peers4");
+            var hasIPv6Peers = driver.PageSource.Contains("table_peers6");
+            
+            var ipv4Peers = hasIPv4Peers ? ExtractAsnsInfoFromPeerTable(driver.FindElement(By.Id("peers")))
+                .Select(x => new AsnModel{
+                    ASN = int.Parse(x[0]),
+                    Name = x[1],
+                    Description = x[2],
+                    CountryCode = null
+                }) : new AsnModel[]{};
+                
+            var ipv6Peers = hasIPv4Peers ? ExtractAsnsInfoFromPeerTable(driver.FindElement(By.Id("peers6")))
+                .Select(x => new AsnModel{
+                    ASN = int.Parse(x[0]),
+                    Name = x[1],
+                    Description = x[2],
+                    CountryCode = null
+                }) : new AsnModel[]{};
+            
+            return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(ipv4Peers, ipv6Peers);
         }
 
         public AsnPrefixesModel GetAsnPrefixes(int asNumber)

@@ -93,5 +93,35 @@ namespace Xunit
             ixs = Service.GetAsnIxs(53181);
             Assert.True(ixs.Count(ix => ix.AsnSpeed == 0) == ixs.Count());
         }
+
+        [Fact]
+        public void GetAsnPeers()
+        {
+            var peers = Service.GetAsnPeers(15169);
+            var firstPeerIpv4 = peers.Item1.First();
+            Assert.Equal(12956, firstPeerIpv4.ASN);
+            Assert.Equal("Telefonica International Wholesale Services II, S.L.U.", firstPeerIpv4.Name);
+            Assert.Equal("Telefonica International Wholesale Services II, S.L.U.", firstPeerIpv4.Description);
+            Assert.Null(firstPeerIpv4.CountryCode);
+
+            var firstPeerIpv6 = peers.Item2.First();
+            Assert.Equal(12956, firstPeerIpv6.ASN);
+            Assert.Equal("Telefonica International Wholesale Services II, S.L.U.", firstPeerIpv6.Name);
+            Assert.Equal("Telefonica International Wholesale Services II, S.L.U.", firstPeerIpv6.Description);
+            Assert.Null(firstPeerIpv6.CountryCode);
+
+            peers = Service.GetAsnPeers(268003);
+            var lastPeerIpv4 = peers.Item1.Last();
+            Assert.Equal(53181, lastPeerIpv4.ASN);
+            Assert.Equal("K2 Telecom e Multimidia LTDA ME", lastPeerIpv4.Name);
+            Assert.Equal("K2 Telecom e Multimidia LTDA ME", lastPeerIpv4.Description);
+            Assert.Null(lastPeerIpv4.CountryCode);
+
+            var lastPeerIpv6 = peers.Item2.Last();
+            Assert.Equal(53181, lastPeerIpv6.ASN);
+            Assert.Equal("K2 Telecom e Multimidia LTDA ME", lastPeerIpv6.Name);
+            Assert.Equal("K2 Telecom e Multimidia LTDA ME", lastPeerIpv6.Description);
+            Assert.Null(lastPeerIpv6.CountryCode);
+        }
     }
 }
