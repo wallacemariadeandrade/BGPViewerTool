@@ -152,5 +152,54 @@ namespace Xunit
             Assert.Equal("CLARO S.A.", firstIpv6Upstream.Description);
             Assert.Null(firstIpv6Upstream.CountryCode);
         }
+
+        [Fact]
+        public void GetIpDetails()
+        {
+            var ip = Service.GetIpDetails("8.8.8.8");
+            Assert.Null(ip.CountryCode);
+            Assert.Equal("8.8.8.8", ip.IPAddress);
+            Assert.Equal("dns.google", ip.PtrRecord);
+            Assert.Equal("8.0.0.0/9", ip.RIRAllocationPrefix);
+            Assert.True(ip.RelatedPrefixes.Count() == 3);
+
+            var firstRelatedPrefix = ip.RelatedPrefixes.First();
+            Assert.Equal("8.0.0.0/9", firstRelatedPrefix.Prefix);
+            Assert.Equal("Level 3 Parent, LLC", firstRelatedPrefix.Name);
+            Assert.Equal("Level 3 Parent, LLC", firstRelatedPrefix.Description);
+            
+            Assert.True(firstRelatedPrefix.ParentAsns.Count() == 2);
+            
+            var firstPrefixParentAsn = firstRelatedPrefix.ParentAsns.First();
+            Assert.Equal(3356, firstPrefixParentAsn.ASN);
+            Assert.Equal("Level 3 Parent, LLC", firstPrefixParentAsn.Name);
+            Assert.Equal("Level 3 Parent, LLC", firstPrefixParentAsn.Description);
+            Assert.Null(firstPrefixParentAsn.CountryCode);
+        }
+
+        [Fact]
+        public void GetIpDetailsWhenPtrRecordDoesNotExist()
+        {
+            var ip = Service.GetIpDetails("196.100.100.0");
+            Assert.Null(ip.CountryCode);
+            Assert.Equal("196.100.100.0", ip.IPAddress);
+            Assert.Null(ip.PtrRecord);
+            Assert.Equal("196.96.0.0/12", ip.RIRAllocationPrefix);
+            Assert.True(ip.RelatedPrefixes.Count() == 2);
+
+            var firstRelatedPrefix = ip.RelatedPrefixes.First();
+            Assert.Equal("196.96.0.0/12", firstRelatedPrefix.Prefix);
+            Assert.Equal("Safaricom Limited", firstRelatedPrefix.Name);
+            Assert.Equal("Safaricom Limited", firstRelatedPrefix.Description);
+            
+            Assert.True(firstRelatedPrefix.ParentAsns.Count() == 1);
+
+            var lastRelatedPrefix = ip.RelatedPrefixes.Last();
+            Assert.Equal("196.96.0.0/13", lastRelatedPrefix.Prefix);
+            Assert.Equal("Used by safaricom 2G/3G/4G  subscribers.", lastRelatedPrefix.Name);
+            Assert.Equal("Used by safaricom 2G/3G/4G  subscribers.", lastRelatedPrefix.Description);
+            
+            Assert.True(lastRelatedPrefix.ParentAsns.Count() == 1);
+        }
     }
 }

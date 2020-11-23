@@ -267,7 +267,46 @@ namespace BGPViewerCore.Service
 
         public IpDetailModel GetIpDetails(string ipAddress)
         {
-            throw new NotImplementedException();
+            var ipInfoElement = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/ip/{ipAddress}")
+                .FindElement(By.Id("ipinfo"));
+
+            var ipDetails = new IpDetailModel { IPAddress = ipAddress };
+
+            using(var reader = new StringReader(ipInfoElement.Text))
+            {
+                // reads the first line, which contains ip address and, sometimes, dns record between ()
+                // Ex 8.8.8.8 (dns.google)
+                var ipAndPtrRecord = reader.ReadLine();
+                var hasPtrRecord = ipAndPtrRecord.Contains("(");
+                ipDetails.PtrRecord = hasPtrRecord ? Regex.Match(ipAndPtrRecord, @"\(([^\)]+)\)").Value.Trim('(', ')') : null;
+            }
+            
+            ipDetails.RelatedPrefixes = ipInfoElement.FindElement(By.TagName("table"))
+                .FindElement(By.TagName("tbody"))
+                .FindElements(By.TagName("tr"))
+                .Select(tr => tr.FindElements(By.TagName("td")))
+                .Select(tds => new string[]{
+                    tds.ElementAt(0).FindElement(By.TagName("a")).GetAttribute("innerHTML").Substring(2), // AS number
+                    tds.ElementAt(1).FindElement(By.TagName("a")).GetAttribute("innerHTML"), // Prefix
+                    tds.ElementAt(2).GetAttribute("innerHTML") // Name/Description
+                })
+                .GroupBy(x => x[1]) // Groups asns by prefixes
+                .Select(px => new PrefixDetailModel {
+                    Prefix = px.Key,
+                    Name = px.ElementAt(0)[2],
+                    Description = px.ElementAt(0)[2],
+                    ParentAsns = px.Select(array => new AsnModel {
+                        ASN = int.Parse(array[0]),
+                        Name = array[2],
+                        Description = array[2],
+                        CountryCode = null
+                    })
+                });
+
+            // Allocation prefix is always the first on the list, which is the major prefix
+            ipDetails.RIRAllocationPrefix = ipDetails.RelatedPrefixes.ElementAt(0).Prefix;
+            
+            return ipDetails;
         }
 
         public PrefixDetailModel GetPrefixDetails(string prefix, byte cidr)
