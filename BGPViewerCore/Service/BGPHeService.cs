@@ -6,7 +6,6 @@ using BGPViewerCore.Model;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System.IO;
-using System.Text;
 
 namespace BGPViewerCore.Service
 {
@@ -36,11 +35,14 @@ namespace BGPViewerCore.Service
             // We've got to use a WebDriverWait to wait bgp.he.net page redirection
             var wb = new WebDriverWait(_driver, _timeout);
             _driver.Navigate().GoToUrl(url);
+            System.Diagnostics.Debug.WriteLine(_driver.PageSource);
             wb.Until(x => x.Url == url);
-            if(CheckIfDataExists(_driver))
+            if(!CheckIfDataExists(_driver))
                 throw new KeyNotFoundException("Your query did not return any results.");
             return _driver;
         }
+
+        private bool CheckIfDataExists(IWebDriver driver) => driver.FindElements(By.Id("error")).Count <= 0;
 
         private IEnumerable<string> ExtractEmailsFrom(string content)
             => Regex.Matches(content, EMAIL_PATTERN)
@@ -107,7 +109,46 @@ namespace BGPViewerCore.Service
             }
         }
 
-        private bool CheckIfDataExists(IWebDriver driver) => driver.FindElements(By.Id("error")).Count > 0;
+        private IEnumerable<string[]> ExtractPrefixAndAsnInfoFromNetInfoDivTable(string tableInnerHtml) 
+        {
+            var matches = Regex.Matches(tableInnerHtml, @"<a.*>.*<\/a>|<td>.*<\/td>");
+            var isMatchCorrect = matches.Count % 3 == 0; // Each table has to match 3 rows (asn, prefix and name)
+            if(!isMatchCorrect) throw new ArgumentException($"Incorrect input HTML. It was expected 3 matches and got {matches.Count}.", nameof(tableInnerHtml));
+
+            for (int i = 0; i < matches.Count; i+=3)
+            {
+                var result = new string[3];
+                // Extract ASxxxx
+                result[0] = Regex.Match(matches[i].Value, ASN_PATTERN).Value.Substring(2);
+
+                // Extract prefix
+                result[1] = Regex.IsMatch(matches[i+1].Value, IPV4_PREFIX_PATTERN) ? 
+                    Regex.Match(matches[i+1].Value, IPV4_PREFIX_PATTERN).Value : Regex.Match(matches[i+1].Value, IPV6_PREFIX_PATTERN).Value;
+
+                // Extract name/description
+                result[2] =  matches[i+2].Value.Replace("<td>", "").Replace("</td>", "");
+
+                yield return result;
+            }
+        }
+
+        private string ExtractCountryCodeFromDivWhois(string divWhois)
+        {
+            using(var reader = new StringReader(divWhois))
+            {
+                while(reader.Peek() > 0)
+                {
+                    var line = reader.ReadLine();
+                    System.Diagnostics.Debug.WriteLine(line);
+                    if(Regex.IsMatch(line, "Country:") || Regex.IsMatch(line, "country:"))
+                    {
+                        var splitted = line.Split(new string[]{" "}, StringSplitOptions.None);
+                        return splitted.Last();
+                    }
+                }
+                return null;
+            }
+        }
 
         #endregion
 
@@ -126,19 +167,14 @@ namespace BGPViewerCore.Service
             var leftDivs = driver.FindElements(By.ClassName("asleft"));
             var rightDivs = driver.FindElements(By.ClassName("asright"));
 
-            // splits "https://bgp.he.net/country/XX" string and gets XX
-            var countryCode = rightDivs
-                .SingleOrDefault(div => div.FindElements(By.TagName("a")).Count > 0 && 
-                        div.FindElements(By.TagName("a")).ElementAt(0)
-                        .GetAttribute("href").Contains("/country"))
-                        ?.FindElement(By.TagName("a"))
-                        ?.GetAttribute("href").Split('/')[4];
+            var divWhois = ExtractDivWhoisFrom(driver.PageSource);
+            var countryCode = ExtractCountryCodeFromDivWhois(divWhois);
             
             // Extracts looking glass url
             var indexOfLookingGlassDiv = leftDivs.IndexOf(leftDivs.SingleOrDefault(div => div.Text.Contains("Looking Glass")));
             var lookingGlass = indexOfLookingGlassDiv != -1 ? rightDivs.ElementAt(indexOfLookingGlassDiv).Text : null;
 
-            var emails = ExtractEmailsFrom(ExtractDivWhoisFrom(driver.PageSource));
+            var emails = ExtractEmailsFrom(divWhois);
 
             return new AsnDetailsModel
             {
@@ -311,7 +347,33 @@ namespace BGPViewerCore.Service
 
         public PrefixDetailModel GetPrefixDetails(string prefix, byte cidr)
         {
-            throw new NotImplementedException();
+            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/net/{prefix}/{cidr}");
+            
+            var asnDetailsExtractedFromNetinfoDiv = driver
+                .FindElement(By.Id("netinfo"))
+                .FindElements(By.TagName("table"))
+                .Select(
+                    table => ExtractPrefixAndAsnInfoFromNetInfoDivTable(table.GetAttribute("innerHTML")))
+                .SelectMany(x => x)
+                .GroupBy(detailsArray => detailsArray[0]) // Group to remove duplicated ASN entries
+                .Select(grouped => new AsnModel {
+                    ASN = int.Parse(grouped.ElementAt(0)[0]),
+                    Name = grouped.ElementAt(0)[2],
+                    Description = grouped.ElementAt(0)[2],
+                    CountryCode = null
+                }).ToArray();
+
+            // Set prefix owner country code, that is,
+            // first parent ASN
+            var ownerPrefix = asnDetailsExtractedFromNetinfoDiv[0];
+            ownerPrefix.CountryCode = ExtractCountryCodeFromDivWhois(ExtractDivWhoisFrom(driver.PageSource));
+
+            return new PrefixDetailModel {
+                Prefix = $"{prefix}/{cidr}",
+                Name = ownerPrefix.Name,
+                Description = ownerPrefix.Description,
+                ParentAsns = asnDetailsExtractedFromNetinfoDiv
+            };
         }
 
         public SearchModel SearchBy(string queryTerm)

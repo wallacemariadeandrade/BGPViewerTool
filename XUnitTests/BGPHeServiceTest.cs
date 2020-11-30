@@ -21,8 +21,8 @@ namespace Xunit
             Assert.Equal("Google LLC", retrievedAsnDetails.Name);   
             Assert.Equal("Google LLC", retrievedAsnDetails.Description);   
             Assert.Equal("US", retrievedAsnDetails.CountryCode);
-            Assert.Equal(string.Join(", ", new string[]{"arin-contact@google.com", "network-abuse@google.com", "arin-contact@google.com"}), string.Join(", ", retrievedAsnDetails.EmailContacts));
-            Assert.Equal(string.Join(", ", new string[]{"arin-contact@google.com", "network-abuse@google.com", "arin-contact@google.com"}), string.Join(", ", retrievedAsnDetails.AbuseContacts));
+            Assert.Equal(string.Join(", ", new string[]{"network-abuse@google.com", "arin-contact@google.com", "arin-contact@google.com"}), string.Join(", ", retrievedAsnDetails.EmailContacts));
+            Assert.Equal(string.Join(", ", new string[]{"network-abuse@google.com", "arin-contact@google.com", "arin-contact@google.com"}), string.Join(", ", retrievedAsnDetails.AbuseContacts));
             Assert.Null(retrievedAsnDetails.LookingGlassUrl);
 
             retrievedAsnDetails = Service.GetAsnDetails(268003);
@@ -73,7 +73,7 @@ namespace Xunit
             Assert.Equal("AMS-IX", firstIx.FullName);
             Assert.Equal("NL", firstIx.CountryCode);
             Assert.Equal("80.249.208.247", firstIx.IPv4);
-            Assert.Equal("2001:7f8:1::a501:5169:2", firstIx.IPv6);
+            Assert.Equal("2001:7f8:1::a501:5169:1", firstIx.IPv6);
 
             var lastIx = ixs.Last();
             Assert.Equal("YYCIX", lastIx.Name);
@@ -138,8 +138,8 @@ namespace Xunit
         public void GetAsnUpstreams()
         {
             var upstreams = Service.GetAsnUpstreams(53181);
-            Assert.True(upstreams.Item1.Count() == 6);
-            Assert.True(upstreams.Item2.Count() == 5);
+            Assert.True(upstreams.Item1.Count() == 5);
+            Assert.True(upstreams.Item2.Count() == 6);
             var firstIpv4Upstream = upstreams.Item1.First();
             Assert.Equal(6762, firstIpv4Upstream.ASN);
             Assert.Equal("TELECOM ITALIA SPARKLE S.p.A.", firstIpv4Upstream.Name);
@@ -200,6 +200,79 @@ namespace Xunit
             Assert.Equal("Used by safaricom 2G/3G/4G  subscribers.", lastRelatedPrefix.Description);
             
             Assert.True(lastRelatedPrefix.ParentAsns.Count() == 1);
+        }
+
+        [Fact]
+        public void GetPrefixDetails()
+        {
+            var prefix = Service.GetPrefixDetails("8.8.8.0", 24);
+            Assert.Equal("8.8.8.0/24", prefix.Prefix);
+            Assert.Equal("Google LLC", prefix.Name);
+            Assert.Equal("Google LLC", prefix.Description);
+            
+            Assert.True(prefix.ParentAsns.Count() == 3, $"It was expected 3 and got {prefix.ParentAsns.Count()}");
+
+            var firstParentAsn = prefix.ParentAsns.First();
+            Assert.Equal(15169, firstParentAsn.ASN);
+            Assert.Equal("Google LLC", firstParentAsn.Name);
+            Assert.Equal("Google LLC", firstParentAsn.Description);
+            Assert.Equal("US", firstParentAsn.CountryCode);
+
+            var lastParentAsn = prefix.ParentAsns.Last();
+            Assert.Equal(3549, lastParentAsn.ASN);
+            Assert.Equal("Level 3 Parent, LLC", lastParentAsn.Name);
+            Assert.Equal("Level 3 Parent, LLC", lastParentAsn.Description);
+            Assert.Null(lastParentAsn.CountryCode);
+
+            prefix = Service.GetPrefixDetails("196.96.0.0", 12);
+            Assert.Equal("196.96.0.0/12", prefix.Prefix);
+            Assert.Equal("Safaricom Limited", prefix.Name);
+            Assert.Equal("Safaricom Limited", prefix.Description);
+
+            Assert.True(prefix.ParentAsns.Count() == 1, $"It was expected 1 and got {prefix.ParentAsns.Count()}");
+            
+            firstParentAsn = prefix.ParentAsns.First();
+            Assert.Equal(33771, firstParentAsn.ASN);
+            Assert.Equal("Safaricom Limited", firstParentAsn.Name);
+            Assert.Equal("Safaricom Limited", firstParentAsn.Description);
+            Assert.Equal("KE", firstParentAsn.CountryCode);
+        }
+
+        [Fact]
+        public void GetV6PrefixDetails()
+        {
+            var prefix = Service.GetPrefixDetails("2001:4860::", 32);
+            Assert.Equal("2001:4860::/32", prefix.Prefix);
+            Assert.Equal("Google LLC", prefix.Name);
+            Assert.Equal("Google LLC", prefix.Description);
+            
+            Assert.True(prefix.ParentAsns.Count() == 1, $"It was expected 1 and got {prefix.ParentAsns.Count()}");
+
+            var firstParentAsn = prefix.ParentAsns.First();
+            Assert.Equal(15169, firstParentAsn.ASN);
+            Assert.Equal("Google LLC", firstParentAsn.Name);
+            Assert.Equal("Google LLC", firstParentAsn.Description);
+            Assert.Equal("US", firstParentAsn.CountryCode);
+
+
+            prefix = Service.GetPrefixDetails("2a02:26f0:128::", 48);
+            Assert.Equal("2a02:26f0:128::/48", prefix.Prefix);
+            Assert.Equal("Akamai International B.V.", prefix.Name);
+            Assert.Equal("Akamai International B.V.", prefix.Description);
+
+            Assert.True(prefix.ParentAsns.Count() == 3, $"It was expected 3 and got {prefix.ParentAsns.Count()}");
+            
+            firstParentAsn = prefix.ParentAsns.First();
+            Assert.Equal(6762, firstParentAsn.ASN);
+            Assert.Equal("Akamai International B.V.", firstParentAsn.Name);
+            Assert.Equal("Akamai International B.V.", firstParentAsn.Description);
+            Assert.Equal("EU", firstParentAsn.CountryCode);
+
+            var lastParentAsn = prefix.ParentAsns.Last();
+            Assert.Equal(20940, lastParentAsn.ASN);
+            Assert.Equal("Akamai International B.V.", lastParentAsn.Name);
+            Assert.Equal("Akamai International B.V.", lastParentAsn.Description);
+            Assert.Null(lastParentAsn.CountryCode);
         }
     }
 }

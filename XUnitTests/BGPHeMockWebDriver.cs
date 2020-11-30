@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using OpenQA.Selenium;
@@ -9,6 +10,7 @@ namespace Xunit
     public class BGPHeMockWebDriver : IWebDriver
     {
         private readonly IWebDriver innerDriver;
+        private readonly MockNavigation innerNavigation;
 
         public BGPHeMockWebDriver()
         {
@@ -31,12 +33,13 @@ namespace Xunit
             options.AddArgument("log-level=3");
             options.AddArgument("output=/dev/null");
             innerDriver = new ChromeDriver(service, options);
+            innerNavigation = new MockNavigation(innerDriver);
         }
 
         public string Url { 
-            get => innerDriver.Url; 
+            get => innerNavigation.Url;
             set {
-                innerDriver.Url = value;
+                innerNavigation.Url = value;
             }
         }
         public string Title => innerDriver.Title;
@@ -48,13 +51,28 @@ namespace Xunit
         public IWebElement FindElement(By by) => innerDriver.FindElement(by);
         public ReadOnlyCollection<IWebElement> FindElements(By by) => innerDriver.FindElements(by);
         public IOptions Manage() => innerDriver.Manage();
-        public INavigation Navigate() => new MockNavigation(innerDriver);
+        public INavigation Navigate() => this.innerNavigation;
         public void Quit() => innerDriver.Quit();
         public ITargetLocator SwitchTo() => innerDriver.SwitchTo();
 
         private class MockNavigation : INavigation
         {
             protected IWebDriver mockDriver;
+            public string Url { get; set; }
+
+            private Dictionary<string, string> mocksUrls = new Dictionary<string, string>
+            {
+                { "https://bgp.he.net/AS15169" , GetPageUrlFor("AS15169MockData.html") },
+                { "https://bgp.he.net/AS268003" , GetPageUrlFor("AS268003MockData.html") },
+                { "https://bgp.he.net/AS53181" , GetPageUrlFor("AS53181MockData.html") },
+                { "https://bgp.he.net/ip/8.8.8.8" , GetPageUrlFor("8.8.8.8_MockData.html") },
+                { "https://bgp.he.net/ip/196.100.100.0" , GetPageUrlFor("196.100.100.0_MockData.html") },
+                { "https://bgp.he.net/net/8.8.8.0/24" , GetPageUrlFor("8.8.8.0-24_MockData.html") },
+                { "https://bgp.he.net/net/196.96.0.0/12" , GetPageUrlFor("196.96.0.0-12_MockData.html") },
+                { "https://bgp.he.net/net/2001:4860::/32" , GetPageUrlFor("2001..4860....32_ MockData.html") },
+                { "https://bgp.he.net/net/2a02:26f0:128::/48" , GetPageUrlFor("2a02..26f0..128....48_MockData.html") },
+                { "default" , GetPageUrlFor("ASNotFoundMockData.html") }
+            };
 
             public MockNavigation(IWebDriver mockDriver)
             {
@@ -63,30 +81,26 @@ namespace Xunit
 
             public void Back() => mockDriver.Navigate().Back();
             public void Forward() => mockDriver.Navigate().Forward();
+
+            private static string GetPageUrlFor(string pageName)
+            {
+                var testsProjectDirectory = System.IO.Path.GetFullPath(@"..\..\..\");
+                return Path.Combine(testsProjectDirectory, pageName);
+            }
+
             public void GoToUrl(string url)
             {
-                var testsProjectDirectory = System.IO.Path.GetFullPath(@"..\..\");
-                switch(url)
+                Url = url; // To simulate real redirection at bgp.he.net
+                
+                if(mocksUrls.ContainsKey(url))
                 {
-                    case "https://bgp.he.net/AS15169":
-                        mockDriver.Navigate().GoToUrl($"file:///{testsProjectDirectory}/AS15169MockData.html");
-                        mockDriver.Url = url;
-                        break;
-                    
-                    case "https://bgp.he.net/AS268003":
-                        mockDriver.Navigate().GoToUrl($"file:///{testsProjectDirectory}/AS268003MockData.html");
-                        mockDriver.Url = url;
-                        break;
-
-                    case "https://bgp.he.net/AS53181":
-                        mockDriver.Navigate().GoToUrl($"file:///{testsProjectDirectory}/AS53181MockData.html");
-                        mockDriver.Url = url;
-                        break;
-
-                    default:
-                        mockDriver.Navigate().GoToUrl($"file:///{testsProjectDirectory}/ASNotFoundMockData.html");
-                        mockDriver.Url = url;
-                        break;
+                    mockDriver.Navigate().GoToUrl(mocksUrls[url]);
+                    mockDriver.Url = mocksUrls[url];
+                }
+                else
+                {
+                    mockDriver.Navigate().GoToUrl(mocksUrls["default"]);
+                    mockDriver.Url = mocksUrls["default"];
                 }
             }
             public void GoToUrl(Uri url) => mockDriver.Navigate().GoToUrl(url);
