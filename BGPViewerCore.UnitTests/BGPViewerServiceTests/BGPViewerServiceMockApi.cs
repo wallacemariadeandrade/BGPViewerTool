@@ -1,7 +1,7 @@
 using System.Text.Json;
 using BGPViewerCore.Service;
 
-namespace Xunit
+namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
 {
     public class BGPViewerMockApi : IBGPViewerApi
     {

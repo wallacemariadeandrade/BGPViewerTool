@@ -5,7 +5,7 @@ using System.IO;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 
-namespace Xunit
+namespace BGPViewerCore.UnitTests.BGPHeServiceTests
 {
     public class BGPHeMockWebDriver : IWebDriver
     {
@@ -84,7 +84,7 @@ namespace Xunit
 
             private static string GetPageUrlFor(string pageName)
             {
-                var testsProjectDirectory = System.IO.Path.GetFullPath(@"..\..\..\");
+                var testsProjectDirectory = System.IO.Path.GetFullPath(@"..\..\..\BGPHeServiceTests");
                 return Path.Combine(testsProjectDirectory, pageName);
             }
 

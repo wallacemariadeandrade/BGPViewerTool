@@ -1,8 +1,9 @@
 using BGPViewerCore.Service;
 using System;
 using System.Linq;
+using Xunit;
 
-namespace Xunit
+namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
 {
     public class BGPViewerServiceTest
     {
