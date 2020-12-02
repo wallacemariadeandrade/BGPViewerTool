@@ -82,9 +82,30 @@ namespace BGPViewerCore.Service
 
         // At bgp.he.net/ASxxx IPv4 and IPv6 prefixes are inside two  
         // HTML tables (IPv4: table with id="table_prefixes4"; IPv6: table with id="table_prefixes6")
-        private IEnumerable<string> ExtractPrefixesFromTablePrefixes(IWebElement tablePrefixes, string prefixPattern)
-            => tablePrefixes.FindElements(By.ClassName("nowrap"))
-                .Select(td => Regex.Match(td.FindElement(By.TagName("a")).GetAttribute("href"), prefixPattern).Value);
+        private IEnumerable<PrefixModel> ExtractPrefixesFromTablePrefixes(IWebElement tablePrefixes, string prefixPattern)
+            // => tablePrefixes.FindElements(By.ClassName("nowrap"))
+            //     .Select(td => Regex.Match(td.FindElement(By.TagName("a")).GetAttribute("href"), prefixPattern).Value);
+            => tablePrefixes.FindElement(By.TagName("tbody"))
+                            .FindElements(By.TagName("tr"))
+                            .Select(tr => tr.FindElements(By.TagName("td")))
+                            .Select(tds => new PrefixModel {
+                                Prefix = Regex.Match(tds.ElementAt(0).FindElement(By.TagName("a")).GetAttribute("href"), prefixPattern).Value,
+                                Name = tds.ElementAt(1).Text,
+                                Description = tds.ElementAt(1).Text
+                            });
+
+        private Tuple<IEnumerable<PrefixModel>, IEnumerable<PrefixModel>> ExtractAsPrefixesFromDriver(IWebDriver driver)
+        {
+            var allHtmlTables = driver.FindElements(By.TagName("table"));
+            
+            var hasIpv4Prefixes = allHtmlTables.Count(table => table.GetAttribute("id") == "table_prefixes4") == 1;
+            var hasIpv6Prefixes = allHtmlTables.Count(table => table.GetAttribute("id") == "table_prefixes6") == 1;
+
+            var ipv4Prefixes = hasIpv4Prefixes ? ExtractPrefixesFromTablePrefixes(allHtmlTables.Single(table => table.GetAttribute("id") == "table_prefixes4"), IPV4_PREFIX_PATTERN) : new PrefixModel[]{};
+            var ipv6Prefixes = hasIpv6Prefixes ? ExtractPrefixesFromTablePrefixes(allHtmlTables.Single(table => table.GetAttribute("id") == "table_prefixes6"), IPV6_PREFIX_PATTERN) : new PrefixModel[]{};
+
+            return new Tuple<IEnumerable<PrefixModel>, IEnumerable<PrefixModel>>(ipv4Prefixes, ipv6Prefixes);
+        }
 
         // At bgp.he.net/ASxxx IPv4 and IPv6 peers are inside two  
         // HTML tables (IPv4: table with id="table_peers4"; IPv6: table with id="table_peers6"), 
@@ -150,12 +171,8 @@ namespace BGPViewerCore.Service
             }
         }
 
-        #endregion
-
-        public AsnDetailsModel GetAsnDetails(int asNumber)
+        private AsnDetailsModel ExtractAsDetailsFromDriver(IWebDriver driver, int asNumber)
         {
-            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}");
-
             // h1 tag is always present and always contains the AS name/description
             var h1TitleElement = driver.FindElement(By.TagName("h1"));
             var asn = h1TitleElement.Text.Split(new string[]{" "}, StringSplitOptions.None)[0].Substring(2);
@@ -186,6 +203,14 @@ namespace BGPViewerCore.Service
                 AbuseContacts = emails,
                 LookingGlassUrl = lookingGlass
             };
+        } 
+
+        #endregion
+
+        public AsnDetailsModel GetAsnDetails(int asNumber)
+        {
+            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}");
+            return ExtractAsDetailsFromDriver(driver, asNumber);
         }
 
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnDownstreams(int asNumber)
@@ -257,20 +282,16 @@ namespace BGPViewerCore.Service
 
         public AsnPrefixesModel GetAsnPrefixes(int asNumber)
         {
-            var allHtmlTables = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}").FindElements(By.TagName("table"));
+            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}");
             
-            var hasIpv4Prefixes = allHtmlTables.Count(table => table.GetAttribute("id") == "table_prefixes4") == 1;
-            var hasIpv6Prefixes = allHtmlTables.Count(table => table.GetAttribute("id") == "table_prefixes6") == 1;
-            
-            var ipv4Prefixes = hasIpv4Prefixes ? ExtractPrefixesFromTablePrefixes(allHtmlTables.Single(table => table.GetAttribute("id") == "table_prefixes4"), IPV4_PREFIX_PATTERN) : new string[]{};
-            var ipv6Prefixes = hasIpv6Prefixes ? ExtractPrefixesFromTablePrefixes(allHtmlTables.Single(table => table.GetAttribute("id") == "table_prefixes6"), IPV6_PREFIX_PATTERN) : new string[]{};
-            
+            var prefixes = ExtractAsPrefixesFromDriver(driver);
+
             return new AsnPrefixesModel
             {
                 ASN = asNumber,
-                IPv4 = ipv4Prefixes,
-                IPv6 = ipv6Prefixes
-            };
+                IPv4 = prefixes.Item1.Select(model => model.Prefix),
+                IPv6 = prefixes.Item2.Select(model => model.Prefix)
+            };  
         }
 
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnUpstreams(int asNumber)
@@ -378,6 +399,19 @@ namespace BGPViewerCore.Service
 
         public SearchModel SearchBy(string queryTerm)
         {
+            if(int.TryParse(queryTerm, out int asNumber))
+            {
+                var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}");
+                var prefixes = ExtractAsPrefixesFromDriver(driver);
+                var asDetails = ExtractAsDetailsFromDriver(driver, asNumber);
+                return new SearchModel
+                {
+                    RelatedAsns = new AsnDetailsModel[] { asDetails },
+                    IPv4 = prefixes.Item1,
+                    IPv6 = prefixes.Item2
+                };
+            }
+
             throw new NotImplementedException();
         }
     }

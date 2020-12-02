@@ -275,5 +275,33 @@ namespace BGPViewerCore.UnitTests.BGPHeServiceTests
             Assert.Equal("Akamai International B.V.", lastParentAsn.Description);
             Assert.Null(lastParentAsn.CountryCode);
         }
+
+        [Fact]
+        public void SearchByAsnWithLittleData()
+        {
+            var searchResultForAsn53181 = Service.SearchBy("53181");
+            
+            Assert.Equal(1, searchResultForAsn53181.RelatedAsns.Count());
+            Assert.Equal(53181, searchResultForAsn53181.RelatedAsns.First().ASN);
+            Assert.Equal("K2 Telecom e Multimidia LTDA ME", searchResultForAsn53181.RelatedAsns.First().Name);
+            Assert.Equal("K2 Telecom e Multimidia LTDA ME", searchResultForAsn53181.RelatedAsns.First().Description);
+            Assert.Equal("BR", searchResultForAsn53181.RelatedAsns.First().CountryCode);
+            
+            Assert.True(searchResultForAsn53181.RelatedAsns.First().EmailContacts.Count() == 1, $"Should have only one contact email and actually has {searchResultForAsn53181.RelatedAsns.First().AbuseContacts.Count()}.");
+            Assert.True(searchResultForAsn53181.RelatedAsns.First().AbuseContacts.Count() == 1, $"Should have only one abuse email and actually has {searchResultForAsn53181.RelatedAsns.First().AbuseContacts.Count()}.");
+            
+            Assert.Equal("engenharia@k2telecom.com.br", searchResultForAsn53181.RelatedAsns.First().EmailContacts.First());
+            Assert.Equal("engenharia@k2telecom.com.br", searchResultForAsn53181.RelatedAsns.First().AbuseContacts.First());
+            
+            var firstIpv4 = searchResultForAsn53181.IPv4.First();
+            Assert.Equal("191.241.64.0/20", firstIpv4.Prefix);
+            Assert.Equal("K2 Telecom e Multimidia LTDA ME", firstIpv4.Name);
+            Assert.Equal("K2 Telecom e Multimidia LTDA ME", firstIpv4.Description);
+
+            var lastIpv6 = searchResultForAsn53181.IPv6.Last();
+            Assert.Equal("2804:113c:fc00::/38", lastIpv6.Prefix);
+            Assert.Equal(string.Empty, lastIpv6.Name);
+            Assert.Equal(string.Empty, lastIpv6.Description);
+        }
     }
 }
