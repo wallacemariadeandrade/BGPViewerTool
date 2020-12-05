@@ -281,7 +281,7 @@ namespace BGPViewerCore.UnitTests.BGPHeServiceTests
         {
             var searchResult = Service.SearchBy("53181");
             
-            Assert.Equal(1, searchResult.RelatedAsns.Count());
+            Assert.True(searchResult.RelatedAsns.Count() == 1);
             Assert.Equal(53181, searchResult.RelatedAsns.First().ASN);
             Assert.Equal("K2 Telecom e Multimidia LTDA ME", searchResult.RelatedAsns.First().Name);
             Assert.Equal("K2 Telecom e Multimidia LTDA ME", searchResult.RelatedAsns.First().Description);

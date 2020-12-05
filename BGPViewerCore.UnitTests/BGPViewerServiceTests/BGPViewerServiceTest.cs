@@ -39,10 +39,10 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
             var asnDetails = GetService().GetAsnDetails(53181);
             
             Assert.Equal(53181, asnDetails.ASN);
-            Assert.Equal(null, asnDetails.Description);
-            Assert.Equal(null, asnDetails.Name);
-            Assert.Equal(0, asnDetails.EmailContacts.Count());
-            Assert.Equal(null, asnDetails.LookingGlassUrl);
+            Assert.Null(asnDetails.Description);
+            Assert.Null(asnDetails.Name);
+            Assert.True(asnDetails.EmailContacts.Count() == 0);
+            Assert.Null(asnDetails.LookingGlassUrl);
             Assert.Equal("BR", asnDetails.CountryCode);
         }
 
@@ -149,7 +149,7 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
             Assert.Equal("BR", ipDetails.CountryCode);
             Assert.Equal("143.208.20.0/22", ipDetails.RIRAllocationPrefix);
             Assert.Equal("143-208-20-0.k1fibra.net.br", ipDetails.PtrRecord);
-            Assert.True(ipDetails.RelatedPrefixes.First().ParentAsns.First().ASN == 264075);
+            Assert.Equal(264075, ipDetails.RelatedPrefixes.First().ParentAsns.First().ASN);
         }
 
         [Fact]
@@ -218,15 +218,15 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
         {
             var searchResultForAsn53181 = GetService().SearchBy("53181");
             
-            Assert.Equal(1, searchResultForAsn53181.RelatedAsns.Count());
+            Assert.True(searchResultForAsn53181.RelatedAsns.Count() == 1);
             Assert.Equal(53181, searchResultForAsn53181.RelatedAsns.First().ASN);
             Assert.Null(searchResultForAsn53181.RelatedAsns.First().Name);
             Assert.Null(searchResultForAsn53181.RelatedAsns.First().Description);
             Assert.Null(searchResultForAsn53181.RelatedAsns.First().CountryCode);
-            Assert.Equal(0, searchResultForAsn53181.RelatedAsns.First().EmailContacts.Count());
-            Assert.Equal(0, searchResultForAsn53181.RelatedAsns.First().AbuseContacts.Count());
-            Assert.Equal(0, searchResultForAsn53181.IPv4.Count());
-            Assert.Equal(0, searchResultForAsn53181.IPv6.Count());
+            Assert.Empty(searchResultForAsn53181.RelatedAsns.First().EmailContacts);
+            Assert.Empty(searchResultForAsn53181.RelatedAsns.First().AbuseContacts);
+            Assert.Empty(searchResultForAsn53181.IPv4);
+            Assert.Empty(searchResultForAsn53181.IPv6);
         }
 
         [Fact]
@@ -234,17 +234,17 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
         {
             var searchResultForAsn3356 = GetService().SearchBy("3356");
             
-            Assert.Equal(1, searchResultForAsn3356.RelatedAsns.Count());
+            Assert.True(searchResultForAsn3356.RelatedAsns.Count() == 1);
             Assert.Equal(3356, searchResultForAsn3356.RelatedAsns.First().ASN);
             Assert.Equal("LEVEL3", searchResultForAsn3356.RelatedAsns.First().Name);
             Assert.Equal("Level 3 Parent, LLC", searchResultForAsn3356.RelatedAsns.First().Description);
             Assert.Equal("US", searchResultForAsn3356.RelatedAsns.First().CountryCode);
-            Assert.Equal(1, searchResultForAsn3356.RelatedAsns.First().EmailContacts.Count());
-            Assert.Equal(1, searchResultForAsn3356.RelatedAsns.First().AbuseContacts.Count());
-            Assert.Equal(2, searchResultForAsn3356.IPv4.Count());
+            Assert.True(searchResultForAsn3356.RelatedAsns.First().EmailContacts.Count() == 1);
+            Assert.True(searchResultForAsn3356.RelatedAsns.First().AbuseContacts.Count() == 1);
+            Assert.True(searchResultForAsn3356.IPv4.Count() == 2);
             Assert.Equal("12.130.205.0/24", searchResultForAsn3356.IPv4.First().Prefix);
             Assert.Equal("65.51.86.0/24", searchResultForAsn3356.IPv4.Last().Prefix);
-            Assert.Equal(0, searchResultForAsn3356.IPv6.Count());
+            Assert.Empty(searchResultForAsn3356.IPv6);
         }
 
         [Fact]
