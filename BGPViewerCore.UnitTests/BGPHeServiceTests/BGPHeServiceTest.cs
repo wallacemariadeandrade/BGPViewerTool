@@ -158,7 +158,7 @@ namespace BGPViewerCore.UnitTests.BGPHeServiceTests
         public void GetIpDetails()
         {
             var ip = Service.GetIpDetails("8.8.8.8");
-            Assert.Null(ip.CountryCode);
+            Assert.Equal("US", ip.CountryCode);
             Assert.Equal("8.8.8.8", ip.IPAddress);
             Assert.Equal("dns.google", ip.PtrRecord);
             Assert.Equal("8.0.0.0/9", ip.RIRAllocationPrefix);
@@ -182,7 +182,7 @@ namespace BGPViewerCore.UnitTests.BGPHeServiceTests
         public void GetIpDetailsWhenPtrRecordDoesNotExist()
         {
             var ip = Service.GetIpDetails("196.100.100.0");
-            Assert.Null(ip.CountryCode);
+            Assert.Equal("MU", ip.CountryCode);
             Assert.Equal("196.100.100.0", ip.IPAddress);
             Assert.Null(ip.PtrRecord);
             Assert.Equal("196.96.0.0/12", ip.RIRAllocationPrefix);

@@ -336,8 +336,8 @@ namespace BGPViewerCore.Service
 
         public IpDetailModel GetIpDetails(string ipAddress)
         {
-            var ipInfoElement = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/ip/{ipAddress}")
-                .FindElement(By.Id("ipinfo"));
+            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/ip/{ipAddress}");
+            var ipInfoElement = driver.FindElement(By.Id("ipinfo"));
 
             var ipDetails = new IpDetailModel { IPAddress = ipAddress };
 
@@ -366,6 +366,7 @@ namespace BGPViewerCore.Service
 
             // Allocation prefix is always the first on the list, which is the major prefix
             ipDetails.RIRAllocationPrefix = ipDetails.RelatedPrefixes.ElementAt(0).Prefix;
+            ipDetails.CountryCode = ExtractCountryCodeFromDivWhois(ExtractDivWhoisFrom(driver.PageSource));
             
             return ipDetails;
         }
