@@ -327,6 +327,30 @@ namespace BGPViewerCore.UnitTests.BGPHeServiceTests
             Assert.Equal("196.96.0.0/12", firstIpv4.Prefix);
             Assert.Equal("Safaricom Limited", firstIpv4.Name);
             Assert.Equal("Safaricom Limited", firstIpv4.Description);
+
+            Assert.Empty(searchResult.IPv6);
+        }
+
+        [Fact]
+        public void SearchbyPrefix()
+        {
+            var searchResult = Service.SearchBy("196.96.0.0/12");
+            
+            Assert.True(searchResult.RelatedAsns.Count() == 1, $"Should be 1 and is {searchResult.RelatedAsns.Count()}");
+            
+            Assert.Equal(33771, searchResult.RelatedAsns.First().ASN);
+            Assert.Equal("Safaricom Limited", searchResult.RelatedAsns.First().Name);
+            Assert.Equal("Safaricom Limited", searchResult.RelatedAsns.First().Description);
+            
+            Assert.Empty(searchResult.RelatedAsns.First().EmailContacts);
+            Assert.Empty(searchResult.RelatedAsns.First().AbuseContacts); 
+
+            var firstIpv4 = searchResult.IPv4.First(); 
+            Assert.Equal("196.96.0.0/12", firstIpv4.Prefix);
+            Assert.Equal("Safaricom Limited", firstIpv4.Name);
+            Assert.Equal("Safaricom Limited", firstIpv4.Description);
+
+            Assert.Empty(searchResult.IPv6);
         }
     }
 }

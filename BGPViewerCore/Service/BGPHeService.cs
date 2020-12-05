@@ -131,26 +131,32 @@ namespace BGPViewerCore.Service
             }
         }
 
-        private IEnumerable<string[]> ExtractPrefixAndAsnInfoFromNetInfoDivTable(string tableInnerHtml) 
+        private IEnumerable<string[]> ExtractPrefixAndAsnInfoFromNetInfoDivTable(IWebDriver driver) 
         {
-            var matches = Regex.Matches(tableInnerHtml, @"<a.*>.*<\/a>|<td>.*<\/td>");
-            var isMatchCorrect = matches.Count % 3 == 0; // Each table has to match 3 rows (asn, prefix and name)
-            if(!isMatchCorrect) throw new ArgumentException($"Incorrect input HTML. It was expected 3 matches and got {matches.Count}.", nameof(tableInnerHtml));
+            var tables = driver.FindElement(By.Id("netinfo"))
+                .FindElements(By.TagName("table"));
 
-            for (int i = 0; i < matches.Count; i+=3)
+            foreach (var table in tables)
             {
-                var result = new string[3];
-                // Extract ASxxxx
-                result[0] = Regex.Match(matches[i].Value, ASN_PATTERN).Value.Substring(2);
+                var matches = Regex.Matches(table.GetAttribute("innerHTML"), @"<a.*>.*<\/a>|<td>.*<\/td>");
+                var isMatchCorrect = matches.Count % 3 == 0; // Each table has to match 3 rows (asn, prefix and name)
+                if(!isMatchCorrect) throw new ArgumentException($"Incorrect input HTML. It was expected 3 matches and got {matches.Count}.", "tableInnerHtml");
 
-                // Extract prefix
-                result[1] = Regex.IsMatch(matches[i+1].Value, IPV4_PREFIX_PATTERN) ? 
-                    Regex.Match(matches[i+1].Value, IPV4_PREFIX_PATTERN).Value : Regex.Match(matches[i+1].Value, IPV6_PREFIX_PATTERN).Value;
+                for (int i = 0; i < matches.Count; i+=3)
+                {
+                    var result = new string[3];
+                    // Extract ASxxxx
+                    result[0] = Regex.Match(matches[i].Value, ASN_PATTERN).Value.Substring(2);
 
-                // Extract name/description
-                result[2] =  matches[i+2].Value.Replace("<td>", "").Replace("</td>", "");
+                    // Extract prefix
+                    result[1] = Regex.IsMatch(matches[i+1].Value, IPV4_PREFIX_PATTERN) ? 
+                        Regex.Match(matches[i+1].Value, IPV4_PREFIX_PATTERN).Value : Regex.Match(matches[i+1].Value, IPV6_PREFIX_PATTERN).Value;
 
-                yield return result;
+                    // Extract name/description
+                    result[2] =  matches[i+2].Value.Replace("<td>", "").Replace("</td>", "");
+
+                    yield return result;
+                }
             }
         }
 
@@ -375,12 +381,7 @@ namespace BGPViewerCore.Service
         {
             var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/net/{prefix}/{cidr}");
             
-            var asnDetailsExtractedFromNetinfoDiv = driver
-                .FindElement(By.Id("netinfo"))
-                .FindElements(By.TagName("table"))
-                .Select(
-                    table => ExtractPrefixAndAsnInfoFromNetInfoDivTable(table.GetAttribute("innerHTML")))
-                .SelectMany(x => x)
+            var asnDetailsExtractedFromNetinfoDiv = ExtractPrefixAndAsnInfoFromNetInfoDivTable(driver)
                 .GroupBy(detailsArray => detailsArray[0]) // Group to remove duplicated ASN entries
                 .Select(grouped => new AsnModel {
                     ASN = int.Parse(grouped.ElementAt(0)[0]),
@@ -414,6 +415,54 @@ namespace BGPViewerCore.Service
                     RelatedAsns = new AsnDetailsModel[] { asDetails },
                     IPv4 = prefixes.Item1,
                     IPv6 = prefixes.Item2
+                };
+            }
+            else if(Regex.IsMatch(queryTerm, IPV4_PREFIX_PATTERN))
+            {
+                var prefix = queryTerm.Split('/')[0];
+                var cidr = queryTerm.Split('/')[1];
+                var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/net/{prefix}/{cidr}");
+                var data = ExtractPrefixAndAsnInfoFromNetInfoDivTable(driver);
+
+                return new SearchModel
+                {
+                    RelatedAsns = data.Select(x => new AsnWithContactsModel {
+                        ASN = int.Parse(x.ElementAt(0)),
+                        Name = x.ElementAt(2),
+                        Description = x.ElementAt(2),
+                        EmailContacts = Enumerable.Empty<string>(),
+                        AbuseContacts = Enumerable.Empty<string>()
+                    }),
+                    IPv4 = data.Select(x => new PrefixModel {
+                        Prefix = x.ElementAt(1),
+                        Name = x.ElementAt(2),
+                        Description = x.ElementAt(2)
+                    }),
+                    IPv6 = Enumerable.Empty<PrefixModel>()
+                };
+            }
+            else if(Regex.IsMatch(queryTerm, IPV6_PREFIX_PATTERN))
+            {
+                var prefix = queryTerm.Split('/')[0];
+                var cidr = queryTerm.Split('/')[1];
+                var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/net/{prefix}/{cidr}");
+                var data = ExtractPrefixAndAsnInfoFromNetInfoDivTable(driver);
+
+                return new SearchModel
+                {
+                    RelatedAsns = data.Select(x => new AsnWithContactsModel {
+                        ASN = int.Parse(x.ElementAt(0)),
+                        Name = x.ElementAt(2),
+                        Description = x.ElementAt(2),
+                        EmailContacts = Enumerable.Empty<string>(),
+                        AbuseContacts = Enumerable.Empty<string>()
+                    }),
+                    IPv4 = Enumerable.Empty<PrefixModel>(),
+                    IPv6 = data.Select(x => new PrefixModel {
+                        Prefix = x.ElementAt(1),
+                        Name = x.ElementAt(2),
+                        Description = x.ElementAt(2)                      
+                    })
                 };
             }
             else if(Regex.IsMatch(queryTerm, IPV4_ADDRESS_PATTERN))
@@ -458,8 +507,10 @@ namespace BGPViewerCore.Service
                     })
                 };
             }
-
-            throw new NotImplementedException();
+            else
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
