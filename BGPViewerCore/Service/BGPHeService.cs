@@ -23,6 +23,7 @@ namespace BGPViewerCore.Service
         #region Constants
         private const string ASN_PATTERN = "(AS[0-9][0-9][0-9][0-9][0-9][0-9][0-9]|AS[0-9][0-9][0-9][0-9][0-9][0-9]|AS[0-9][0-9][0-9][0-9][0-9]|AS[0-9][0-9][0-9][0-9]|AS[0-9][0-9][0-9]|AS[0-9][0-9]|AS[0-9])";
         private const string IPV4_ADDRESS_PATTERN = @"((?:[0-9]{1,3}\.){3}[0-9]{1,3})";
+        private const string IPV6_ADDRESS_PATTERN = @"^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$";
         private const string IPV4_PREFIX_PATTERN = @"((?:[0-9]{1,3}\.){3}[0-9]{1,3}\/([0-9][0-9]|[0-9]))";
         private const string IPV6_PREFIX_PATTERN = @"(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\/([0-9][0-9][0-9]|[0-9][0-9]|[0-9])";
         private const string EMAIL_PATTERN = @"([a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)";
@@ -205,6 +206,17 @@ namespace BGPViewerCore.Service
             };
         } 
 
+        private IEnumerable<string[]> ExtractAsDataFromIpInfoElement(IWebElement ipInfoElement)
+            => ipInfoElement.FindElement(By.TagName("table"))
+                .FindElement(By.TagName("tbody"))
+                .FindElements(By.TagName("tr"))
+                .Select(tr => tr.FindElements(By.TagName("td")))
+                .Select(tds => new string[]{
+                    tds.ElementAt(0).FindElement(By.TagName("a")).GetAttribute("innerHTML").Substring(2), // AS number
+                    tds.ElementAt(1).FindElement(By.TagName("a")).GetAttribute("innerHTML"), // Prefix
+                    tds.ElementAt(2).GetAttribute("innerHTML") // Name/Description
+                });
+
         #endregion
 
         public AsnDetailsModel GetAsnDetails(int asNumber)
@@ -338,15 +350,7 @@ namespace BGPViewerCore.Service
                 ipDetails.PtrRecord = hasPtrRecord ? Regex.Match(ipAndPtrRecord, @"\(([^\)]+)\)").Value.Trim('(', ')') : null;
             }
             
-            ipDetails.RelatedPrefixes = ipInfoElement.FindElement(By.TagName("table"))
-                .FindElement(By.TagName("tbody"))
-                .FindElements(By.TagName("tr"))
-                .Select(tr => tr.FindElements(By.TagName("td")))
-                .Select(tds => new string[]{
-                    tds.ElementAt(0).FindElement(By.TagName("a")).GetAttribute("innerHTML").Substring(2), // AS number
-                    tds.ElementAt(1).FindElement(By.TagName("a")).GetAttribute("innerHTML"), // Prefix
-                    tds.ElementAt(2).GetAttribute("innerHTML") // Name/Description
-                })
+            ipDetails.RelatedPrefixes = ExtractAsDataFromIpInfoElement(ipInfoElement)
                 .GroupBy(x => x[1]) // Groups asns by prefixes
                 .Select(px => new PrefixDetailModel {
                     Prefix = px.Key,
@@ -409,6 +413,48 @@ namespace BGPViewerCore.Service
                     RelatedAsns = new AsnDetailsModel[] { asDetails },
                     IPv4 = prefixes.Item1,
                     IPv6 = prefixes.Item2
+                };
+            }
+            else if(Regex.IsMatch(queryTerm, IPV4_ADDRESS_PATTERN))
+            {
+                var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/ip/{queryTerm}");
+                var data = ExtractAsDataFromIpInfoElement(driver.FindElement(By.Id("ipinfo")));
+                return new SearchModel
+                {
+                    RelatedAsns = data.Select(x => new AsnWithContactsModel {
+                        ASN = int.Parse(x.ElementAt(0)),
+                        Name = x.ElementAt(2),
+                        Description = x.ElementAt(2),
+                        EmailContacts = Enumerable.Empty<string>(),
+                        AbuseContacts = Enumerable.Empty<string>()
+                    }),
+                    IPv4 = data.Select(x => new PrefixModel {
+                        Prefix = x.ElementAt(1),
+                        Name = x.ElementAt(2),
+                        Description = x.ElementAt(2)
+                    }),
+                    IPv6 = Enumerable.Empty<PrefixModel>()
+                };
+            }
+            else if(Regex.IsMatch(queryTerm, IPV6_ADDRESS_PATTERN))
+            {
+                var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/ip/{queryTerm}");
+                var data = ExtractAsDataFromIpInfoElement(driver.FindElement(By.Id("ipinfo")));
+                return new SearchModel
+                {
+                    RelatedAsns = data.Select(x => new AsnWithContactsModel {
+                        ASN = int.Parse(x.ElementAt(0)),
+                        Name = x.ElementAt(2),
+                        Description = x.ElementAt(2),
+                        EmailContacts = Enumerable.Empty<string>(),
+                        AbuseContacts = Enumerable.Empty<string>()
+                    }),
+                    IPv4 = Enumerable.Empty<PrefixModel>(),
+                    IPv6 = data.Select(x => new PrefixModel {
+                        Prefix = x.ElementAt(1),
+                        Name = x.ElementAt(2),
+                        Description = x.ElementAt(2)                      
+                    })
                 };
             }
 

@@ -277,31 +277,56 @@ namespace BGPViewerCore.UnitTests.BGPHeServiceTests
         }
 
         [Fact]
-        public void SearchByAsnWithLittleData()
+        public void SearchByAsn()
         {
-            var searchResultForAsn53181 = Service.SearchBy("53181");
+            var searchResult = Service.SearchBy("53181");
             
-            Assert.Equal(1, searchResultForAsn53181.RelatedAsns.Count());
-            Assert.Equal(53181, searchResultForAsn53181.RelatedAsns.First().ASN);
-            Assert.Equal("K2 Telecom e Multimidia LTDA ME", searchResultForAsn53181.RelatedAsns.First().Name);
-            Assert.Equal("K2 Telecom e Multimidia LTDA ME", searchResultForAsn53181.RelatedAsns.First().Description);
-            Assert.Equal("BR", searchResultForAsn53181.RelatedAsns.First().CountryCode);
+            Assert.Equal(1, searchResult.RelatedAsns.Count());
+            Assert.Equal(53181, searchResult.RelatedAsns.First().ASN);
+            Assert.Equal("K2 Telecom e Multimidia LTDA ME", searchResult.RelatedAsns.First().Name);
+            Assert.Equal("K2 Telecom e Multimidia LTDA ME", searchResult.RelatedAsns.First().Description);
+            Assert.Equal("BR", searchResult.RelatedAsns.First().CountryCode);
             
-            Assert.True(searchResultForAsn53181.RelatedAsns.First().EmailContacts.Count() == 1, $"Should have only one contact email and actually has {searchResultForAsn53181.RelatedAsns.First().AbuseContacts.Count()}.");
-            Assert.True(searchResultForAsn53181.RelatedAsns.First().AbuseContacts.Count() == 1, $"Should have only one abuse email and actually has {searchResultForAsn53181.RelatedAsns.First().AbuseContacts.Count()}.");
+            Assert.True(searchResult.RelatedAsns.First().EmailContacts.Count() == 1, $"Should have only one contact email and actually has {searchResult.RelatedAsns.First().AbuseContacts.Count()}.");
+            Assert.True(searchResult.RelatedAsns.First().AbuseContacts.Count() == 1, $"Should have only one abuse email and actually has {searchResult.RelatedAsns.First().AbuseContacts.Count()}.");
             
-            Assert.Equal("engenharia@k2telecom.com.br", searchResultForAsn53181.RelatedAsns.First().EmailContacts.First());
-            Assert.Equal("engenharia@k2telecom.com.br", searchResultForAsn53181.RelatedAsns.First().AbuseContacts.First());
+            Assert.Equal("engenharia@k2telecom.com.br", searchResult.RelatedAsns.First().EmailContacts.First());
+            Assert.Equal("engenharia@k2telecom.com.br", searchResult.RelatedAsns.First().AbuseContacts.First());
             
-            var firstIpv4 = searchResultForAsn53181.IPv4.First();
+            var firstIpv4 = searchResult.IPv4.First();
             Assert.Equal("191.241.64.0/20", firstIpv4.Prefix);
             Assert.Equal("K2 Telecom e Multimidia LTDA ME", firstIpv4.Name);
             Assert.Equal("K2 Telecom e Multimidia LTDA ME", firstIpv4.Description);
 
-            var lastIpv6 = searchResultForAsn53181.IPv6.Last();
+            var lastIpv6 = searchResult.IPv6.Last();
             Assert.Equal("2804:113c:fc00::/38", lastIpv6.Prefix);
             Assert.Equal(string.Empty, lastIpv6.Name);
             Assert.Equal(string.Empty, lastIpv6.Description);
+        }
+
+        [Fact]
+        public void SearchByIPAddress()
+        {
+            var searchResult = Service.SearchBy("196.100.100.0");
+            Assert.True(searchResult.RelatedAsns.Count() == 2, $"Should be 2 and is {searchResult.RelatedAsns.Count()}");
+            Assert.Equal("Safaricom Limited", searchResult.RelatedAsns.First().Name);
+            Assert.Equal("Safaricom Limited", searchResult.RelatedAsns.First().Description);
+
+            Assert.Equal("Used by safaricom 2G/3G/4G  subscribers.", searchResult.RelatedAsns.Last().Name);
+            Assert.Equal("Used by safaricom 2G/3G/4G  subscribers.", searchResult.RelatedAsns.Last().Description);
+            
+            Assert.True(searchResult.RelatedAsns.Count(x => x.CountryCode == null) == 2, $"Country codes should be nulls");
+            
+            foreach(var asn in searchResult.RelatedAsns)
+            {
+                Assert.Empty(asn.AbuseContacts);
+                Assert.Empty(asn.EmailContacts);
+            }
+
+            var firstIpv4 = searchResult.IPv4.First(); 
+            Assert.Equal("196.96.0.0/12", firstIpv4.Prefix);
+            Assert.Equal("Safaricom Limited", firstIpv4.Name);
+            Assert.Equal("Safaricom Limited", firstIpv4.Description);
         }
     }
 }
