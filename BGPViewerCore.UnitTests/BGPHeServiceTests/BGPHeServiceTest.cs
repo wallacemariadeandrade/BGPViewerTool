@@ -352,5 +352,29 @@ namespace BGPViewerCore.UnitTests.BGPHeServiceTests
 
             Assert.Empty(searchResult.IPv6);
         }
+
+        [Fact]
+        public void SearchByKeyword()
+        {
+            var searchResult = Service.SearchBy("ascenty");
+
+            Assert.True(searchResult.RelatedAsns.Count() == 2, $"Should be 2 ases and is {searchResult.RelatedAsns.Count()}");
+            Assert.True(searchResult.IPv4.Count() == 7, $"Should be 7 v4 prefixes and is {searchResult.IPv4.Count()}");
+            Assert.True(searchResult.IPv6.Count() == 5, $"Should be 5 v6 prefixes and is {searchResult.IPv6.Count()}");
+
+            var ases = searchResult.RelatedAsns.Select(x => x.ASN);
+            Assert.Contains(52925, ases);
+            Assert.Contains(28630, ases);
+
+            var firstIpv6 = searchResult.IPv6.First();
+            Assert.Equal("2804:ad4:ff:6::/64", firstIpv6.Prefix);
+            Assert.Equal("Ascenty Data Centers e Telecomunicaï¿½ï¿½es S/A", firstIpv6.Name);
+            Assert.Equal("Ascenty Data Centers e Telecomunicaï¿½ï¿½es S/A", firstIpv6.Description);
+
+            var lastIpv4 = searchResult.IPv4.Last();
+            Assert.Equal("138.118.140.0/22", lastIpv4.Prefix);
+            Assert.Equal("Ascenty Data Centers e Telecomunicaï¿½ï¿½es S/A", lastIpv4.Name);
+            Assert.Equal("Ascenty Data Centers e Telecomunicaï¿½ï¿½es S/A", lastIpv4.Description);
+        }
     }
 }

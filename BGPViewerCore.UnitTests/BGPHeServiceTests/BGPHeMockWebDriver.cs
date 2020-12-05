@@ -71,6 +71,7 @@ namespace BGPViewerCore.UnitTests.BGPHeServiceTests
                 { "https://bgp.he.net/net/196.96.0.0/12" , GetPageUrlFor("196.96.0.0-12_MockData.html") },
                 { "https://bgp.he.net/net/2001:4860::/32" , GetPageUrlFor("2001..4860....32_ MockData.html") },
                 { "https://bgp.he.net/net/2a02:26f0:128::/48" , GetPageUrlFor("2a02..26f0..128....48_MockData.html") },
+                { "https://bgp.he.net/search?search%5Bsearch%5D=ascenty&commit=Search" , GetPageUrlFor("searchby-ascenty_MockData.html") },
                 { "default" , GetPageUrlFor("ASNotFoundMockData.html") }
             };
 

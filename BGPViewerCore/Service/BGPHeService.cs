@@ -509,7 +509,57 @@ namespace BGPViewerCore.Service
             }
             else
             {
-                throw new NotImplementedException();
+                var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/search?search%5Bsearch%5D={queryTerm.Replace(' ', '+')}&commit=Search");
+                var relatedAsns = new List<AsnWithContactsModel>();
+                var ipv4Prefixes = new List<PrefixModel>();
+                var ipv6Prefixes = new List<PrefixModel>();
+
+
+                var trs = driver.FindElement(By.TagName("tbody"))
+                    .FindElements(By.TagName("tr"))
+                    .Skip(1) // The first row is irrelevant, so skip it
+                    .Select(tr => tr.FindElements(By.TagName("td")));
+                
+                foreach(var tds in trs)
+                {
+                    var firstTdAnchorHref = tds.ElementAt(0).FindElement(By.TagName("a")).GetAttribute("href");
+                    var name = tds.ElementAt(1).Text;
+                    
+                    if(Regex.IsMatch(firstTdAnchorHref, ASN_PATTERN))
+                    {
+                        relatedAsns.Add(new AsnWithContactsModel {   
+                            ASN = int.Parse(Regex.Match(firstTdAnchorHref, ASN_PATTERN).Value.Substring(2)),
+                            Name = name,
+                            Description = name,
+                            CountryCode = null,
+                            AbuseContacts = Enumerable.Empty<string>(),
+                            EmailContacts = Enumerable.Empty<string>()
+                        });
+                    }
+                    else if(Regex.IsMatch(firstTdAnchorHref, IPV6_PREFIX_PATTERN))
+                    {
+                        ipv6Prefixes.Add(new PrefixModel {
+                            Prefix = Regex.Match(firstTdAnchorHref, IPV6_PREFIX_PATTERN).Value,
+                            Name = name,
+                            Description = name
+                        });
+                    }
+                    else 
+                    {
+                        ipv4Prefixes.Add(new PrefixModel {
+                            Prefix = Regex.Match(firstTdAnchorHref, IPV4_PREFIX_PATTERN).Value,
+                            Name = name,
+                            Description = name
+                        });
+                    }
+                }
+
+                return new SearchModel
+                {
+                    RelatedAsns = relatedAsns,
+                    IPv4 = ipv4Prefixes,
+                    IPv6 = ipv6Prefixes
+                };
             }
         }
     }
