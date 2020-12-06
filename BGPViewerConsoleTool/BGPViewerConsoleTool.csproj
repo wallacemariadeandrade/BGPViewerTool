@@ -4,6 +4,12 @@
     <ProjectReference Include="..\BGPViewerCore\BGPViewerCore.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="86.0.4240.2200" />
+    <PackageReference Include="Selenium.WebDriver.GeckoDriver" Version="0.28.0" />
+    <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="87.0.664.47" />
+  </ItemGroup>
+
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
