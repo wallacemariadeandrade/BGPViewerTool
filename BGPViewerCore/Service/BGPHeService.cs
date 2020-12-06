@@ -36,7 +36,6 @@ namespace BGPViewerCore.Service
             // We've got to use a WebDriverWait to wait bgp.he.net page redirection
             var wb = new WebDriverWait(_driver, _timeout);
             _driver.Navigate().GoToUrl(url);
-            System.Diagnostics.Debug.WriteLine(_driver.PageSource);
             wb.Until(x => x.Url == url);
             if(!CheckIfDataExists(_driver))
                 throw new KeyNotFoundException("Your query did not return any results.");
@@ -47,10 +46,9 @@ namespace BGPViewerCore.Service
 
         private IEnumerable<string> ExtractEmailsFrom(string content)
             => Regex.Matches(content, EMAIL_PATTERN)
-            .Cast<Match>() // This is necessary to access LINQ methods
+            .Cast<Match>()
             .Select(match => match.Value);
                 
-        
         private string ExtractDivWhoisFrom(string content)
         {
             var whoisDivStartIndex = content.IndexOf(@"<div id=""whois"" class=""tabdata hidden"">");
@@ -83,30 +81,22 @@ namespace BGPViewerCore.Service
 
         // At bgp.he.net/ASxxx IPv4 and IPv6 prefixes are inside two  
         // HTML tables (IPv4: table with id="table_prefixes4"; IPv6: table with id="table_prefixes6")
-        private IEnumerable<PrefixModel> ExtractPrefixesFromTablePrefixes(IWebElement tablePrefixes, string prefixPattern)
-            // => tablePrefixes.FindElements(By.ClassName("nowrap"))
-            //     .Select(td => Regex.Match(td.FindElement(By.TagName("a")).GetAttribute("href"), prefixPattern).Value);
+        private IEnumerable<PrefixModel> ExtractPrefixesFromTablePrefixes(IWebElement tablePrefixes)
             => tablePrefixes.FindElement(By.TagName("tbody"))
                             .FindElements(By.TagName("tr"))
                             .Select(tr => tr.FindElements(By.TagName("td")))
                             .Select(tds => new PrefixModel {
-                                Prefix = Regex.Match(tds.ElementAt(0).FindElement(By.TagName("a")).GetAttribute("href"), prefixPattern).Value,
+                                Prefix = tds.ElementAt(0).FindElement(By.TagName("a")).GetAttribute("innerHTML"),
                                 Name = tds.ElementAt(1).Text,
                                 Description = tds.ElementAt(1).Text
                             });
 
-        private Tuple<IEnumerable<PrefixModel>, IEnumerable<PrefixModel>> ExtractAsPrefixesFromDriver(IWebDriver driver)
-        {
-            var allHtmlTables = driver.FindElements(By.TagName("table"));
-            
-            var hasIpv4Prefixes = allHtmlTables.Count(table => table.GetAttribute("id") == "table_prefixes4") == 1;
-            var hasIpv6Prefixes = allHtmlTables.Count(table => table.GetAttribute("id") == "table_prefixes6") == 1;
-
-            var ipv4Prefixes = hasIpv4Prefixes ? ExtractPrefixesFromTablePrefixes(allHtmlTables.Single(table => table.GetAttribute("id") == "table_prefixes4"), IPV4_PREFIX_PATTERN) : new PrefixModel[]{};
-            var ipv6Prefixes = hasIpv6Prefixes ? ExtractPrefixesFromTablePrefixes(allHtmlTables.Single(table => table.GetAttribute("id") == "table_prefixes6"), IPV6_PREFIX_PATTERN) : new PrefixModel[]{};
-
-            return new Tuple<IEnumerable<PrefixModel>, IEnumerable<PrefixModel>>(ipv4Prefixes, ipv6Prefixes);
-        }
+        // For better performance while querying only prefixes
+        private IEnumerable<string> ExtractPrefixesFromTablePrefixes(IWebElement tablePrefixes, string pattern)
+            => Regex.Matches(tablePrefixes.GetAttribute("innerHTML"), pattern)
+                    .Cast<Match>()
+                    .Select(x => x.Value)
+                    .Distinct();
 
         // At bgp.he.net/ASxxx IPv4 and IPv6 peers are inside two  
         // HTML tables (IPv4: table with id="table_peers4"; IPv6: table with id="table_peers6"), 
@@ -301,14 +291,18 @@ namespace BGPViewerCore.Service
         public AsnPrefixesModel GetAsnPrefixes(int asNumber)
         {
             var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}");
-            
-            var prefixes = ExtractAsPrefixesFromDriver(driver);
+
+            var hasIpv4Prefixes = driver.PageSource.Contains("table_prefixes4");
+            var hasIpv6Prefixes = driver.PageSource.Contains("table_prefixes6");
+
+            var ipv4Prefixes = hasIpv4Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes4")), IPV4_PREFIX_PATTERN) : Enumerable.Empty<string>();
+            var ipv6Prefixes = hasIpv6Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes6")), IPV6_PREFIX_PATTERN) : Enumerable.Empty<string>();
 
             return new AsnPrefixesModel
             {
                 ASN = asNumber,
-                IPv4 = prefixes.Item1.Select(model => model.Prefix),
-                IPv6 = prefixes.Item2.Select(model => model.Prefix)
+                IPv4 = ipv4Prefixes,
+                IPv6 = ipv6Prefixes
             };  
         }
 
@@ -408,13 +402,19 @@ namespace BGPViewerCore.Service
             if(int.TryParse(queryTerm, out int asNumber))
             {
                 var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}");
-                var prefixes = ExtractAsPrefixesFromDriver(driver);
+                
+                var hasIpv4Prefixes = driver.PageSource.Contains("table_prefixes4");
+                var hasIpv6Prefixes = driver.PageSource.Contains("table_prefixes6");
+
+                var ipv4Prefixes = hasIpv4Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes4"))) : Enumerable.Empty<PrefixModel>();
+                var ipv6Prefixes = hasIpv6Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes6"))) : Enumerable.Empty<PrefixModel>();
+                
                 var asDetails = ExtractAsDetailsFromDriver(driver, asNumber);
                 return new SearchModel
                 {
                     RelatedAsns = new AsnDetailsModel[] { asDetails },
-                    IPv4 = prefixes.Item1,
-                    IPv6 = prefixes.Item2
+                    IPv4 = ipv4Prefixes,
+                    IPv6 = ipv6Prefixes
                 };
             }
             else if(Regex.IsMatch(queryTerm, IPV4_PREFIX_PATTERN))
