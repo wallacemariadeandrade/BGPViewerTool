@@ -1,4 +1,6 @@
 .vscode/
+BGPViewerConsoleTool/debug.log
+BGPViewerConsoleTool/build-deploy-script.bat
 BGPViewerConsoleTool/bin/
 BGPViewerConsoleTool/obj/
 BGPViewerCore/bin/
