@@ -9,140 +9,16 @@ There are a few ways to use this repo content, so scroll down and have fun! :smi
 ## .NET Developers
 If you're a .NET developer you can use the core library on your application. Download [BGPViewerCore](https://github.com/wallacemariadeandrade/BGPViewerTool/tree/development/BGPViewerCore), add a reference to it on your project and go code! :sunglasses:
 
-### Creating the Service
-```c#
-var service = new BGPViewerService(new BGPViewerWebApi());
-```
 
-### Getting ASN Information
-```c#
+## Windows, Mac or Linux User (.NET Core Solution)
+Use can use the .NET Core solution [BGPViewerConsoleTool](https://github.com/wallacemariadeandrade/BGPViewerTool/tree/development/BGPViewerConsoleTool). It's a command line client built on NET Core, a cross-platform version of .NET for building websites, services, and console apps.
 
-// AS Number, Name, Description, Email Contacts, Looking Glass URL and Country Code
-var details = service.GetAsnDetails(6762);
-
-```
-
-### Getting ASN Prefixes
-```c#
-
-// AS Number, IPv4 Prefixes, IPv6 Prefixes
-var prefixes = service.GetAsnPrefixes(131630);
-
-```
-
-### Getting ASN Peers, Upstreams and Downstreams
-```c#
-
-// AS Number, Name, Description and Country Code for IPv4 and IPv6 peers
-var prefixes = service.GetAsnPeers(131630);
-var upstreams = service.GetAsnUpstreams(131630);
-var downstreams = service.GetAsnDownstreams(131630);
-
-```
-
-### Getting IXs where given ASN is present
-```c#
-
-// IX Name, Country Code, IPv4 and IPv6 Address, Participant Speed
-var ixs = service.GetAsnIxs(131630);
-
-```
-
-### Getting IP address details
-```c#
-
-// Allocation Prefix, PTR Record, Name, Description, Related ASNs
-var ip = service.GetIpDetails("10.100.100.20");
-
-```
-
-### Getting prefix details
-```c#
-
-// Prefix, Name, Description, Parent ASNs
-var ip = service.GetPrefixDetails("10.100.100.20", 20);
-
-```
-
-### Searching by ASN, prefix, IP, name, description
-```c#
-
-// IPv4 and IPv6 Prefixes, Related ASNs
-var searchResult = service.SearchBy("Google");
-
-```
+To use this tool you'll must have installed NET Core Runtime, which one you can get [here](https://dotnet.microsoft.com/download).
 
 
-## Powershell User
+## Windows, Mac or Linux User (Powershell Solution)
 If you're a normal human (maybe not so normal cause you probably work with telecom :laughing::sweat_smile:) and likes Powershell, then you can use [BGPViewerPowerTool](https://github.com/wallacemariadeandrade/BGPViewerTool/tree/development/BGPViewerPowerTool)! It's a bunch of PowerShell scripts that do all the work for you. Download the folder and call the scripts from PowerShell prompt at scripts directory.
 
 > [PowerShell](https://docs.microsoft.com/pt-br/powershell/scripting/overview?view=powershell-7) is a cross-platform task automation and configuration management framework, consisting of a command-line shell and scripting language. Unlike most shells, which accept and return text, PowerShell is built on top of the .NET Common Language Runtime (CLR), and accepts and returns .NET objects. This fundamental change brings entirely new tools and methods for automation.
 
 Download PowerShell [here](https://docs.microsoft.com/pt-br/powershell/scripting/install/installing-powershell?view=powershell-7).
-
-### Permit Powershell to Excute Scripts
-By default PowerShell doesn't allow scripts execution. To turn it on you have to run PowerShell as Administrator and paste the command bellow:
-```
-set-executionpolicy remotesigned
-
-```
-### Examples
-- Get ASN Details: 
-    - ```.\get_asn_details.ps1 3356 ```
-- Get ASN Prefixes:
-    - ```.\get_asn_prefixes.ps1 3356 ```
-- Get ASN Peers:
-    - ```.\get_asn_peers.ps1 3356 ```
-- Get ASN Upstreams:
-    - ```.\get_asn_upstreams.ps1 3356 ```
-- Get ASN Downstreams:
-    - ```.\get_asn_downstreams.ps1 3356 ```
-- Get ASN IXs:
-    - ```.\get_asn_ixs.ps1 3356 ```
-- Get Prefix Details:
-    - ```.\get_prefix_details.ps1 4.55.0.0/16 or .\get_prefix_details.ps1 4.55.0.0 16 ```
-- Get IP Address Details:
-    - ```.\get_ip_details.ps1 4.55.0.0 ```
-- Search by ASN, Prefix, IP Address, Name
-    - ```.\search.ps1 "Century Link" or .\search.ps1 CenturyLink or .\search.ps1 3356 ```
-
-## NET Core User
-Another option for you is to use the [BGPViewerConsoleTool](https://github.com/wallacemariadeandrade/BGPViewerTool/tree/development/BGPViewerConsoleTool). It's a command line client built on NET Core, a cross-platform version of .NET for building websites, services, and console apps.
-
-To use this tool you'll must have installed NET Core Runtime, whitch one you can get [here](https://dotnet.microsoft.com/download).
-
-
-### Use
-Download the [app](https://github.com/wallacemariadeandrade/BGPViewerTool/tree/development/BGPViewerConsoleTool/app) folder and call BGPViewerConsoleTool.dll from it as shown below. Take a look! :mag:
-
-```
-Usage: dotnet BGPViewerConsoleTool [options] <value> [command]
-Usage: dotnet BGPViewerConsoleTool -s <search_value>
-Usage: dotnet BGPViewerConsoleTool -h
-
-Options:
-    -a          AS number       (e.g. -a 53181)
-    -p          Prefix          (e.g  -p 8.8.8.8/24)
-    -i          IP              (e.g  -i 8.8.8.8)
-    -s          Search by       (e.g  -s 8.8.8.8 or -s 6762 or -s ""Century Link"")
-    -h          Help
-
-Commands: 
-    
-With -a option:
-
-    -d          AS details
-    -px         AS prefixes
-    -pr         AS peers
-    -up         AS upstreams
-    -dw         AS downstreams
-    -ix         AS IXs
-
-With -p option:
-
-    -d          Prefix details
-
-With -i option:
-
-    -d          IP details
-```
