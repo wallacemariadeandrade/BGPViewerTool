@@ -8,7 +8,7 @@ To use this tool you'll must have installed NET Core Runtime, which one you can 
 
 First, [download and install the .NET Core runtime](https://dotnet.microsoft.com/download). 
 
-Second, download the [app](https://github.com/wallacemariadeandrade/BGPViewerTool/tree/development/BGPViewerConsoleTool/app) folder and place it somewhere on your PC.
+Second, download the app folder for your enviroment (see bgpvctool folders) and place it somewhere on your PC.
 
 And that's it. To use the tool just navigate into the app folder and call BGPViewerConsoleTool.dll. You can also simplify calling the tool using environment variables to set a shortcut for it. 
 
