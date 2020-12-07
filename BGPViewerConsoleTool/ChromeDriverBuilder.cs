@@ -42,6 +42,17 @@ namespace BGPViewerConsoleTool
                 service.HideCommandPromptWindow = true;
         }
 
-        public override IWebDriver Build() => new ChromeDriver(service, innerOptions);
+        public override IWebDriver Build() // => new ChromeDriver(service, innerOptions);
+        {
+            try
+            {
+                return new ChromeDriver(service, innerOptions);
+            }
+            catch(InvalidOperationException innerException)
+            {
+                System.Diagnostics.Process.GetProcessById(service.ProcessId).Kill();
+                throw new InvalidOperationException("An error occurred while creating Chrome Driver. Check if your Chrome Browser is working and try again. (do you have it installed?)", innerException);
+            }
+        }
     }
 }

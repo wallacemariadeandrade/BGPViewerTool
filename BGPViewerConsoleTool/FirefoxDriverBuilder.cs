@@ -41,6 +41,17 @@ namespace BGPViewerConsoleTool
             service.HideCommandPromptWindow = true;
         }
 
-        public override IWebDriver Build() => new FirefoxDriver(service, innerOptions);
+        public override IWebDriver Build()
+        {
+            try
+            {
+                return new FirefoxDriver(service, innerOptions);
+            }
+            catch(InvalidOperationException innerException)
+            {
+                System.Diagnostics.Process.GetProcessById(service.ProcessId).Kill();
+                throw new InvalidOperationException("An error occurred while creating Firefox Driver. Check if your Firefox Browser is working and try again. (do you have it installed?)", innerException);
+            }
+        }
     }
 }

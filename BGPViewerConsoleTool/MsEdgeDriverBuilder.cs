@@ -43,6 +43,17 @@ namespace BGPViewerConsoleTool
             service.HideCommandPromptWindow = true;
         }
 
-        public override IWebDriver Build() => new EdgeDriver(service, innerOptions);
+        public override IWebDriver Build() // => new EdgeDriver(service, innerOptions);
+        {
+            try
+            {
+                return new EdgeDriver(service, innerOptions);
+            }
+            catch(InvalidOperationException innerException)
+            {
+                System.Diagnostics.Process.GetProcessById(service.ProcessId).Kill();
+                throw new InvalidOperationException("An error occurred while creating MS Edge Driver. Check if your Microsoft Edge Browser is working and try again. (do you have it installed?)", innerException);
+            }
+        }
     }
 }
