@@ -30,34 +30,37 @@ namespace BGPViewerConsoleTool
                 return;
             }
 
-            using(var serviceBuilder = new ServiceBuilder(GetIntInput, WriteLine))
+            try
             {
-                try
-                {
-                    serviceBuilder.AskForApi();
+                var serviceBuilder = new ServiceManager(GetIntInput, WriteLine, new DriverBuilder[] { new ChromeDriverBuilder(), new FirefoxDriverBuilder(), new MsEdgeDriverBuilder() });
+                serviceBuilder.AskForApi();
 
-                    var manager = new Manager(serviceBuilder.Build());
-                    
-                    var option = args[0];
-                    var optionValue = args[1];
-                    var command = isSearching ? "" : args[2];
+                var manager = new Manager(serviceBuilder.Build());
+                
+                var option = args[0];
+                var optionValue = args[1];
+                var command = isSearching ? "" : args[2];
 
-                    WriteLine("Loading data...");
-                    Loading(true);
-                    var result = manager.Execute(option, optionValue, command);
-                    Loading(false);
-                    WriteLine();
-                    WriteLine(result);
-                }
-                catch (System.Exception ex)
-                {
-                    PrintHelpMessage(ex.Message);
-                }
+                WriteLine("Loading data...");
+                Loading(true);
+                var result = manager.Execute(option, optionValue, command);
+                Loading(false);
+                WriteLine();
+                WriteLine(result);
+            }
+            catch (System.Exception ex)
+            {
+                PrintHelpMessage(ex.Message);
             }
         }
 
         private static void PrintHelpMessage(string message) => WriteLine($"\n *** {message} *** \n");
-        private static int GetIntInput() => int.Parse(Console.ReadLine());
+        private static int GetIntInput()
+        {
+            if(int.TryParse(Console.ReadLine(), out int option))
+                return option;
+            throw new ArgumentException("Option must be a number. Try again.", nameof(option));
+        }
         private static void Loading(bool loading)
         {
             if(loading)
