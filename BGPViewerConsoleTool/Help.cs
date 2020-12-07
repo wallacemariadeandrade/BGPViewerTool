@@ -3,33 +3,35 @@ namespace BGPViewerConsoleTool
     public static class Help
     {
         public static string Get => @"
-Usage: dotnet BGPViewerConsoleTool [options] <value> [command]
-Usage: dotnet BGPViewerConsoleTool -s <search_value>
+Usage: dotnet BGPViewerConsoleTool.dll [options] <value> [command]
+Usage: dotnet BGPViewerConsoleTool.dll -s <search_value>
+Usage: dotnet BGPViewerConsoleTool.dll -h
 
 Options:
-    -a          AS number       (e.g. -a 53181)
-    -p          Prefix          (e.g  -p 8.8.8.8/24)
+    -a          AS number       (e.g. -a 15169)
+    -p          Prefix          (e.g  -p 8.8.8.0/24)
     -i          IP              (e.g  -i 8.8.8.8)
-    -s          Search by       (e.g  -s 8.8.8.8 or -s 6762 or -s ""Century Link"")
+    -s          Search by       (e.g  -s 8.8.8.8 or -s 6762 or -s ""Google"")
+    -h          Help
 
 Commands: 
     
 With -a option:
 
-    -d          AS details
-    -px         AS prefixes
-    -pr         AS peers
-    -up         AS upstreams
-    -dw         AS downstreams
-    -ix         AS IXs
+    -d          AS details      (e.g. -a 15169 -d)
+    -px         AS prefixes     (e.g. -a 15169 -px)
+    -pr         AS peers        (e.g. -a 15169 -pr)
+    -up         AS upstreams    (e.g. -a 15169 -up)
+    -dw         AS downstreams  (e.g. -a 15169 -dw)
+    -ix         AS IXs          (e.g. -a 15169 -ix)
 
 With -p option:
 
-    -d          Prefix details
+    -d          Prefix details  (e.g  -p 8.8.8.0/24 -d)
 
 With -i option:
 
-    -d          IP details
+    -d          IP details  (e.g  -i 8.8.8.8 -d)
 ";
     }
 }
