@@ -294,5 +294,10 @@ namespace BGPViewerCore.Service
             if(rawJson.RootElement.GetProperty("status").GetString() != "ok")
                 throw new ArgumentException(rawJson.RootElement.GetProperty("status_message").GetString());
         }
+
+        public void Dispose()
+        {
+            _jsonApi = null;
+        }
     }
 }

@@ -531,5 +531,7 @@ namespace BGPViewerCore.Service
                 };
             }
         }
+
+        public void Dispose() => _driver.Dispose();
     }
 }

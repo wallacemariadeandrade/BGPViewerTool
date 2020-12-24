@@ -7,7 +7,7 @@ namespace BGPViewerCore.Service
     /// <summary>
     /// Provides methods to get relevant data about Autonomous Systems (AS's), prefixes and IP addresses.
     /// </summary>
-    public interface IBGPViewerService
+    public interface IBGPViewerService : IDisposable
     {
         /// <summary>
         /// Retrieve some personal data about ASN provided.
