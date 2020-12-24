@@ -6,34 +6,31 @@ using BGPViewerCore.Model;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System.IO;
+using static BGPViewerCore.Service.RegexPatterns;
 
 namespace BGPViewerCore.Service
 {
     public class BGPHeService : IBGPViewerService
     {
+        protected class PrefixWithAsNumber : PrefixModel
+        {
+            public string AsNumberStr { get; set; }
+        }
+
+        private const string EMAIL_PATTERN = @"([a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)";
         private readonly IWebDriver _driver;
         private readonly TimeSpan _timeout;
-
+        
         public BGPHeService(IWebDriver driver, int timeout)
         {
             _timeout = TimeSpan.FromSeconds(timeout);
             _driver = driver;
         }
 
-        #region Constants
-        private const string ASN_PATTERN = "(AS[0-9][0-9][0-9][0-9][0-9][0-9][0-9]|AS[0-9][0-9][0-9][0-9][0-9][0-9]|AS[0-9][0-9][0-9][0-9][0-9]|AS[0-9][0-9][0-9][0-9]|AS[0-9][0-9][0-9]|AS[0-9][0-9]|AS[0-9])";
-        private const string IPV4_ADDRESS_PATTERN = @"((?:[0-9]{1,3}\.){3}[0-9]{1,3})";
-        private const string IPV6_ADDRESS_PATTERN = @"^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$";
-        private const string IPV4_PREFIX_PATTERN = @"((?:[0-9]{1,3}\.){3}[0-9]{1,3}\/([0-9][0-9]|[0-9]))";
-        private const string IPV6_PREFIX_PATTERN = @"(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\/([0-9][0-9][0-9]|[0-9][0-9]|[0-9])";
-        private const string EMAIL_PATTERN = @"([a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)";
-        #endregion
-
         #region Routines
 
         private IWebDriver GetDriverWithValidatedResponseFrom(string url)
         {
-            // We've got to use a WebDriverWait to wait bgp.he.net page redirection
             var wb = new WebDriverWait(_driver, _timeout);
             _driver.Navigate().GoToUrl(url);
             wb.Until(x => x.Url == url);
@@ -57,10 +54,7 @@ namespace BGPViewerCore.Service
             return  content.Substring(whoisDivStartIndex, whoisDivlength);
         }
 
-        // At bgp.he.net/ASxxx upstreams are inside two  
-        // HTML tables (IPv4 and IPv6) styled with "toppeertable" class
-        // Each string array returned contains the as number (pos 0) and its name (pos 1)
-        private IEnumerable<string[]> ExtractAsnsAndNamesFromToppertable(string toppeertableText)
+        private IEnumerable<AsnModel> ExtractAsnsAndNamesFromToppertable(string toppeertableText)
         {            
             using(var reader = new StringReader(toppeertableText.Split(new string[]{"ASN Name"}, StringSplitOptions.None)[1].TrimStart()))
             {
@@ -71,16 +65,16 @@ namespace BGPViewerCore.Service
                     var asnAndName = line.Split(separator, StringSplitOptions.None);
                     var asn = asnAndName[0].Substring(2);
                     var name = line.Replace($"AS{asn}", "").TrimStart();
-                    yield return new string[] {
-                        asn,
-                        name
+                    yield return new AsnModel {
+                        ASN = int.Parse(asn),
+                        Name = name,
+                        Description = name,
+                        CountryCode = null
                     };
                 }
             }
         }
 
-        // At bgp.he.net/ASxxx IPv4 and IPv6 prefixes are inside two  
-        // HTML tables (IPv4: table with id="table_prefixes4"; IPv6: table with id="table_prefixes6")
         private IEnumerable<PrefixModel> ExtractPrefixesFromTablePrefixes(IWebElement tablePrefixes)
             => tablePrefixes.FindElement(By.TagName("tbody"))
                             .FindElements(By.TagName("tr"))
@@ -98,10 +92,7 @@ namespace BGPViewerCore.Service
                     .Select(x => x.Value)
                     .Distinct();
 
-        // At bgp.he.net/ASxxx IPv4 and IPv6 peers are inside two  
-        // HTML tables (IPv4: table with id="table_peers4"; IPv6: table with id="table_peers6"), 
-        // within divs "peers" and "peers6"
-        private IEnumerable<string[]> ExtractAsnsInfoFromPeerTable(IWebElement peerTable)
+        private IEnumerable<AsnModel> ExtractAsnsInfoFromPeerTable(IWebElement peerTable)
         {
             var tdList = peerTable.FindElement(By.TagName("tbody"))
                 .FindElements(By.TagName("tr"))
@@ -109,43 +100,47 @@ namespace BGPViewerCore.Service
             foreach (var td in tdList)
             {
                 var asn = td.ElementAt(3).FindElement(By.TagName("a")).GetAttribute("innerHTML").Substring(2);
-                // Extracting name and country
                 var tdWithNameAndCountry = td.ElementAt(1);
                 var innerHtmlOfTdWithNameAndCountry = tdWithNameAndCountry.GetAttribute("innerHTML");
                 var name = innerHtmlOfTdWithNameAndCountry.Substring(0, innerHtmlOfTdWithNameAndCountry.IndexOf("<div")); // Gets only the portion with asn name
                 var description = name;
-                var country = tdWithNameAndCountry.FindElement(By.TagName("img")).GetAttribute("title");
-                yield return new string[]{
-                    asn, name, description, country
+                yield return new AsnModel {
+                    ASN = int.Parse(asn),
+                    Name = name,
+                    Description = name,
+                    CountryCode = null
                 };
             }
         }
 
-        private IEnumerable<string[]> ExtractPrefixAndAsnInfoFromNetInfoDivTable(IWebDriver driver) 
+        private IEnumerable<PrefixWithAsNumber> ExtractPrefixAndAsnInfoFromNetInfoDivTable(IWebDriver driver) 
         {
             var tables = driver.FindElement(By.Id("netinfo"))
                 .FindElements(By.TagName("table"));
 
+            int correctNumberOfTableRows = 3; // Each table has to match 3 rows (asn, prefix and name)
+
             foreach (var table in tables)
             {
                 var matches = Regex.Matches(table.GetAttribute("innerHTML"), @"<a.*>.*<\/a>|<td>.*<\/td>");
-                var isMatchCorrect = matches.Count % 3 == 0; // Each table has to match 3 rows (asn, prefix and name)
-                if(!isMatchCorrect) throw new ArgumentException($"Incorrect input HTML. It was expected 3 matches and got {matches.Count}.", "tableInnerHtml");
+                var isNumberOfRowsCorrect = matches.Count % correctNumberOfTableRows == 0; 
+                if(!isNumberOfRowsCorrect) throw new ArgumentException($"Incorrect input HTML. It was expected 3 matches and got {matches.Count}.", "tableInnerHtml");
 
                 for (int i = 0; i < matches.Count; i+=3)
                 {
-                    var result = new string[3];
-                    // Extract ASxxxx
-                    result[0] = Regex.Match(matches[i].Value, ASN_PATTERN).Value.Substring(2);
+                    var asnStr = Regex.Match(matches[i].Value, ASN_PATTERN).Value.Substring(2);
 
-                    // Extract prefix
-                    result[1] = Regex.IsMatch(matches[i+1].Value, IPV4_PREFIX_PATTERN) ? 
+                    var prefix = Regex.IsMatch(matches[i+1].Value, IPV4_PREFIX_PATTERN) ? 
                         Regex.Match(matches[i+1].Value, IPV4_PREFIX_PATTERN).Value : Regex.Match(matches[i+1].Value, IPV6_PREFIX_PATTERN).Value;
 
-                    // Extract name/description
-                    result[2] =  matches[i+2].Value.Replace("<td>", "").Replace("</td>", "");
+                    var nameOrDescription = matches[i+2].Value.Replace("<td>", "").Replace("</td>", "");
 
-                    yield return result;
+                    yield return new PrefixWithAsNumber {
+                        AsNumberStr = asnStr,
+                        Name = nameOrDescription,
+                        Description = nameOrDescription,
+                        Prefix = prefix
+                    };
                 }
             }
         }
@@ -170,7 +165,6 @@ namespace BGPViewerCore.Service
 
         private AsnDetailsModel ExtractAsDetailsFromDriver(IWebDriver driver, int asNumber)
         {
-            // h1 tag is always present and always contains the AS name/description
             var h1TitleElement = driver.FindElement(By.TagName("h1"));
             var asn = h1TitleElement.Text.Split(new string[]{" "}, StringSplitOptions.None)[0].Substring(2);
             var name = h1TitleElement.Text.Replace($"AS{asn} ", "");
@@ -184,7 +178,6 @@ namespace BGPViewerCore.Service
             var divWhois = ExtractDivWhoisFrom(driver.PageSource);
             var countryCode = ExtractCountryCodeFromDivWhois(divWhois);
             
-            // Extracts looking glass url
             var indexOfLookingGlassDiv = leftDivs.IndexOf(leftDivs.SingleOrDefault(div => div.Text.Contains("Looking Glass")));
             var lookingGlass = indexOfLookingGlassDiv != -1 ? rightDivs.ElementAt(indexOfLookingGlassDiv).Text : null;
 
@@ -202,15 +195,16 @@ namespace BGPViewerCore.Service
             };
         } 
 
-        private IEnumerable<string[]> ExtractAsDataFromIpInfoElement(IWebElement ipInfoElement)
+        private IEnumerable<PrefixWithAsNumber> ExtractAsDataFromIpInfoElement(IWebElement ipInfoElement)
             => ipInfoElement.FindElement(By.TagName("table"))
                 .FindElement(By.TagName("tbody"))
                 .FindElements(By.TagName("tr"))
                 .Select(tr => tr.FindElements(By.TagName("td")))
-                .Select(tds => new string[]{
-                    tds.ElementAt(0).FindElement(By.TagName("a")).GetAttribute("innerHTML").Substring(2), // AS number
-                    tds.ElementAt(1).FindElement(By.TagName("a")).GetAttribute("innerHTML"), // Prefix
-                    tds.ElementAt(2).GetAttribute("innerHTML") // Name/Description
+                .Select(tds => new PrefixWithAsNumber {
+                    AsNumberStr = tds.ElementAt(0).FindElement(By.TagName("a")).GetAttribute("innerHTML").Substring(2),
+                    Prefix = tds.ElementAt(1).FindElement(By.TagName("a")).GetAttribute("innerHTML"),
+                    Name = tds.ElementAt(2).GetAttribute("innerHTML"),
+                    Description = tds.ElementAt(2).GetAttribute("innerHTML")
                 });
 
         #endregion
@@ -221,10 +215,9 @@ namespace BGPViewerCore.Service
             return ExtractAsDetailsFromDriver(driver, asNumber);
         }
 
+        // Not supported by bgp.he.net
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnDownstreams(int asNumber)
         {
-            // https://bgp.he.net doesn't provide downstreams information,
-            // so we'll just return null object
             return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(
                 new AsnDetailsModel[]{}, 
                 new AsnDetailsModel[]{}
@@ -247,7 +240,7 @@ namespace BGPViewerCore.Service
                     var ixIpv6AddressesCount = ixIpv6Addresses.Count();
                     // We loop by IPv4 cause it'll be always equal to or 
                     // greater than IPv6
-                    for(int index=0; index<ixIpv4Addresses.Count(); index++)
+                    for(int index=0; index < ixIpv4Addresses.Count(); index++)
                     {
                         yield return new IxModel {
                             Name = ixName,
@@ -270,20 +263,10 @@ namespace BGPViewerCore.Service
             var hasIPv6Peers = driver.PageSource.Contains("table_peers6");
             
             var ipv4Peers = hasIPv4Peers ? ExtractAsnsInfoFromPeerTable(driver.FindElement(By.Id("peers")))
-                .Select(x => new AsnModel{
-                    ASN = int.Parse(x[0]),
-                    Name = x[1],
-                    Description = x[2],
-                    CountryCode = null
-                }) : new AsnModel[]{};
-                
-            var ipv6Peers = hasIPv4Peers ? ExtractAsnsInfoFromPeerTable(driver.FindElement(By.Id("peers6")))
-                .Select(x => new AsnModel{
-                    ASN = int.Parse(x[0]),
-                    Name = x[1],
-                    Description = x[2],
-                    CountryCode = null
-                }) : new AsnModel[]{};
+                : new AsnModel[]{};
+
+            var ipv6Peers = hasIPv6Peers ? ExtractAsnsInfoFromPeerTable(driver.FindElement(By.Id("peers6")))
+                : new AsnModel[]{};
             
             return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(ipv4Peers, ipv6Peers);
         }
@@ -316,20 +299,10 @@ namespace BGPViewerCore.Service
             var hasIpv6Upstreams = toppeertables.Count() >= 2;
 
             var ipv4Upstreams = hasIpv4Upstreams ? ExtractAsnsAndNamesFromToppertable(toppeertables.ElementAt(0))
-                    .Select(x => new AsnModel{
-                        ASN = int.Parse(x[0]),
-                        Name = x[1],
-                        Description = x[1],
-                        CountryCode = null
-                    }) : new AsnModel[]{};
+                    : new AsnModel[]{};
 
             var ipv6Upstreams = hasIpv6Upstreams ? ExtractAsnsAndNamesFromToppertable(toppeertables.ElementAt(1))
-                    .Select(x => new AsnModel{
-                        ASN = int.Parse(x[0]),
-                        Name = x[1],
-                        Description = x[1],
-                        CountryCode = null
-                    }) : new AsnModel[]{};
+                    : new AsnModel[]{};
 
             return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(ipv4Upstreams, ipv6Upstreams);
         }
@@ -351,20 +324,18 @@ namespace BGPViewerCore.Service
             }
             
             ipDetails.RelatedPrefixes = ExtractAsDataFromIpInfoElement(ipInfoElement)
-                .GroupBy(x => x[1]) // Groups asns by prefixes
+                .GroupBy(data => data.Prefix)
                 .Select(px => new PrefixDetailModel {
                     Prefix = px.Key,
-                    Name = px.ElementAt(0)[2],
-                    Description = px.ElementAt(0)[2],
-                    ParentAsns = px.Select(array => new AsnModel {
-                        ASN = int.Parse(array[0]),
-                        Name = array[2],
-                        Description = array[2],
+                    Name = px.ElementAt(0).Name,
+                    Description = px.ElementAt(0).Description,
+                    ParentAsns = px.Select(x => new AsnModel {
+                        ASN = int.Parse(x.AsNumberStr),
+                        Name = x.Name,
+                        Description = x.Description,
                         CountryCode = null
-                    })
-                });
+                    })});
 
-            // Allocation prefix is always the first on the list, which is the major prefix
             ipDetails.RIRAllocationPrefix = ipDetails.RelatedPrefixes.ElementAt(0).Prefix;
             ipDetails.CountryCode = ExtractCountryCodeFromDivWhois(ExtractDivWhoisFrom(driver.PageSource));
             
@@ -376,16 +347,14 @@ namespace BGPViewerCore.Service
             var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/net/{prefix}/{cidr}");
             
             var asnDetailsExtractedFromNetinfoDiv = ExtractPrefixAndAsnInfoFromNetInfoDivTable(driver)
-                .GroupBy(detailsArray => detailsArray[0]) // Group to remove duplicated ASN entries
+                .GroupBy(data => data.AsNumberStr)
                 .Select(grouped => new AsnModel {
-                    ASN = int.Parse(grouped.ElementAt(0)[0]),
-                    Name = grouped.ElementAt(0)[2],
-                    Description = grouped.ElementAt(0)[2],
+                    ASN = int.Parse(grouped.ElementAt(0).AsNumberStr),
+                    Name = grouped.ElementAt(0).Name,
+                    Description = grouped.ElementAt(0).Description,
                     CountryCode = null
                 }).ToArray();
 
-            // Set prefix owner country code, that is,
-            // first parent ASN
             var ownerPrefix = asnDetailsExtractedFromNetinfoDiv[0];
             ownerPrefix.CountryCode = ExtractCountryCodeFromDivWhois(ExtractDivWhoisFrom(driver.PageSource));
 
@@ -427,16 +396,16 @@ namespace BGPViewerCore.Service
                 return new SearchModel
                 {
                     RelatedAsns = data.Select(x => new AsnWithContactsModel {
-                        ASN = int.Parse(x.ElementAt(0)),
-                        Name = x.ElementAt(2),
-                        Description = x.ElementAt(2),
+                        ASN = int.Parse(x.AsNumberStr),
+                        Name = x.Name,
+                        Description = x.Description,
                         EmailContacts = Enumerable.Empty<string>(),
                         AbuseContacts = Enumerable.Empty<string>()
                     }),
                     IPv4 = data.Select(x => new PrefixModel {
-                        Prefix = x.ElementAt(1),
-                        Name = x.ElementAt(2),
-                        Description = x.ElementAt(2)
+                        Prefix = x.Prefix,
+                        Name = x.Name,
+                        Description = x.Description
                     }),
                     IPv6 = Enumerable.Empty<PrefixModel>()
                 };
@@ -451,17 +420,17 @@ namespace BGPViewerCore.Service
                 return new SearchModel
                 {
                     RelatedAsns = data.Select(x => new AsnWithContactsModel {
-                        ASN = int.Parse(x.ElementAt(0)),
-                        Name = x.ElementAt(2),
-                        Description = x.ElementAt(2),
+                        ASN = int.Parse(x.AsNumberStr),
+                        Name = x.Name,
+                        Description = x.Description,
                         EmailContacts = Enumerable.Empty<string>(),
                         AbuseContacts = Enumerable.Empty<string>()
                     }),
                     IPv4 = Enumerable.Empty<PrefixModel>(),
                     IPv6 = data.Select(x => new PrefixModel {
-                        Prefix = x.ElementAt(1),
-                        Name = x.ElementAt(2),
-                        Description = x.ElementAt(2)                      
+                        Prefix = x.Prefix,
+                        Name = x.Name,
+                        Description = x.Description
                     })
                 };
             }
@@ -472,16 +441,16 @@ namespace BGPViewerCore.Service
                 return new SearchModel
                 {
                     RelatedAsns = data.Select(x => new AsnWithContactsModel {
-                        ASN = int.Parse(x.ElementAt(0)),
-                        Name = x.ElementAt(2),
-                        Description = x.ElementAt(2),
+                        ASN = int.Parse(x.AsNumberStr),
+                        Name = x.Name,
+                        Description = x.Description,
                         EmailContacts = Enumerable.Empty<string>(),
                         AbuseContacts = Enumerable.Empty<string>()
                     }),
                     IPv4 = data.Select(x => new PrefixModel {
-                        Prefix = x.ElementAt(1),
-                        Name = x.ElementAt(2),
-                        Description = x.ElementAt(2)
+                        Prefix = x.Prefix,
+                        Name = x.Name,
+                        Description = x.Description
                     }),
                     IPv6 = Enumerable.Empty<PrefixModel>()
                 };
@@ -493,17 +462,17 @@ namespace BGPViewerCore.Service
                 return new SearchModel
                 {
                     RelatedAsns = data.Select(x => new AsnWithContactsModel {
-                        ASN = int.Parse(x.ElementAt(0)),
-                        Name = x.ElementAt(2),
-                        Description = x.ElementAt(2),
+                        ASN = int.Parse(x.AsNumberStr),
+                        Name = x.Name,
+                        Description = x.Description,
                         EmailContacts = Enumerable.Empty<string>(),
                         AbuseContacts = Enumerable.Empty<string>()
                     }),
                     IPv4 = Enumerable.Empty<PrefixModel>(),
                     IPv6 = data.Select(x => new PrefixModel {
-                        Prefix = x.ElementAt(1),
-                        Name = x.ElementAt(2),
-                        Description = x.ElementAt(2)                      
+                        Prefix = x.Prefix,
+                        Name = x.Name,
+                        Description = x.Description
                     })
                 };
             }
