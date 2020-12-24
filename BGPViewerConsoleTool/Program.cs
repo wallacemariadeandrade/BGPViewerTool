@@ -35,18 +35,19 @@ namespace BGPViewerConsoleTool
                 var serviceBuilder = new ServiceManager(GetIntInput, WriteLine, new DriverBuilder[] { new ChromeDriverBuilder(), new FirefoxDriverBuilder(), new MsEdgeDriverBuilder() });
                 serviceBuilder.AskForApi();
 
-                var manager = new Manager(serviceBuilder.Build());
-                
-                var option = args[0];
-                var optionValue = args[1];
-                var command = isSearching ? "" : args[2];
+                using(var manager = new Manager(serviceBuilder.Build()))
+                {
+                    var option = args[0];
+                    var optionValue = args[1];
+                    var command = isSearching ? "" : args[2];
 
-                WriteLine("Loading data...");
-                Loading(true);
-                var result = manager.Execute(option, optionValue, command);
-                Loading(false);
-                WriteLine();
-                WriteLine(result);
+                    WriteLine("Loading data...");
+                    Loading(true);
+                    var result = manager.Execute(option, optionValue, command);
+                    Loading(false);
+                    WriteLine();
+                    WriteLine(result);
+                }
             }
             catch (System.Exception ex)
             {

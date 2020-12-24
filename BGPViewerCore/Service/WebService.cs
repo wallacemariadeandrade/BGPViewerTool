@@ -6,7 +6,11 @@ namespace BGPViewerCore.Service
     public static class WebService
     {
         public static string GetContentFrom(string url)
-            => new StreamReader(WebRequest.Create(url).GetResponse().GetResponseStream())
-                .ReadToEnd();
+        {
+            using(var stream = new StreamReader(WebRequest.Create(url).GetResponse().GetResponseStream()))
+            {
+                return stream.ReadToEnd();   
+            }
+        }
     }
 }

@@ -4,7 +4,7 @@ using BGPViewerCore.Service;
 
 namespace BGPViewerConsoleTool
 {
-    public class Manager
+    public class Manager : IDisposable
     {
         public const string OPTION_ASN = "-a";
         public const string OPTION_IP = "-i";
@@ -15,8 +15,10 @@ namespace BGPViewerConsoleTool
         private readonly IDictionary<string, Func<string, string>> ipCommands;
         private readonly IDictionary<string, Func<(string, byte), string>> prefixCommands;
         private readonly Func<string, string> searchCommand;
+        private readonly IBGPViewerService service;
         public Manager(IBGPViewerService service)
         {
+            this.service = service;
             asnCommands = BuildAsnCommands(service);
             ipCommands = BuildIpCommands(service);
             prefixCommands = BuildPrefixCommands(service);
@@ -129,5 +131,6 @@ namespace BGPViewerConsoleTool
             }
         };
 
+        public void Dispose() => service.Dispose();
     }
 }

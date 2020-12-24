@@ -40,17 +40,10 @@ namespace BGPViewerConsoleTool
                 if(driverDatabase.ContainsKey(option))
                 {
                     var driver = driverDatabase[option];
-                    if(!CheckIfServiceIsAlreadyRunning(option))
-                    {
-                        messagePrinter.Invoke("Creating the service ...");
-                        var service = new BGPHeService(driver.Build(), TIMEOUT);
-                        messagePrinter.Invoke("Writing service to cache...");
-                        SaveDriverToCache(option);
-                        return service;
-                    }
-
-                    messagePrinter.Invoke("Loading service from cache...");
-                    return new BGPHeService(LoadDriverFromCache(option), TIMEOUT);
+                    messagePrinter.Invoke("Creating the service ...");
+                    var service = new BGPHeService(driver.Build(), TIMEOUT);
+                    messagePrinter.Invoke("Service is ready.");
+                    return service;
                 }
                 else
                     throw new ArgumentException("This option doesn't exist. Try again.", nameof(option));
@@ -75,28 +68,5 @@ namespace BGPViewerConsoleTool
             messagePrinter.Invoke(message.ToString());
             option = optionGetter.Invoke();
         }
-
-        private IWebDriver LoadDriverFromCache(int driverIndex)
-        {   
-            var driver = driverDatabase[driverIndex];
-
-            if(File.Exists(GetCacheFileName(driverIndex)))
-            {
-                var cacheDriverUrl = File.ReadAllText(GetCacheFileName(driverIndex));
-                return new RemoteWebDriver(new Uri(cacheDriverUrl), driver.Options);
-            }
-
-            messagePrinter.Invoke("Cache file not found. Creating a new service...");
-            var service = driver.Build();
-            messagePrinter.Invoke("Writing service to cache...");
-            SaveDriverToCache(driverIndex);
-            return service;
-        }
-
-        private void SaveDriverToCache(int driverIndex) 
-            => File.WriteAllText(GetCacheFileName(driverIndex), driverDatabase[driverIndex].ServiceUrl.ToString());
-        private string GetCacheFileName(int driverIndex) => $"{driverIndex}_{driverDatabase[driverIndex].ExecutableName}";
-        private bool CheckIfServiceIsAlreadyRunning(int driverIndex)
-            => System.Diagnostics.Process.GetProcessesByName(driverDatabase[driverIndex].ExecutableName).Length > 0;
     }
 }
