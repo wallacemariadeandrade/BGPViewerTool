@@ -7,7 +7,7 @@ There are a few ways to use this repo content, so scroll down and have fun! :smi
 :construction: It's under construction :construction:
 
 ## .NET Developers
-If you're a .NET developer you can use the core library on your application. Download [BGPViewerCore](https://github.com/wallacemariadeandrade/BGPViewerTool/tree/development/BGPViewerCore), add a reference to it on your project and go code! :sunglasses:
+If you're a .NET developer you can use the core library on your application. Download [BGPViewerCore](https://github.com/wallacemariadeandrade/BGPViewerTool/tree/master/BGPViewerCore), add a reference to it on your project and go code! :sunglasses:
 
 
 ## Windows, Mac or Linux User (.NET Core Solution)
