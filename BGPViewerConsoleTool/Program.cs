@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using BGPViewerCore.Service;
+using System.Threading;
 using static System.Console;
 
 namespace BGPViewerConsoleTool
@@ -10,6 +8,8 @@ namespace BGPViewerConsoleTool
     {
         private const string OPTION_HELP = "-h";
         private static bool isSearching;
+        private static bool isLoading = false;
+        private static Thread loader;
 
         static void Main(string[] args)
         {
@@ -30,16 +30,23 @@ namespace BGPViewerConsoleTool
                 return;
             }
 
-            var service = new BGPViewerService(new BGPViewerWebApi());
-            var manager = new Manager(service);
-            
-            var option = args[0];
-            var optionValue = args[1];
-            var command = isSearching ? "" : args[2];
-
             try
             {
-                WriteLine(manager.Execute(option, optionValue, command));
+                var serviceBuilder = new ServiceManager(GetIntInput, WriteLine, new DriverBuilder[] { new ChromeDriverBuilder(), new FirefoxDriverBuilder(), new MsEdgeDriverBuilder() });
+                serviceBuilder.AskForApi();
+
+                var manager = new Manager(serviceBuilder.Build());
+                
+                var option = args[0];
+                var optionValue = args[1];
+                var command = isSearching ? "" : args[2];
+
+                WriteLine("Loading data...");
+                Loading(true);
+                var result = manager.Execute(option, optionValue, command);
+                Loading(false);
+                WriteLine();
+                WriteLine(result);
             }
             catch (System.Exception ex)
             {
@@ -48,5 +55,36 @@ namespace BGPViewerConsoleTool
         }
 
         private static void PrintHelpMessage(string message) => WriteLine($"\n *** {message} *** \n");
+        private static int GetIntInput()
+        {
+            if(int.TryParse(Console.ReadLine(), out int option))
+                return option;
+            throw new ArgumentException("Option must be a number. Try again.", nameof(option));
+        }
+        private static void Loading(bool loading)
+        {
+            if(loading)
+            {
+                isLoading = true;
+
+                loader = new Thread(() => {
+                    while(isLoading)
+                    {
+                        Write("#");
+                        Thread.Sleep(500);
+                    }
+                })
+                {
+                    IsBackground = true,
+                    Name = "BGPViewerConsoleTool loader thread"
+                };
+             
+                loader.Start();
+            }
+            else
+            {
+                isLoading = false;
+            }
+        }
     }
 }
