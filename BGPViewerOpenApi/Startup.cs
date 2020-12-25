@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BGPViewerOpenApi.Model;
+using BGPViewerOpenApi.Service;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -28,6 +30,9 @@ namespace BGPViewerOpenApi
         {
 
             services.AddControllers();
+            services.AddScoped<Provider>();
+            services.AddScoped<ApiBase, BGPViewApi>();
+            services.AddScoped<ApiBase, BGPHeApi>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "BGPViewerOpenApi", Version = "v1" });
