@@ -7,3 +7,5 @@ BGPViewerCore/bin/
 BGPViewerCore/obj/
 BGPViewerCore.UnitTests/obj/
 BGPViewerCore.UnitTests/bin/
+BGPViewerOpenApi/obj/
+BGPViewerOpenApi/bin/
