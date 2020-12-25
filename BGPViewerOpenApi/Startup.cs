@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BGPViewerCore.Service;
 using BGPViewerOpenApi.Model;
 using BGPViewerOpenApi.Service;
 using Microsoft.AspNetCore.Builder;
@@ -28,11 +29,14 @@ namespace BGPViewerOpenApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
             services.AddControllers();
-            services.AddScoped<Provider>();
+            
             services.AddScoped<ApiBase, BGPViewApi>();
-            services.AddScoped<ApiBase, BGPHeApi>();
+            services.AddScoped<BGPViewerService>();
+            services.AddScoped<IBGPViewerApi, BGPViewerWebApi>();
+
+            services.AddScoped<Provider>();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "BGPViewerOpenApi", Version = "v1" });
