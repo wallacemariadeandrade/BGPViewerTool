@@ -6,11 +6,11 @@ namespace BGPViewerOpenApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AsnController : ControllerBase
+    public class AsController : ControllerBase
     {
         private readonly Provider provider;
 
-        public AsnController(Provider provider)
+        public AsController(Provider provider)
         {
             this.provider = provider;
         }
