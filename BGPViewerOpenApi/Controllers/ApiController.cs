@@ -6,19 +6,19 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BGPViewerOpenApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api")]
     [ApiController]
-    public class ServiceController : ControllerBase
+    public class ApiController : ControllerBase
     {
-        private readonly Provider provider;
+        private readonly ApiProvider provider;
 
-        public ServiceController(Provider provider)
+        public ApiController(ApiProvider provider)
         {
             this.provider = provider;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetServices()
+        public async Task<IActionResult> GetApis()
         {
             var apis = await provider.ListAvailableAsync();
 

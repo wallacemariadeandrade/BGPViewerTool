@@ -8,9 +8,9 @@ namespace BGPViewerOpenApi.Controllers
     [ApiController]
     public class AsController : ControllerBase
     {
-        private readonly Provider provider;
+        private readonly AsProvider provider;
 
-        public AsController(Provider provider)
+        public AsController(AsProvider provider)
         {
             this.provider = provider;
         }

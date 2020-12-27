@@ -30,12 +30,15 @@ namespace BGPViewerOpenApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            
+
+            services.AddScoped<ApiProvider>();
+            services.AddScoped<AsProvider>();
+
             services.AddScoped<ApiBase, BGPViewApi>();
             services.AddScoped<BGPViewerService>();
             services.AddScoped<IBGPViewerApi, BGPViewerWebApi>();
 
-            services.AddScoped<Provider>();
+            services.AddScoped<AsProvider>();
 
             services.AddSwaggerGen(c =>
             {
