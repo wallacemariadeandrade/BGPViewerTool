@@ -26,46 +26,46 @@ namespace BGPViewerOpenApi.Service
             return Task.FromResult(availableApis);
         }
 
-        internal Task<AsnDetailsModel> GetDetailsAsync(int apiId, int asNumber)
+        internal async Task<AsnDetailsModel> GetDetailsAsync(int apiId, int asNumber)
         {
             var api = GetApiById(apiId);
 
-            return Task.FromResult(api.GetAsnDetails(asNumber));
+            return await Task.FromResult(api.GetAsnDetails(asNumber));
         }
 
-        internal Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetPeersAsync(int apiId, int asNumber)
+        internal async Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetPeersAsync(int apiId, int asNumber)
         {
             var api = GetApiById(apiId);
 
-            return Task.FromResult(api.GetAsnPeers(asNumber));
+            return await Task.FromResult(api.GetAsnPeers(asNumber));
         }
 
-        internal Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetUpstreamsAsync(int apiId, int asNumber)
+        internal async Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetUpstreamsAsync(int apiId, int asNumber)
         {
             var api = GetApiById(apiId);
 
-            return Task.FromResult(api.GetAsnUpstreams(asNumber));
+            return await Task.FromResult(api.GetAsnUpstreams(asNumber));
         }
 
-        internal  Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetDownstreamsAsync(int apiId, int asNumber)
+        internal async Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetDownstreamsAsync(int apiId, int asNumber)
         {
             var api = GetApiById(apiId);
 
-            return Task.FromResult(api.GetAsnDownstreams(asNumber));
+            return await Task.FromResult(api.GetAsnDownstreams(asNumber));
         }
 
-        internal Task<IEnumerable<IxModel>> GetIxsAsync(int apiId, int asNumber)
+        internal async Task<IEnumerable<IxModel>> GetIxsAsync(int apiId, int asNumber)
         {
             var api = GetApiById(apiId);
 
-            return Task.FromResult(api.GetAsnIxs(asNumber));
+            return await Task.FromResult(api.GetAsnIxs(asNumber));
         }
 
-        internal Task<AsnPrefixesModel> GetPrefixesAsync(int apiId, int asNumber)
+        internal async Task<AsnPrefixesModel> GetPrefixesAsync(int apiId, int asNumber)
         {
             var api = GetApiById(apiId);
 
-            return Task.FromResult(api.GetAsnPrefixes(asNumber));
+            return await Task.FromResult(api.GetAsnPrefixes(asNumber));
         }
 
         private IBGPViewerService GetApiById(int apiId)
