@@ -33,6 +33,13 @@ namespace BGPViewerOpenApi.Service
             return Task.FromResult(api.GetAsnDetails(asNumber));
         }
 
+        internal Task<AsnPrefixesModel> GetPrefixesAsync(int apiId, int asNumber)
+        {
+            var api = GetApiById(apiId);
+
+            return Task.FromResult(api.GetAsnPrefixes(asNumber));
+        }
+
         private IBGPViewerService GetApiById(int apiId)
         {
             var selectedApi = availableApis.FirstOrDefault(x => x.Id == apiId);
