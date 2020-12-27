@@ -19,11 +19,11 @@ namespace BGPViewerOpenApi.Service
             this.serviceProvider = serviceProvider;
         }
 
-        internal Task<IEnumerable<ApiBase>> ListAvailableAsync()
+        internal async Task<IEnumerable<ApiBase>> ListAvailableAsync()
         {
             if(ContainsDuplicatedId()) throw new InvalidOperationException("There are one or more APIs with same ID.");
 
-            return Task.FromResult(availableApis);
+            return await Task.FromResult(availableApis);
         }
 
         internal async Task<AsnDetailsModel> GetDetailsAsync(int apiId, int asNumber)
@@ -33,25 +33,40 @@ namespace BGPViewerOpenApi.Service
             return await Task.FromResult(api.GetAsnDetails(asNumber));
         }
 
-        internal async Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetPeersAsync(int apiId, int asNumber)
+        internal async Task<Peers> GetPeersAsync(int apiId, int asNumber)
         {
             var api = GetApiById(apiId);
 
-            return await Task.FromResult(api.GetAsnPeers(asNumber));
+            var peersTuple = await Task.FromResult(api.GetAsnPeers(asNumber));
+
+            return new Peers {
+                IPv4 = peersTuple.Item1,
+                IPv6 = peersTuple.Item2
+            };
         }
 
-        internal async Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetUpstreamsAsync(int apiId, int asNumber)
+        internal async Task<Peers> GetUpstreamsAsync(int apiId, int asNumber)
         {
             var api = GetApiById(apiId);
 
-            return await Task.FromResult(api.GetAsnUpstreams(asNumber));
+            var upstreamsTuple = await Task.FromResult(api.GetAsnUpstreams(asNumber));
+
+            return new Peers {
+                IPv4 = upstreamsTuple.Item1,
+                IPv6 = upstreamsTuple.Item2
+            };
         }
 
-        internal async Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetDownstreamsAsync(int apiId, int asNumber)
+        internal async Task<Peers> GetDownstreamsAsync(int apiId, int asNumber)
         {
             var api = GetApiById(apiId);
 
-            return await Task.FromResult(api.GetAsnDownstreams(asNumber));
+            var downstreamsTuple = await Task.FromResult(api.GetAsnDownstreams(asNumber));
+
+            return new Peers {
+                IPv4 = downstreamsTuple.Item1,
+                IPv6 = downstreamsTuple.Item2,
+            };
         }
 
         internal async Task<IEnumerable<IxModel>> GetIxsAsync(int apiId, int asNumber)
