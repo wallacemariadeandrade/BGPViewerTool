@@ -17,16 +17,10 @@ namespace BGPViewerOpenApi.Controllers
 
         [HttpGet("{asNumber}/details/{apiId}")]
         public async Task<IActionResult> GetDetails(int asNumber, int apiId)
-        {
-            var details = await provider.GetDetailsAsync(apiId, asNumber);
-            return Ok(details);   
-        }
+            => Ok(await provider.GetDetailsAsync(apiId, asNumber));
 
         [HttpGet("{asNumber}/prefixes/{apiId}")]
         public async Task<IActionResult> GetPrefixes(int asNumber, int apiId)
-        {
-            var prefixes = await provider.GetPrefixesAsync(apiId, asNumber);
-            return Ok(prefixes);   
-        }
+            => Ok(await provider.GetPrefixesAsync(apiId, asNumber));
     }
 }
