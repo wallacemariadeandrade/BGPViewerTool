@@ -35,6 +35,7 @@ namespace BGPViewerOpenApi
             services.AddScoped<AsProvider>();
             services.AddScoped<PrefixProvider>();
             services.AddScoped<IPAddressProvider>();
+            services.AddScoped<SearchProvider>();
 
             services.AddScoped<ApiBase, BGPViewApi>();
             services.AddScoped<BGPViewerService>();
