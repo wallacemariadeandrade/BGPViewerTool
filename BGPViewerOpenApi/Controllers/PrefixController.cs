@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace BGPViewerOpenApi.Controllers
 {
-    [Route("api")]
+    [Route("api/prefix")]
     [ApiController]
     public class PrefixController : Controller
     {

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BGPViewerOpenApi.Controllers
 {
-    [Route("api")]
+    [Route("api/as")]
     [ApiController]
     public class AsController : ControllerBase
     {
