@@ -1,11 +1,13 @@
 using System.Threading.Tasks;
 using BGPViewerOpenApi.Service;
+using BGPViewerOpenApi.Validators;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BGPViewerOpenApi.Controllers
 {
     [Route("api/search")]
     [ApiController]
+    [ValidateSelectedApiExistence]
     public class SearchByController : Controller
     {
         private readonly SearchProvider provider;

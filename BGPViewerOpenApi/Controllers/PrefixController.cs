@@ -5,11 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 using BGPViewerCore.Service;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
+using BGPViewerOpenApi.Validators;
 
 namespace BGPViewerOpenApi.Controllers
 {
     [Route("api/prefix")]
     [ApiController]
+    [ValidateSelectedApiExistence]
     public class PrefixController : Controller
     {
         private readonly PrefixProvider provider;
@@ -20,6 +22,7 @@ namespace BGPViewerOpenApi.Controllers
         }
 
         [HttpGet("{prefix}/{cidr}/details/{apiId}")]
+        [ValidatePrefix]
         public async Task<IActionResult> GetDetails(string prefix, byte cidr, int apiId)
         {
             return Ok(await provider.GetDetailsAsync(apiId, prefix, cidr));

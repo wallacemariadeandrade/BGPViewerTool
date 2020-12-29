@@ -1,11 +1,13 @@
 using System.Threading.Tasks;
 using BGPViewerOpenApi.Service;
+using BGPViewerOpenApi.Validators;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BGPViewerOpenApi.Controllers
 {
     [Route("api/as")]
     [ApiController]
+    [ValidateSelectedApiExistence]
     public class AsController : ControllerBase
     {
         private readonly AsProvider provider;
