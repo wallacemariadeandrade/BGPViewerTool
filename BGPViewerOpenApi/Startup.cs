@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -48,7 +49,25 @@ namespace BGPViewerOpenApi
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "BGPViewerOpenApi", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo 
+                { 
+                    Version = "v1",
+                    Title = "BGPViewerOpenApi",
+                    Description = "An API to provide an extensible and accessible information endpoint about Autonomous Systems (AS), prefixes and IP addresses.",
+                    Contact = new OpenApiContact 
+                    {
+                        Name = "Wallace Andrade",
+                        Email = "instrutorwallaceandrade@gmail.com",
+                        Url = new Uri("https://www.linkedin.com/in/wallace-andrade-62414b128/"),
+                    },
+                    License = new OpenApiLicense 
+                    {
+                        Name = "MIT Licence",
+                        Url = new Uri("https://github.com/wallacemariadeandrade/BGPViewerTool/tree/create-web-api/LICENCE")
+                    }
+                }); 
+
+                c.EnableAnnotations();
             });
         }
 

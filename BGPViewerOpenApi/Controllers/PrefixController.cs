@@ -6,9 +6,12 @@ using BGPViewerCore.Service;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using BGPViewerOpenApi.Validators;
+using Swashbuckle.AspNetCore.Annotations;
+using BGPViewerCore.Model;
 
 namespace BGPViewerOpenApi.Controllers
 {
+    [Produces("application/json")]
     [Route("api/prefix")]
     [ApiController]
     [ValidateSelectedApiExistence]
@@ -23,6 +26,8 @@ namespace BGPViewerOpenApi.Controllers
 
         [HttpGet("{prefix}/{cidr}/details/{apiId}")]
         [ValidatePrefix]
+        [SwaggerOperation(Summary = "Retrieves details from provided prefix.", Description = "Supports IPv4 and IPv6 prefixes.", OperationId = "PrefixDetails", Tags = new [] {"Prefix (v4 or v6)"})]
+        [SwaggerResponse(200, Type = typeof(PrefixDetailModel))]
         public async Task<IActionResult> GetDetails(string prefix, byte cidr, int apiId)
         {
             return Ok(await provider.GetDetailsAsync(apiId, prefix, cidr));
