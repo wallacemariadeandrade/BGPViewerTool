@@ -15,6 +15,7 @@ namespace BGPViewerOpenApi.Controllers
     [Route("api/prefix")]
     [ApiController]
     [ValidateSelectedApiExistence]
+    [SwaggerResponse(404, "When there is no API with the given ID.", Type = typeof(ValidationProblemDetails))]
     public class PrefixController : Controller
     {
         private readonly PrefixProvider provider;

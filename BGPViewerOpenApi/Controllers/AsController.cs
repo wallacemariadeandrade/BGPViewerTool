@@ -13,6 +13,7 @@ namespace BGPViewerOpenApi.Controllers
     [Route("api/as")]
     [ApiController]
     [ValidateSelectedApiExistence]
+    [SwaggerResponse(404, "When there is no API with the given ID.", Type = typeof(ValidationProblemDetails))]
     public class AsController : ControllerBase
     {
         private readonly AsProvider provider;
