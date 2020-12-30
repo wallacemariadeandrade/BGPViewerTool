@@ -85,8 +85,9 @@ namespace BGPViewerCore.UnitTests.BGPHeServiceTests
 
             private static string GetPageUrlFor(string pageName)
             {
-                var testsProjectDirectory = Directory.GetCurrentDirectory();
-                return Path.Combine(testsProjectDirectory, "BGPHeServiceMockTestData", pageName);
+                // var testsProjectDirectory = Directory.GetCurrentDirectory();
+                // return Path.Combine(testsProjectDirectory, "BGPHeServiceMockTestData", pageName);
+                return pageName;
             }
 
             public void GoToUrl(string url)

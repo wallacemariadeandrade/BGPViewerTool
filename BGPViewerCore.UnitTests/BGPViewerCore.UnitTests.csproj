@@ -18,9 +18,39 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="BGPHeServiceMockTestData\*.*">
+    <Content Include="2a02..26f0..128....48_MockData.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>  
+    <Content Include="8.8.8.0-24_MockData.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>  
+    <Content Include="8.8.8.8_MockData.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content> 
+    <Content Include="196.96.0.0-12_MockData.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content> 
+    <Content Include="196.100.100.0_MockData.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content> 
+    <Content Include="2001..4860....32_ MockData.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content> 
+    <Content Include="AS15169MockData.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content> 
+    <Content Include="AS53181MockData.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content> 
+    <Content Include="AS268003MockData.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content> 
+    <Content Include="ASNotFoundMockData.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content> 
+    <Content Include="searchby-ascenty_MockData.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content> 
   </ItemGroup>
 
 </Project>
