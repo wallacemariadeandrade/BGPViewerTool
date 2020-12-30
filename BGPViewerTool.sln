@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BGPViewerConsoleTool", "BGP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BGPViewerCore.UnitTests", "BGPViewerCore.UnitTests\BGPViewerCore.UnitTests.csproj", "{0C863926-C4BA-421F-8FB5-765948EA7C41}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BGPViewerOpenApi", "BGPViewerOpenApi\BGPViewerOpenApi.csproj", "{58870115-087C-4677-9A19-7262AEEFCD9A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,5 +60,17 @@ Global
 		{0C863926-C4BA-421F-8FB5-765948EA7C41}.Release|x64.Build.0 = Release|Any CPU
 		{0C863926-C4BA-421F-8FB5-765948EA7C41}.Release|x86.ActiveCfg = Release|Any CPU
 		{0C863926-C4BA-421F-8FB5-765948EA7C41}.Release|x86.Build.0 = Release|Any CPU
+		{58870115-087C-4677-9A19-7262AEEFCD9A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58870115-087C-4677-9A19-7262AEEFCD9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58870115-087C-4677-9A19-7262AEEFCD9A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{58870115-087C-4677-9A19-7262AEEFCD9A}.Debug|x64.Build.0 = Debug|Any CPU
+		{58870115-087C-4677-9A19-7262AEEFCD9A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{58870115-087C-4677-9A19-7262AEEFCD9A}.Debug|x86.Build.0 = Debug|Any CPU
+		{58870115-087C-4677-9A19-7262AEEFCD9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58870115-087C-4677-9A19-7262AEEFCD9A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58870115-087C-4677-9A19-7262AEEFCD9A}.Release|x64.ActiveCfg = Release|Any CPU
+		{58870115-087C-4677-9A19-7262AEEFCD9A}.Release|x64.Build.0 = Release|Any CPU
+		{58870115-087C-4677-9A19-7262AEEFCD9A}.Release|x86.ActiveCfg = Release|Any CPU
+		{58870115-087C-4677-9A19-7262AEEFCD9A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
