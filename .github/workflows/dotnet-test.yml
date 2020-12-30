@@ -17,7 +17,7 @@ jobs:
 
     steps:
     - name: Install Google Chrome # Using shell script to install Google Chrome
-      working-directory: /BGPViewerTool
+      working-directory: ./BGPViewerTool
       run: |
        chmod +x ./scripts/InstallChrome.sh
         ./scripts/InstallChrome.sh
