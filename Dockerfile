@@ -12,15 +12,14 @@ COPY . .
 # publish
 FROM build AS publish
 WORKDIR /BGPViewerTool/BGPViewerOpenApi
-#RUN dotnet publish -c Debug -o /BGPViewerTool/publish
 RUN dotnet build -o /BGPViewerTool/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS runtime
 WORKDIR /BGPViewerTool
 COPY --from=publish /BGPViewerTool/publish .
-ENTRYPOINT ["dotnet", "BGPViewerOpenApi.dll"]
+# ENTRYPOINT ["dotnet", "BGPViewerOpenApi.dll"]
 # heroku uses the following
-# CMD ASPNETCORE_URLS=http://*:$PORT dotnet BGPViewerOpenApi.dll
+CMD ASPNETCORE_URLS=http://*:$PORT dotnet BGPViewerOpenApi.dll
 
 RUN apt-get update && \   
     apt-get install -y gnupg  libgconf-2-4 wget && \
