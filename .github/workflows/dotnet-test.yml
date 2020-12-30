@@ -16,15 +16,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Install Google Chrome # Using shell script to install Google Chrome
-      run: |
-       chmod +x .BGPViewerTool/scripts/InstallChrome.sh
-        .BGPViewerTool/scripts/InstallChrome.sh
     - uses: actions/checkout@v2
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.301
+    - name: Install Google Chrome # Using shell script to install Google Chrome
+      run: |
+       chmod +x ./scripts/InstallChrome.sh
+        ./scripts/InstallChrome.sh
     - name: Restore dependencies
       run: dotnet restore
     - name: Test
