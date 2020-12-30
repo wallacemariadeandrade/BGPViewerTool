@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using System;
-using System.ComponentModel.DataAnnotations;
 using static BGPViewerCore.Service.RegexPatterns;
 using static System.Text.RegularExpressions.Regex;
 
