@@ -18,11 +18,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 
 namespace BGPViewerOpenApi
 {
     public class Startup
     {
+        private const int TIMEOUT = 7;
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -35,6 +39,7 @@ namespace BGPViewerOpenApi
         {
             services.AddControllers();
 
+            services.AddScoped<AsProvider>();
             services.AddScoped<ApiProvider>();
             services.AddScoped<AsProvider>();
             services.AddScoped<PrefixProvider>();
@@ -45,7 +50,32 @@ namespace BGPViewerOpenApi
             services.AddScoped<BGPViewerService>();
             services.AddScoped<IBGPViewerApi, BGPViewerWebApi>();
 
-            services.AddScoped<AsProvider>();
+            services.AddScoped<ApiBase, BGPHeApi>();
+            services.AddScoped<BGPHeService>((s) => new BGPHeService(s.GetService<IWebDriver>(), TIMEOUT));
+            services.AddScoped<ChromeDriverService>((s) => {
+                var service = ChromeDriverService.CreateDefaultService(
+                    Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location));
+                service.EnableVerboseLogging = false;
+                service.SuppressInitialDiagnosticInformation = true;
+                service.HideCommandPromptWindow = true;
+                return service;
+            });
+            services.AddScoped<ChromeOptions>((s) => {
+                var options = new ChromeOptions();
+                options.PageLoadStrategy = PageLoadStrategy.Normal;
+                options.AddArguments("headless");
+                options.AddArgument("no-sandbox");
+                options.AddArgument("disable-gpu");
+                options.AddArgument("disable-crash-reporter");
+                options.AddArgument("disable-extensions");
+                options.AddArgument("disable-in-process-stack-traces");
+                options.AddArgument("disable-logging");
+                options.AddArgument("disable-dev-shm-usage");
+                options.AddArgument("log-level=3");
+                options.AddArgument("output=/dev/null");
+                return options;
+            });
+            services.AddScoped<IWebDriver, ChromeDriver>((s) => new ChromeDriver(s.GetService<ChromeDriverService>(), s.GetService<ChromeOptions>()));
 
             services.AddSwaggerGen(c =>
             {
