@@ -20,7 +20,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.301
+        dotnet-version: 2.1.505
     - name: Install Google Chrome # Using shell script to install Google Chrome
       run: |
        chmod +x ./scripts/InstallChrome.sh
