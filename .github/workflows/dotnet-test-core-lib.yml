@@ -1,0 +1,27 @@
+name: .NET
+
+on:
+  push:
+    paths:
+      - BGPViewerCore/*
+
+jobs:
+  build-and-test:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 2.1.505
+    - name: Install Google Chrome for Selenium tests
+      run: .\scripts\InstallChrome.ps1
+      shell: powershell 
+    - name: Restore dependencies
+      working-directory: ./BGPViewerCore.UnitTests
+      run: dotnet restore
+    - name: Test
+      working-directory: ./BGPViewerCore.UnitTests
+      run: dotnet test --verbosity normal
