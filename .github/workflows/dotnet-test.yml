@@ -25,8 +25,8 @@ jobs:
       run: .\scripts\InstallChrome.ps1
       shell: powershell 
     - name: Restore dependencies
-      working-directory: \BGPViewerCore.UnitTests
+      working-directory: /BGPViewerCore.UnitTests
       run: dotnet restore
     - name: Test
-      working-directory: \BGPViewerCore.UnitTests
+      working-directory: /BGPViewerCore.UnitTests
       run: dotnet test --verbosity normal
