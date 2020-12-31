@@ -17,4 +17,10 @@
     <ProjectReference Include="..\BGPViewerCore\BGPViewerCore.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="BGPHeServiceMockTestData\*.*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>  
+  </ItemGroup>
+
 </Project>

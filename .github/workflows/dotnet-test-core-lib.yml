@@ -2,18 +2,13 @@ name: .NET
 
 on:
   push:
-    branches: [ master ]
-    paths: 
-      - BGPViewerCore/*
-  pull_request:
-    branches: [ master ]
-    paths: 
+    paths:
       - BGPViewerCore/*
 
 jobs:
-  build:
+  build-and-test:
 
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -21,11 +16,12 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 2.1.505
-    - name: Install Google Chrome # Using shell script to install Google Chrome
-      run: |
-       chmod +x ./scripts/InstallChrome.sh
-        ./scripts/InstallChrome.sh
+    - name: Install Google Chrome for Selenium tests
+      run: .\scripts\InstallChrome.ps1
+      shell: powershell 
     - name: Restore dependencies
+      working-directory: ./BGPViewerCore.UnitTests
       run: dotnet restore
     - name: Test
+      working-directory: ./BGPViewerCore.UnitTests
       run: dotnet test --verbosity normal
