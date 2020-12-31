@@ -95,8 +95,6 @@ namespace BGPViewerCore.UnitTests.BGPHeServiceTests
                 
                 if(mocksUrls.ContainsKey(url))
                 {
-                    System.Diagnostics.Debug.Print(mocksUrls[url]);
-                    Console.WriteLine(mocksUrls[url]);
                     mockDriver.Navigate().GoToUrl(mocksUrls[url]);
                     mockDriver.Url = mocksUrls[url];
                 }
