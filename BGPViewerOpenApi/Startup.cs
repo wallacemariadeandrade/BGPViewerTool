@@ -42,30 +42,31 @@ namespace BGPViewerOpenApi
 
             services.AddScoped<ApiBase, BGPHeApi>();
             services.AddScoped<BGPHeService>((s) => new BGPHeService(s.GetService<IWebDriver>(), TIMEOUT));
-            services.AddScoped<ChromeDriverService>((s) => {
-                var service = ChromeDriverService.CreateDefaultService(
-                    Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location));
-                service.EnableVerboseLogging = false;
-                service.SuppressInitialDiagnosticInformation = true;
-                service.HideCommandPromptWindow = true;
-                return service;
-            });
             services.AddScoped<ChromeOptions>((s) => {
-                var options = new ChromeOptions();
-                options.PageLoadStrategy = PageLoadStrategy.Normal;
-                options.AddArguments("headless");
+                var options = new ChromeOptions
+                {
+                    PageLoadStrategy = PageLoadStrategy.Eager,
+                    LeaveBrowserRunning = false,
+                    AcceptInsecureCertificates = true
+                };
+                options.AddArgument("headless");
+                options.AddArgument("browser-test");
+                options.AddArgument("bwsi");
                 options.AddArgument("no-sandbox");
                 options.AddArgument("disable-gpu");
                 options.AddArgument("disable-crash-reporter");
                 options.AddArgument("disable-extensions");
+                options.AddArgument("disable-notifications");
                 options.AddArgument("disable-in-process-stack-traces");
-                options.AddArgument("disable-logging");
                 options.AddArgument("disable-dev-shm-usage");
-                options.AddArgument("log-level=3");
-                options.AddArgument("output=/dev/null");
+                options.AddArgument("disable-default-apps");
+                options.AddArgument("log-level=1");
+                options.AddArgument("verbose");
+                options.SetLoggingPreference(LogType.Driver, LogLevel.All);
+                options.SetLoggingPreference(LogType.Server, LogLevel.All);
                 return options;
             });
-            services.AddScoped<IWebDriver, ChromeDriver>((s) => new ChromeDriver(s.GetService<ChromeDriverService>(), s.GetService<ChromeOptions>()));
+            services.AddScoped<IWebDriver, ChromeDriver>((s) => new ChromeDriver(s.GetService<ChromeOptions>()));
 
             services.AddSwaggerGen(c =>
             {
