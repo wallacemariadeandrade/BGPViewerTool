@@ -2,7 +2,12 @@ name: .NET
 
 on:
   push:
+    branches: 
+      - master
     paths:
+      - BGPViewerCore/*
+  pull_request:
+    paths: 
       - BGPViewerCore/*
 
 jobs:
