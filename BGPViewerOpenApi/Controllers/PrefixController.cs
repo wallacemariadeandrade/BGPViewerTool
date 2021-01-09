@@ -8,7 +8,7 @@ using BGPViewerCore.Model;
 namespace BGPViewerOpenApi.Controllers
 {
     [Produces("application/json")]
-    [Route("api/prefix")]
+    [Route("api/{apiId}/prefix")]
     [ApiController]
     [ValidateSelectedApiExistence]
     public class PrefixController : Controller
@@ -20,7 +20,7 @@ namespace BGPViewerOpenApi.Controllers
             this.provider = provider;
         }
 
-        [HttpGet("{prefix}/{cidr}/details/{apiId}")]
+        [HttpGet("{prefix}/{cidr}/details")]
         [ValidatePrefix]
         [SwaggerOperation(Summary = "Retrieves details from provided prefix.", Description = "Prefixes examples: 2001:db8::, 8.8.8.0, 2001:db8:3c4d:15::, 2002:: and so on. Note that cidr comes separated in other field.", OperationId = "PrefixDetails", Tags = new [] {"Prefix (v4 or v6)"})]
         [SwaggerResponse(200, Type = typeof(PrefixDetailModel))]

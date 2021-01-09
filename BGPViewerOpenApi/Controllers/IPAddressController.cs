@@ -8,7 +8,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace BGPViewerOpenApi.Controllers
 {
     [Produces("application/json")]
-    [Route("api/address")]
+    [Route("api/{apiId}/address")]
     [ApiController]
     [ValidateSelectedApiExistence]
     public class IPAddressController : Controller
@@ -20,7 +20,7 @@ namespace BGPViewerOpenApi.Controllers
             this.provider = provider;
         }
 
-        [HttpGet("{ipAddress}/details/{apiId}")]
+        [HttpGet("{ipAddress}/details")]
         [SwaggerOperation(Summary = "Retrieves details from provided IP address.", Description = "Addresses examples: 8.8.8.8, 1.1.1.1, 684d:1111:222:3333:4444:5555:6:77, fe80::0202:b3ff:fe1e:8329, 2001:db8:0::1 and so on." ,OperationId = "IPAddressDetails", Tags = new [] {"IP Address"})]
         [SwaggerResponse(200, Type = typeof(IpDetailModel))]
         [SwaggerResponse(404, "When there is no API with the given ID or when searched IP address doesn't exist on selected API", Type = typeof(ValidationProblemDetails))]
