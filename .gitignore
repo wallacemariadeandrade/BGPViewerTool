@@ -5,6 +5,8 @@ BGPViewerConsoleTool/bin/
 BGPViewerConsoleTool/obj/
 BGPViewerCore/bin/
 BGPViewerCore/obj/
+BGPViewerCore.Models/bin/
+BGPViewerCore.Models/obj/
 BGPViewerCore.UnitTests/obj/
 BGPViewerCore.UnitTests/bin/
 BGPViewerOpenApi/obj/
