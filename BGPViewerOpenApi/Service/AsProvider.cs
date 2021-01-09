@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using BGPViewerCore.Model;
+using BGPViewerCore.Models;
 using BGPViewerOpenApi.Model;
 
 namespace BGPViewerOpenApi.Service

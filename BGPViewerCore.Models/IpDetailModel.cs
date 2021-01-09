@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace BGPViewerCore.Model
+namespace BGPViewerCore.Models
 {
     public class IpDetailModel
     {

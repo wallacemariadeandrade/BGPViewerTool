@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using BGPViewerCore.Model;
+using BGPViewerCore.Models;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System.IO;

@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using BGPViewerCore.Model;
+using BGPViewerCore.Models;
 
 namespace BGPViewerOpenApi.Service
 {
