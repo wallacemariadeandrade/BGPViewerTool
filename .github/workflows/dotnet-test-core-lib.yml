@@ -4,8 +4,7 @@ on:
   pull_request:
     paths: 
       - 'BGPViewerCore.Models/**'
-      - 'BGPViewerCore/**'
-
+        
 jobs:
   build-and-test:
 
