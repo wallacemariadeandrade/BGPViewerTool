@@ -3,8 +3,8 @@ name: Core Library Tests
 on:
   pull_request:
     paths: 
-      - BGPViewerCore/*
-      - BGPViewerCore.Models/*
+      - 'BGPViewerCore.Models/**'
+      - 'BGPViewerCore/**'
 
 jobs:
   build-and-test:
