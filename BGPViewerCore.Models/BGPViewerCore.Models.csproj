@@ -2,6 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>BGPViewerCore.Models</PackageId>
+    <Title>BGPViewerCore.Models</Title>
+    <Description>A library containg only the models used by BGPViewerCore. Use this to avoid rewriting code while consuming BGPViewerOpenAPI.</Description>
+    <PackageTags>BGPViewerCoreModels;BGPViewerCore;BGPViewerTool</PackageTags>
+    <RepositoryUrl>https://github.com/wallacemariadeandrade/BGPViewerTool/tree/master/BGPViewerCore.Models</RepositoryUrl>
+    <Version>1.0.0</Version>
+    <Authors>Wallace Andrade</Authors>
+    <Company>Wallace Andrade</Company>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
-
+ 
 </Project>
