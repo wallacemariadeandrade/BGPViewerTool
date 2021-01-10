@@ -2,6 +2,7 @@
 
 ![Core Library Tests](https://github.com/wallacemariadeandrade/BGPViewerTool/workflows/Core%20Library%20Tests/badge.svg)
 ![Deploy BGPViewerOpenApi to Heroku](https://github.com/wallacemariadeandrade/BGPViewerTool/workflows/Deploy%20BGPViewerOpenApi%20to%20Heroku/badge.svg)
+![license](https://img.shields.io/github/license/wallacemariadeandrade/BGPViewerTool)
 
 # BGPViewerTool
 
