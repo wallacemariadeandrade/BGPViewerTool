@@ -1,12 +1,7 @@
 name: Publish core library models as Nuget package
 
 on:
-  pull_request:
-    types: [closed]
-    branches:
-      - master
-    paths:
-      - BGPViewerCore.Models/**
+  push:
 
 jobs:
   publish-nuget:
