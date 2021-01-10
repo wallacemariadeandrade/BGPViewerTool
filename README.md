@@ -1,5 +1,8 @@
 ![alt text](https://github.com/wallacemariadeandrade/BGPViewerTool/blob/master/bgpviewerlogo_480x270.png)
 
+![Core Library Tests](https://github.com/wallacemariadeandrade/BGPViewerTool/workflows/Core%20Library%20Tests/badge.svg)
+![Deploy BGPViewerOpenApi to Heroku](https://github.com/wallacemariadeandrade/BGPViewerTool/workflows/Deploy%20BGPViewerOpenApi%20to%20Heroku/badge.svg)
+
 # BGPViewerTool
 
 A tool to help network analysts querying information about prefixes and ASN's. Built on netstandard2.0 and based on [BGPView API](https://bgpview.docs.apiary.io/#reference).
