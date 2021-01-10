@@ -1,0 +1,30 @@
+name: Publish core library Nuget package
+
+on:
+  workflow-run:
+    workflows: ["Core Library Tests"]
+    types:
+      - completed
+
+jobs:
+  publish-nuget:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 2.1.505
+    - name: Restore dependencies
+      working-directory: ./BGPViewerCore.Models
+      run: dotnet restore
+    - name: Build
+      working-directory: ./BGPViewerCore.Models
+      run: dotnet build --configuration Release --no-restore
+    - name: Publish to NuGet
+      uses: brandedoutcast/publish-nuget@v2
+      with:
+        PROJECT_FILE_PATH: ./BGPViewerCore.Models/BGPViewerCore.Models.csproj
+        VERSION_REGEX: '^\s*<PackageVersion>(.*)<\/PackageVersion>\s*$'
+        TAG_FORMAT: '*'
+        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
