@@ -1,4 +1,4 @@
-name: Publish core library Nuget package
+name: Publish core library models as Nuget package
 
 on:
   pull_request:
