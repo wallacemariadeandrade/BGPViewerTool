@@ -23,9 +23,9 @@ An REST API built on top of [BGPViewerCore](https://github.com/wallacemariadeand
 More information [here](https://github.com/wallacemariadeandrade/BGPViewerTool/tree/master/BGPViewerOpenApi). Check it out! :wink:
 
 ### .NET Developers
-If you're a .NET developer you can use the core library on your application. Download [BGPViewerCore](https://github.com/wallacemariadeandrade/BGPViewerTool/tree/master/BGPViewerCore), add a reference to it on your project and go code! :sunglasses:
+If you're a .NET developer you can use the core library on your application. See [BGPViewerCore](https://github.com/wallacemariadeandrade/BGPViewerTool/tree/master/BGPViewerCore) repo to get more information. 
 
-Also, if you're consuming the API instead of using core library directly, you can use core library models to avoid rewriting the wheel. It's a separate library, so just download and add it to your project.
+Also, if you're consuming the API instead of using core library directly, you can use core library models to avoid rewriting the wheel. It's a separate library, so just download and add it to your project. It's available [here](https://www.nuget.org/packages/BGPViewerCore.Models/).
 
 ## Windows, Mac or Linux Users (.NET Core Solution)
 You can use the .NET Core solution [BGPViewerConsoleTool](https://github.com/wallacemariadeandrade/BGPViewerTool/tree/master/BGPViewerConsoleTool). It's a command line client built on NET Core, a cross-platform version of .NET for building websites, services, and console apps.
