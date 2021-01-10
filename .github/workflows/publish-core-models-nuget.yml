@@ -1,0 +1,32 @@
+name: Publish core library models as Nuget package
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - master
+    paths:
+      - BGPViewerCore.Models/**
+
+jobs:
+  publish-nuget:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 2.1.505
+    - name: Restore dependencies
+      working-directory: ./BGPViewerCore.Models
+      run: dotnet restore
+    - name: Build
+      working-directory: ./BGPViewerCore.Models
+      run: dotnet build --configuration Release --no-restore
+    - name: Publish to NuGet
+      uses: brandedoutcast/publish-nuget@v2
+      with:
+        PROJECT_FILE_PATH: ./BGPViewerCore.Models/BGPViewerCore.Models.csproj
+        VERSION_REGEX: '^\s*<Version>(.*)<\/Version>\s*$'
+        TAG_FORMAT: '*'
+        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
