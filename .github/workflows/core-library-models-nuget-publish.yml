@@ -1,7 +1,7 @@
 name: Publish core library Nuget package
 
 on:
-  workflow-run:
+  workflow_run:
     workflows: ["Core Library Tests"]
     types:
       - completed
