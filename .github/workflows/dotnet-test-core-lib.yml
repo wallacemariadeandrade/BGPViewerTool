@@ -1,8 +1,11 @@
 name: Core Library Tests
 
 on:
-  pull_request:
+  push:
+    branches-ignore: 
+      - master
     paths: 
+      - BGPViewerCore/**
       - BGPViewerCore.Models/**
         
 jobs:
