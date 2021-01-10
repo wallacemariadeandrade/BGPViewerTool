@@ -1,11 +1,6 @@
-name: .NET
+name: Core Library Tests
 
 on:
-  push:
-    branches: 
-      - master
-    paths:
-      - BGPViewerCore/*
   pull_request:
     paths: 
       - BGPViewerCore/*
