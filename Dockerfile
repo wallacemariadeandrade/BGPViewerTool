@@ -4,6 +4,7 @@ WORKDIR /BGPViewerTool
 COPY *.sln .
 COPY BGPViewerConsoleTool/*.csproj BGPViewerConsoleTool/
 COPY BGPViewerCore/*.csproj BGPViewerCore/
+COPY BGPViewerCore.Models/*.csproj BGPViewerCore.Models/
 COPY BGPViewerCore.UnitTests/*.csproj BGPViewerCore.UnitTests/
 COPY BGPViewerOpenApi/*.csproj BGPViewerOpenApi/
 RUN dotnet restore
