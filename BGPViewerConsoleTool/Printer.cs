@@ -1,5 +1,5 @@
 using System.Text;
-using BGPViewerCore.Model;
+using BGPViewerCore.Models;
 using System.Linq;
 using System.Collections.Generic;
 

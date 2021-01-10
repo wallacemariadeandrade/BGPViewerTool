@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using BGPViewerCore.Model;
+using BGPViewerCore.Models;
 using BGPViewerOpenApi.Service;
 using BGPViewerOpenApi.Validators;
 using Microsoft.AspNetCore.Mvc;

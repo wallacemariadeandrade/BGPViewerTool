@@ -1,10 +1,13 @@
-name: .NET
+name: Core Library Tests
 
 on:
   push:
-    paths:
-      - BGPViewerCore/*
-
+    branches-ignore: 
+      - master
+    paths: 
+      - BGPViewerCore/**
+      - BGPViewerCore.Models/**
+        
 jobs:
   build-and-test:
 

@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using BGPViewerCore.Model;
+using BGPViewerCore.Models;
 
 namespace BGPViewerOpenApi.Model
 {

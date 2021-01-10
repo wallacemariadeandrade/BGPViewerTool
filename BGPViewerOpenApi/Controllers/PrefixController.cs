@@ -3,7 +3,7 @@ using BGPViewerOpenApi.Service;
 using Microsoft.AspNetCore.Mvc;
 using BGPViewerOpenApi.Validators;
 using Swashbuckle.AspNetCore.Annotations;
-using BGPViewerCore.Model;
+using BGPViewerCore.Models;
 
 namespace BGPViewerOpenApi.Controllers
 {

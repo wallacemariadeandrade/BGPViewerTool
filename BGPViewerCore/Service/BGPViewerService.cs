@@ -1,4 +1,4 @@
-using BGPViewerCore.Model;
+using BGPViewerCore.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
