@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace BGPViewerCore.Service
 {
@@ -298,6 +299,51 @@ namespace BGPViewerCore.Service
         public void Dispose()
         {
             _jsonApi = null;
+        }
+
+        public Task<AsnDetailsModel> GetAsnDetailsAsync(int asNumber)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnDownstreamsAsync(int asNumber)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<IxModel>> GetAsnIxsAsync(int asNumber)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnPeersAsync(int asNumber)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<AsnPrefixesModel> GetAsnPrefixesAsync(int asNumber)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnUpstreamsAsync(int asNumber)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IpDetailModel> GetIpDetailsAsync(string ipAddress)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<PrefixDetailModel> GetPrefixDetailsAsync(string prefix, byte cidr)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<SearchModel> SearchByAsync(string queryTerm)
+        {
+            throw new NotImplementedException();
         }
     }
 }
