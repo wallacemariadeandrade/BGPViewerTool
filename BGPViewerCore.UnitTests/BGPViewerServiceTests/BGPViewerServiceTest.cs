@@ -256,5 +256,23 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
             Assert.Empty(result.IPv4);
             Assert.Empty(result.IPv6);
         }
+
+        [Fact]
+        public async void GetAsnDetaisAsync()
+        {
+            // Mocked Data
+            var asnDetailsAsync = await GetService().GetAsnDetailsAsync(6762);
+            
+            Assert.Equal(6762, asnDetailsAsync.ASN);
+            Assert.Equal("TELECOM ITALIA SPARKLE S.p.A.", asnDetailsAsync.Description);
+            Assert.Equal("SEABONE-NET", asnDetailsAsync.Name);
+            Assert.Equal("abuse@seabone.net", asnDetailsAsync.EmailContacts.ElementAt(0));
+            Assert.Equal("peering@seabone.net", asnDetailsAsync.EmailContacts.ElementAt(1));
+            Assert.Equal("tech@seabone.net", asnDetailsAsync.EmailContacts.ElementAt(2));
+            Assert.Equal("francesco.chiappini@telecomitalia.it", asnDetailsAsync.EmailContacts.ElementAt(3));
+            Assert.Equal("abuse@seabone.net", asnDetailsAsync.AbuseContacts.ElementAt(0));
+            Assert.Equal("https://gambadilegno.noc.seabone.net/lg/", asnDetailsAsync.LookingGlassUrl);
+            Assert.Equal("IT", asnDetailsAsync.CountryCode);
+        }
     }
 }

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Threading.Tasks;
 using BGPViewerCore.Service;
 
 namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
@@ -14,11 +15,18 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
             return JsonDocument.Parse(@"{""status"":""error"",""status_message"":""Could not find ASN"",""@meta"":{""time_zone"":""UTC"",""api_version"":1,""execution_time"":""5027.25 ms""}}");
         }
 
+        public Task<JsonDocument> RetrieveAsnDetailsAsync(int asNumber) => Task.FromResult(RetrieveAsnDetails(asNumber));
+
         public JsonDocument RetrieveAsnDownstreams(int asNumber)
         {
             if(asNumber == 52908)
                 return JsonDocument.Parse(@"{""status"":""ok"",""status_message"":""Query was successful"",""data"":{""ipv4_downstreams"":[{""asn"":267360,""name"":null,""description"":null,""country_code"":""""},{""asn"":268699,""name"":null,""description"":null,""country_code"":""""}],""ipv6_downstreams"":[]},""@meta"":{""time_zone"":""UTC"",""api_version"":1,""execution_time"":""98.38 ms""}}");
             return JsonDocument.Parse(@"{""status"":""error"",""status_message"":""Could not find ASN"",""@meta"":{""time_zone"":""UTC"",""api_version"":1,""execution_time"":""5027.25 ms""}}");
+        }
+
+        public Task<JsonDocument> RetrieveAsnDownstreamsAsync(int asNumber)
+        {
+            throw new System.NotImplementedException();
         }
 
         public JsonDocument RetrieveAsnIxs(int asNumber)
@@ -30,6 +38,11 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
             return JsonDocument.Parse(@"{""status"":""error"",""status_message"":""Could not find ASN"",""@meta"":{""time_zone"":""UTC"",""api_version"":1,""execution_time"":""5027.25 ms""}}");
         }
 
+        public Task<JsonDocument> RetrieveAsnIxsAsync(int asNumber)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public JsonDocument RetrieveAsnPeers(int asNumber)
         {
             if(asNumber == 268374)
@@ -37,6 +50,11 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
             if(asNumber == 264075)
                 return JsonDocument.Parse(@"{""status"":""ok"",""status_message"":""Query was successful"",""data"":{""ipv4_peers"":[{""asn"":53181,""name"":null,""description"":null,""country_code"":""""}],""ipv6_peers"":[{""asn"":53181,""name"":null,""description"":null,""country_code"":""""}]},""@meta"":{""time_zone"":""UTC"",""api_version"":1,""execution_time"":""69.02 ms""}}");
             return JsonDocument.Parse(@"{""status"":""error"",""status_message"":""Could not find ASN"",""@meta"":{""time_zone"":""UTC"",""api_version"":1,""execution_time"":""5027.25 ms""}}");
+        }
+
+        public Task<JsonDocument> RetrieveAsnPeersAsync(int asNumber)
+        {
+            throw new System.NotImplementedException();
         }
 
         public JsonDocument RetrieveAsnPrefixes(int asNumber)
@@ -52,11 +70,21 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
             return JsonDocument.Parse(@"{""status"":""error"",""status_message"":""Could not find ASN"",""@meta"":{""time_zone"":""UTC"",""api_version"":1,""execution_time"":""5027.25 ms""}}");
         }
 
+        public Task<JsonDocument> RetrieveAsnPrefixesAsync(int asNumber)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public JsonDocument RetrieveAsnUpstreams(int asNumber)
         {
             if(asNumber == 52575) 
                 return JsonDocument.Parse(@"{""status"":""ok"",""status_message"":""Query was successful"",""data"":{""ipv4_upstreams"":[{""asn"":265185,""name"":null,""description"":null,""country_code"":""""}],""ipv6_upstreams"":[],""ipv4_graph"":""https:\/\/api.bgpview.io\/assets\/graphs\/AS52575_IPv4.svg"",""ipv6_graph"":""https:\/\/api.bgpview.io\/assets\/graphs\/AS52575_IPv6.svg"",""combined_graph"":""https:\/\/api.bgpview.io\/assets\/graphs\/AS52575_Combined.svg""},""@meta"":{""time_zone"":""UTC"",""api_version"":1,""execution_time"":""141 ms""}}");
             return JsonDocument.Parse(@"{""status"":""error"",""status_message"":""Could not find ASN"",""@meta"":{""time_zone"":""UTC"",""api_version"":1,""execution_time"":""5027.25 ms""}}");
+        }
+
+        public Task<JsonDocument> RetrieveAsnUpstreamsAsync(int asNumber)
+        {
+            throw new System.NotImplementedException();
         }
 
         public JsonDocument RetrieveIpDetails(string ipAddress)
@@ -68,6 +96,11 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
             return JsonDocument.Parse(@"{""status"":""error"",""status_message"":""Malformed input"",""@meta"":{""time_zone"":""UTC"",""api_version"":1,""execution_time"":""2095.67 ms""}}");
         }
 
+        public Task<JsonDocument> RetrieveIpDetailsAsync(string ipAddress)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public JsonDocument RetrievePrefixDetails(string prefix, byte cidr)
         {
             if(prefix == "143.208.20.0" && cidr == 22)
@@ -75,6 +108,11 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
             if(prefix == "177.75.40.0" && cidr == 21)
                 return JsonDocument.Parse(@"{""status"":""ok"",""status_message"":""Query was successful"",""data"":{""prefix"":""177.75.40.0\/21"",""ip"":""177.75.40.0"",""cidr"":21,""asns"":[{""asn"":53040,""name"":""IANA-"",""description"":null,""country_code"":null,""prefix_upstreams"":[{""asn"":53181,""name"":""IANA-"",""description"":null,""country_code"":null}]}],""name"":null,""description_short"":null,""description_full"":[],""email_contacts"":[],""abuse_contacts"":[],""owner_address"":[],""country_codes"":{""whois_country_code"":null,""rir_allocation_country_code"":""BR"",""maxmind_country_code"":""BR""},""rir_allocation"":{""rir_name"":""Lacnic"",""country_code"":""BR"",""ip"":""177.75.40.0"",""cidr"":21,""prefix"":""177.75.40.0\/21"",""date_allocated"":""2011-09-13 00:00:00"",""allocation_status"":""allocated""},""iana_assignment"":{""assignment_status"":null,""description"":null,""whois_server"":null,""date_assigned"":null},""maxmind"":{""country_code"":""BR"",""city"":""Itaborai""},""related_prefixes"":[],""date_updated"":""2020-08-27 15:29:28""},""@meta"":{""time_zone"":""UTC"",""api_version"":1,""execution_time"":""4320.03 ms""}}");
             return JsonDocument.Parse(@"{""status"":""error"",""status_message"":""Prefix not found in BGP table or malformed"",""@meta"":{""time_zone"":""UTC"",""api_version"":1,""execution_time"":""2388.59 ms""}}");
+        }
+
+        public Task<JsonDocument> RetrievePrefixDetailsAsync(string prefix, byte cidr)
+        {
+            throw new System.NotImplementedException();
         }
 
         public JsonDocument RetrieveSearchBy(string queryTerm)
@@ -86,6 +124,11 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
             if(queryTerm == "3356")
                 return JsonDocument.Parse(@"{""status"":""ok"",""status_message"":""Query was successful"",""data"":{""asns"":[{""asn"":3356,""name"":""LEVEL3"",""description"":""Level 3 Parent, LLC"",""country_code"":""US"",""email_contacts"":[""ipaddressing@level3.com""],""abuse_contacts"":[""ipaddressing@level3.com""],""rir_name"":""ARIN""}],""ipv4_prefixes"":[{""prefix"":""12.130.205.0\/24"",""ip"":""12.130.205.0"",""cidr"":24,""name"":""ATTWH-12-130-205-0-24-1011223356"",""country_code"":""US"",""description"":""CI - Macsteel Service Centers Usa, Inc SID-18233"",""email_contacts"":[""rm-mhops-ap@intl.att.com"",""abuse@att.net""],""abuse_contacts"":[""abuse@att.net""],""rir_name"":""ARIN"",""parent_prefix"":""12.0.0.0\/8"",""parent_ip"":""12.0.0.0"",""parent_cidr"":8},{""prefix"":""65.51.86.0\/24"",""ip"":""65.51.86.0"",""cidr"":24,""name"":""CVNET-41335600"",""country_code"":""US"",""description"":""Christie's Inc"",""email_contacts"":[""hostmaster@cv.net"",""abuse@cv.net""],""abuse_contacts"":[""abuse@cv.net""],""rir_name"":""ARIN"",""parent_prefix"":""65.51.0.0\/16"",""parent_ip"":""65.51.0.0"",""parent_cidr"":16}],""ipv6_prefixes"":[],""internet_exchanges"":[]},""@meta"":{""time_zone"":""UTC"",""api_version"":1,""execution_time"":""483.48 ms""}}");
             return JsonDocument.Parse(@"{""status"":""error"",""status_message"":""Out of testing scope"",""@meta"":{""time_zone"":""UTC"",""api_version"":1,""execution_time"":""2388.59 ms""}}");
+        }
+
+        public Task<JsonDocument> RetrieveSearchByAsync(string queryTerm)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

@@ -1,5 +1,6 @@
 using System.Net;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace BGPViewerCore.Service
 {
@@ -11,6 +12,15 @@ namespace BGPViewerCore.Service
             {
                 return stream.ReadToEnd();   
             }
+        }
+
+        public static async Task<Stream> GetContentStreamFromAsync(string url)
+        {
+            using(var response = await WebRequest.Create(url).GetResponseAsync())
+            {
+                return response.GetResponseStream();
+            }
+            
         }
     }
 }

@@ -301,9 +301,27 @@ namespace BGPViewerCore.Service
             _jsonApi = null;
         }
 
-        public Task<AsnDetailsModel> GetAsnDetailsAsync(int asNumber)
+        public async Task<AsnDetailsModel> GetAsnDetailsAsync(int asNumber)
         {
-            throw new NotImplementedException();
+            var jsonData = await _jsonApi.RetrieveAsnDetailsAsync(asNumber);
+            ValidateStatus(jsonData);
+            var dataElement = jsonData.RootElement.GetProperty("data");   
+            return new AsnDetailsModel 
+            {
+                ASN = asNumber,
+                Name = dataElement.GetProperty("name").GetString(),
+                Description = dataElement.GetProperty("description_short").GetString(),
+                CountryCode = dataElement.GetProperty("rir_allocation").GetProperty("country_code").GetString(),
+                EmailContacts = dataElement
+                    .GetProperty("email_contacts")
+                    .EnumerateArray()
+                    .Select(email => email.GetString()),
+                AbuseContacts = dataElement
+                    .GetProperty("abuse_contacts")
+                    .EnumerateArray()
+                    .Select(email => email.GetString()),
+                LookingGlassUrl = dataElement.GetProperty("looking_glass").GetString(),
+            };
         }
 
         public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnDownstreamsAsync(int asNumber)
