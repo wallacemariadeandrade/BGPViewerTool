@@ -341,5 +341,26 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
             Assert.Equal(53181, asn268374Peers.Item2.First().ASN);
             Assert.Equal(267613, asn268374Peers.Item2.Last().ASN);
         }
+
+        [Fact]
+        public async void GettingAsnUpstreamsAsync()
+        {
+            var asn52575Upstreams = await GetService().GetAsnUpstreamsAsync(52575);
+          
+            Assert.True(asn52575Upstreams.Item1.Count() == 1);
+            Assert.True(asn52575Upstreams.Item2.Count() == 0);
+            Assert.Equal(265185, asn52575Upstreams.Item1.First().ASN);
+        }
+
+        [Fact]
+        public async void GettingAsnDownstreamsAsync()
+        {
+            var asn52908Downstreams = await GetService().GetAsnDownstreamsAsync(52908);
+          
+            Assert.True(asn52908Downstreams.Item1.Count() == 2);
+            Assert.True(asn52908Downstreams.Item2.Count() == 0);
+            Assert.Equal(267360, asn52908Downstreams.Item1.First().ASN);
+            Assert.Equal(268699, asn52908Downstreams.Item1.Last().ASN);
+        }
     }
 }

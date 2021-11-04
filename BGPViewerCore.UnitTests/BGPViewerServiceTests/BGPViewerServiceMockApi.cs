@@ -25,9 +25,7 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
         }
 
         public Task<JsonDocument> RetrieveAsnDownstreamsAsync(int asNumber)
-        {
-            throw new System.NotImplementedException();
-        }
+            => Task.FromResult(RetrieveAsnDownstreams(asNumber));
 
         public JsonDocument RetrieveAsnIxs(int asNumber)
         {
@@ -79,9 +77,7 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
         }
 
         public Task<JsonDocument> RetrieveAsnUpstreamsAsync(int asNumber)
-        {
-            throw new System.NotImplementedException();
-        }
+            => Task.FromResult(RetrieveAsnUpstreams(asNumber));
 
         public JsonDocument RetrieveIpDetails(string ipAddress)
         {

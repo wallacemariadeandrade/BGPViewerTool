@@ -324,9 +324,15 @@ namespace BGPViewerCore.Service
             };
         }
 
-        public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnDownstreamsAsync(int asNumber)
+        public async Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnDownstreamsAsync(int asNumber)
         {
-            throw new NotImplementedException();
+            var jsonData = await _jsonApi.RetrieveAsnDownstreamsAsync(asNumber);
+            ValidateStatus(jsonData);
+            var dataElement = jsonData.RootElement.GetProperty("data");
+            return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(
+                item1: ExtractInfoFromArray(dataElement.GetProperty("ipv4_downstreams")),
+                item2: ExtractInfoFromArray(dataElement.GetProperty("ipv6_downstreams"))
+            );
         }
 
         public Task<IEnumerable<IxModel>> GetAsnIxsAsync(int asNumber)
@@ -364,9 +370,15 @@ namespace BGPViewerCore.Service
             };
         }
 
-        public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnUpstreamsAsync(int asNumber)
+        public async Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnUpstreamsAsync(int asNumber)
         {
-            throw new NotImplementedException();
+            var jsonData = await _jsonApi.RetrieveAsnUpstreamsAsync(asNumber);
+            ValidateStatus(jsonData);
+            var dataElement = jsonData.RootElement.GetProperty("data");
+            return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(
+                item1: ExtractInfoFromArray(dataElement.GetProperty("ipv4_upstreams")),
+                item2: ExtractInfoFromArray(dataElement.GetProperty("ipv6_upstreams"))
+            );
         }
 
         public Task<IpDetailModel> GetIpDetailsAsync(string ipAddress)
