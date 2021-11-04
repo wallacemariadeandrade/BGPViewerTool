@@ -312,5 +312,34 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
             Assert.True(asn131630Prefixes.IPv4.Count() == 3, $"Error: AS{asn131630Prefixes.ASN} shoud have 3 IPv4 prefixes");
             Assert.True(asn131630Prefixes.IPv6.Count() == 0, $"Error: AS{asn131630Prefixes.ASN} shoudn't IPv6 prefix");
         }
+
+        [Fact]
+        public async void VerifyAsnPrefixesAsync()
+        {
+            var asn264075Prefixes = await GetService().GetAsnPrefixesAsync(264075);
+          
+            Assert.Equal("143.208.20.0/22", asn264075Prefixes.IPv4.First());
+            Assert.Equal("2804:2a7c::/32", asn264075Prefixes.IPv6.First());
+        }
+
+        [Fact]
+        public async void CountAsnPeersAsync()
+        {
+            var asn268374Peers = await GetService().GetAsnPeersAsync(268374);
+          
+            Assert.True(asn268374Peers.Item1.Count() == 13);
+            Assert.True(asn268374Peers.Item2.Count() == 8);
+        }
+
+        [Fact]
+        public async void VerifyAsnPeersAsync()
+        {
+            var asn268374Peers = await GetService().GetAsnPeersAsync(268374);
+          
+            Assert.Equal(53181, asn268374Peers.Item1.First().ASN);
+            Assert.Equal(57463, asn268374Peers.Item1.Last().ASN);
+            Assert.Equal(53181, asn268374Peers.Item2.First().ASN);
+            Assert.Equal(267613, asn268374Peers.Item2.Last().ASN);
+        }
     }
 }

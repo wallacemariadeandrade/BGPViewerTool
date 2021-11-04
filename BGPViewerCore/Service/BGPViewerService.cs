@@ -334,9 +334,15 @@ namespace BGPViewerCore.Service
             throw new NotImplementedException();
         }
 
-        public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnPeersAsync(int asNumber)
+        public async Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnPeersAsync(int asNumber)
         {
-            throw new NotImplementedException();
+            var jsonData = await _jsonApi.RetrieveAsnPeersAsync(asNumber);
+            ValidateStatus(jsonData);
+            var dataElement = jsonData.RootElement.GetProperty("data");
+            return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(
+                item1: ExtractInfoFromArray(dataElement.GetProperty("ipv4_peers")),
+                item2: ExtractInfoFromArray(dataElement.GetProperty("ipv6_peers"))
+            );
         }
 
         public async Task<AsnPrefixesModel> GetAsnPrefixesAsync(int asNumber)
