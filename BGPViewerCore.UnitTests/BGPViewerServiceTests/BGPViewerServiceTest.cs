@@ -381,5 +381,36 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
             var asn268003Ixs = await GetService().GetAsnIxsAsync(268003);
             Assert.Empty(asn268003Ixs);
         }
+
+        [Fact]
+        public async void GettingIpAddressDetailsAsync()
+        {
+            var ipDetails = await GetService().GetIpDetailsAsync("143.208.20.0");
+          
+            Assert.Equal("BR", ipDetails.CountryCode);
+            Assert.Equal("143.208.20.0/22", ipDetails.RIRAllocationPrefix);
+            Assert.Equal("143-208-20-0.k1fibra.net.br", ipDetails.PtrRecord);
+            Assert.Equal(264075, ipDetails.RelatedPrefixes.First().ParentAsns.First().ASN);
+        }
+
+        [Fact]
+        public async void GettingIpAddressDetailsWithSomeNullPropertiesAsync()
+        {
+            var ipDetails = await GetService().GetIpDetailsAsync("170.245.37.10");
+            
+            Assert.Null(ipDetails.PtrRecord);
+            Assert.Null(ipDetails.RelatedPrefixes.First().ParentAsns.First().CountryCode);
+            Assert.Null(ipDetails.RelatedPrefixes.First().Name);
+            Assert.Null(ipDetails.RelatedPrefixes.First().Description);
+            Assert.Null(ipDetails.RelatedPrefixes.Last().ParentAsns.First().CountryCode);
+        }
+        
+        [Fact]
+        public async void TryGetIpAddressDetailsWithMalformedInputAsync()
+        {
+            await Assert.ThrowsAsync<ArgumentException>(() => GetService().GetIpDetailsAsync("192.168"));
+            await Assert.ThrowsAsync<ArgumentException>(() => GetService().GetIpDetailsAsync("177.75.40.256"));
+            await Assert.ThrowsAsync<ArgumentException>(() => GetService().GetIpDetailsAsync("192.168.10.10.1"));
+        }
     }
 }

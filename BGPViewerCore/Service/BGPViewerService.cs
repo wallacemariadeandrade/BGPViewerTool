@@ -397,9 +397,33 @@ namespace BGPViewerCore.Service
             );
         }
 
-        public Task<IpDetailModel> GetIpDetailsAsync(string ipAddress)
+        public async Task<IpDetailModel> GetIpDetailsAsync(string ipAddress)
         {
-            throw new NotImplementedException();
+            var jsonData = await _jsonApi.RetrieveIpDetailsAsync(ipAddress);
+            ValidateStatus(jsonData);
+            var dataElement = jsonData.RootElement.GetProperty("data");
+            return new IpDetailModel 
+            {
+                IPAddress = ipAddress,
+                RIRAllocationPrefix = dataElement.GetProperty("rir_allocation").GetProperty("prefix").GetString(),
+                CountryCode = dataElement.GetProperty("rir_allocation").GetProperty("country_code").GetString(),
+                PtrRecord = dataElement.GetProperty("ptr_record").GetString(),
+                RelatedPrefixes = dataElement.GetProperty("prefixes")
+                    .EnumerateArray()
+                    .Select(x => new PrefixDetailModel {
+                        Prefix = x.GetProperty("prefix").GetString(),
+                        Name = x.GetProperty("name").GetString(),
+                        Description = x.GetProperty("description").GetString(),
+                        ParentAsns = new AsnModel[] {
+                            new AsnModel {
+                                ASN = x.GetProperty("asn").GetProperty("asn").GetInt32(),
+                                Name = x.GetProperty("asn").GetProperty("name").GetString(),
+                                Description = x.GetProperty("asn").GetProperty("name").GetString(),
+                                CountryCode = x.GetProperty("asn").GetProperty("country_code").GetString(),
+                            }
+                        }
+                    })
+            };
         }
 
         public Task<PrefixDetailModel> GetPrefixDetailsAsync(string prefix, byte cidr)

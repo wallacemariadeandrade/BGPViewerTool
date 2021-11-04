@@ -87,9 +87,7 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
         }
 
         public Task<JsonDocument> RetrieveIpDetailsAsync(string ipAddress)
-        {
-            throw new System.NotImplementedException();
-        }
+            => Task.FromResult(RetrieveIpDetails(ipAddress));
 
         public JsonDocument RetrievePrefixDetails(string prefix, byte cidr)
         {
