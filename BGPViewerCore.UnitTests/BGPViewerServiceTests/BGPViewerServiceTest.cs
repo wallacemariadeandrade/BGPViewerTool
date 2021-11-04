@@ -274,5 +274,26 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
             Assert.Equal("https://gambadilegno.noc.seabone.net/lg/", asnDetailsAsync.LookingGlassUrl);
             Assert.Equal("IT", asnDetailsAsync.CountryCode);
         }
+
+        [Fact]
+        public async void GetAsnDetailsWhenSomePropertiesAreNullAsync()
+        {
+            // Mocked Data
+            var asnDetails = await GetService().GetAsnDetailsAsync(53181);
+            
+            Assert.Equal(53181, asnDetails.ASN);
+            Assert.Null(asnDetails.Description);
+            Assert.Null(asnDetails.Name);
+            Assert.True(asnDetails.EmailContacts.Count() == 0);
+            Assert.Null(asnDetails.LookingGlassUrl);
+            Assert.Equal("BR", asnDetails.CountryCode);
+        }
+
+        [Fact]
+        public async void TryGettingInvalidAsnDetailsAsync()
+        {
+            await Assert.ThrowsAsync<ArgumentException>(
+                () => GetService().GetAsnDetailsAsync(101010101));
+        }
     }
 }
