@@ -339,9 +339,23 @@ namespace BGPViewerCore.Service
             throw new NotImplementedException();
         }
 
-        public Task<AsnPrefixesModel> GetAsnPrefixesAsync(int asNumber)
+        public async Task<AsnPrefixesModel> GetAsnPrefixesAsync(int asNumber)
         {
-            throw new NotImplementedException();
+            var jsonData = await _jsonApi.RetrieveAsnPrefixesAsync(asNumber);
+            ValidateStatus(jsonData);
+            var dataElement = jsonData.RootElement.GetProperty("data");
+            return new AsnPrefixesModel
+            {
+                ASN = asNumber,
+                IPv4 = dataElement
+                .GetProperty("ipv4_prefixes")
+                .EnumerateArray()
+                .Select(prefix => prefix.GetProperty("prefix").GetString()),
+                IPv6 = dataElement
+                .GetProperty("ipv6_prefixes")
+                .EnumerateArray()
+                .Select(prefix => prefix.GetProperty("prefix").GetString()),
+            };
         }
 
         public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnUpstreamsAsync(int asNumber)

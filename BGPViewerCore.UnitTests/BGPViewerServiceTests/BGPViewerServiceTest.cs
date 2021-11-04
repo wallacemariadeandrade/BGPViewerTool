@@ -295,5 +295,22 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
             await Assert.ThrowsAsync<ArgumentException>(
                 () => GetService().GetAsnDetailsAsync(101010101));
         }
+
+        [Fact]
+        public async void CountAsnPrefixesAsync()
+        {
+            var asn264075Prefixes = await GetService().GetAsnPrefixesAsync(264075);
+            var asn268374Prefixes = await GetService().GetAsnPrefixesAsync(268374);
+            var asn131630Prefixes = await GetService().GetAsnPrefixesAsync(131630);
+            
+            Assert.True(asn264075Prefixes.IPv4.Count() == 1, $"Error: AS{asn264075Prefixes.ASN} shoud have only one IPv4 prefix");
+            Assert.True(asn264075Prefixes.IPv6.Count() == 1, $"Error: AS{asn264075Prefixes.ASN} shoud have only one IPv6 prefix");
+
+            Assert.True(asn268374Prefixes.IPv4.Count() == 7, $"Error: AS{asn268374Prefixes.ASN} shoud have 7 IPv4 prefixes");
+            Assert.True(asn268374Prefixes.IPv6.Count() == 1, $"Error: AS{asn268374Prefixes.ASN} shoud have only one IPv6 prefix");
+
+            Assert.True(asn131630Prefixes.IPv4.Count() == 3, $"Error: AS{asn131630Prefixes.ASN} shoud have 3 IPv4 prefixes");
+            Assert.True(asn131630Prefixes.IPv6.Count() == 0, $"Error: AS{asn131630Prefixes.ASN} shoudn't IPv6 prefix");
+        }
     }
 }
