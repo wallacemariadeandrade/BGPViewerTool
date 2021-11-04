@@ -37,9 +37,7 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
         }
 
         public Task<JsonDocument> RetrieveAsnIxsAsync(int asNumber)
-        {
-            throw new System.NotImplementedException();
-        }
+            => Task.FromResult(RetrieveAsnIxs(asNumber));
 
         public JsonDocument RetrieveAsnPeers(int asNumber)
         {

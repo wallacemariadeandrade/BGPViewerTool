@@ -362,5 +362,24 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
             Assert.Equal(267360, asn52908Downstreams.Item1.First().ASN);
             Assert.Equal(268699, asn52908Downstreams.Item1.Last().ASN);
         }
+
+        [Fact]
+        public async void GettingAnsIxsAsync()
+        {
+            var asn53181Ixs = await GetService().GetAsnIxsAsync(53181);
+            var ixSp = asn53181Ixs.Where(ix => ix.Name.Contains("São Paulo")).Count();
+            var ixRj = asn53181Ixs.Where(ix => ix.Name.Contains("Rio de Janeiro")).Count();
+            
+            Assert.True(asn53181Ixs.Count() == 4, $"Error: expected 4, got {asn53181Ixs.Count()}");
+            Assert.True(ixSp == 1, $"Error: expected 1 for São Paulo, got {ixSp}");
+            Assert.True(ixRj == 3, $"Error: expected 3 for Rio de Janeiro, got {ixRj}");
+        }
+
+        [Fact]
+        public async void GettingAsnWithoutIxsAsync()
+        {
+            var asn268003Ixs = await GetService().GetAsnIxsAsync(268003);
+            Assert.Empty(asn268003Ixs);
+        }
     }
 }

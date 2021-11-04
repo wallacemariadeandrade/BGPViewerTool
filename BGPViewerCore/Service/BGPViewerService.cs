@@ -335,9 +335,25 @@ namespace BGPViewerCore.Service
             );
         }
 
-        public Task<IEnumerable<IxModel>> GetAsnIxsAsync(int asNumber)
+        public async Task<IEnumerable<IxModel>> GetAsnIxsAsync(int asNumber)
         {
-            throw new NotImplementedException();
+            var jsonData = await _jsonApi.RetrieveAsnIxsAsync(asNumber);
+            ValidateStatus(jsonData);
+            var dataElement = jsonData.RootElement.GetProperty("data");
+            return ExtractIxModelFromJsonArray(dataElement);
+        }
+
+        private IEnumerable<IxModel> ExtractIxModelFromJsonArray(JsonElement jsonArray)
+        {
+            foreach(var ixJson in jsonArray.EnumerateArray())
+                yield return new IxModel {
+                    Name = ixJson.GetProperty("name").GetString(),
+                    FullName = ixJson.GetProperty("name_full").GetString(),
+                    CountryCode = ixJson.GetProperty("country_code").GetString(),
+                    IPv4 = ixJson.GetProperty("ipv4_address").GetString(),
+                    IPv6 = ixJson.GetProperty("ipv6_address").GetString(),
+                    AsnSpeed = ixJson.GetProperty("speed").GetInt32()
+                };
         }
 
         public async Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnPeersAsync(int asNumber)
