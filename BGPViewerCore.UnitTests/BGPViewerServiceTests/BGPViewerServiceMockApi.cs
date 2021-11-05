@@ -113,8 +113,6 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
         }
 
         public Task<JsonDocument> RetrieveSearchByAsync(string queryTerm)
-        {
-            throw new System.NotImplementedException();
-        }
+            => Task.FromResult(RetrieveSearchBy(queryTerm));
     }
 }

@@ -439,5 +439,49 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
         {
             await Assert.ThrowsAsync<ArgumentException>(() => GetService().GetPrefixDetailsAsync("143.208.20.0", 20)); // Should be 143.208.20.0/22 or lesser
         }
+
+        [Fact]
+        public async void SearchByAsnWithLittleDataAsync()
+        {
+            var searchResultForAsn53181 = await GetService().SearchByAsync("53181");
+            
+            Assert.True(searchResultForAsn53181.RelatedAsns.Count() == 1);
+            Assert.Equal(53181, searchResultForAsn53181.RelatedAsns.First().ASN);
+            Assert.Null(searchResultForAsn53181.RelatedAsns.First().Name);
+            Assert.Null(searchResultForAsn53181.RelatedAsns.First().Description);
+            Assert.Null(searchResultForAsn53181.RelatedAsns.First().CountryCode);
+            Assert.Empty(searchResultForAsn53181.RelatedAsns.First().EmailContacts);
+            Assert.Empty(searchResultForAsn53181.RelatedAsns.First().AbuseContacts);
+            Assert.Empty(searchResultForAsn53181.IPv4);
+            Assert.Empty(searchResultForAsn53181.IPv6);
+        }
+
+        [Fact]
+        public async void SearchByAsnWithSomeDataAsync()
+        {
+            var searchResultForAsn3356 = await GetService().SearchByAsync("3356");
+            
+            Assert.True(searchResultForAsn3356.RelatedAsns.Count() == 1);
+            Assert.Equal(3356, searchResultForAsn3356.RelatedAsns.First().ASN);
+            Assert.Equal("LEVEL3", searchResultForAsn3356.RelatedAsns.First().Name);
+            Assert.Equal("Level 3 Parent, LLC", searchResultForAsn3356.RelatedAsns.First().Description);
+            Assert.Equal("US", searchResultForAsn3356.RelatedAsns.First().CountryCode);
+            Assert.True(searchResultForAsn3356.RelatedAsns.First().EmailContacts.Count() == 1);
+            Assert.True(searchResultForAsn3356.RelatedAsns.First().AbuseContacts.Count() == 1);
+            Assert.True(searchResultForAsn3356.IPv4.Count() == 2);
+            Assert.Equal("12.130.205.0/24", searchResultForAsn3356.IPv4.First().Prefix);
+            Assert.Equal("65.51.86.0/24", searchResultForAsn3356.IPv4.Last().Prefix);
+            Assert.Empty(searchResultForAsn3356.IPv6);
+        }
+
+        [Fact]
+        public async void SearchByInexistantThingAsync()
+        {
+            var result = await GetService().SearchByAsync("empty");
+
+            Assert.Empty(result.RelatedAsns);
+            Assert.Empty(result.IPv4);
+            Assert.Empty(result.IPv6);
+        }
     }
 }
