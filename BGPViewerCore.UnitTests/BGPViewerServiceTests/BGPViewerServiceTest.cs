@@ -412,5 +412,32 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
             await Assert.ThrowsAsync<ArgumentException>(() => GetService().GetIpDetailsAsync("177.75.40.256"));
             await Assert.ThrowsAsync<ArgumentException>(() => GetService().GetIpDetailsAsync("192.168.10.10.1"));
         }
+
+        [Fact]
+        public async void GetPrefixDetailsAsync()
+        {
+            var prefixDetails = await GetService().GetPrefixDetailsAsync("143.208.20.0", 22);
+            
+            Assert.Equal(264075, prefixDetails.ParentAsns.First().ASN);
+            Assert.Equal("K1 Telecom e Multimidia LTDA", prefixDetails.Name);
+        }
+
+        [Fact]
+        public async void GetPrefixDetailsWithSomeNullPropertiesAsync()
+        {
+            var prefixDetails = await GetService().GetPrefixDetailsAsync("177.75.40.0", 21);
+            
+            Assert.Equal(53040, prefixDetails.ParentAsns.First().ASN);
+            Assert.Null(prefixDetails.Name);
+            Assert.Null(prefixDetails.Description);
+            Assert.Null(prefixDetails.ParentAsns.First().Description);
+            Assert.Null(prefixDetails.ParentAsns.First().CountryCode);
+        }
+
+        [Fact]
+        public async void TryGetPrefixDetailsWithWrongCIDRAsync()
+        {
+            await Assert.ThrowsAsync<ArgumentException>(() => GetService().GetPrefixDetailsAsync("143.208.20.0", 20)); // Should be 143.208.20.0/22 or lesser
+        }
     }
 }

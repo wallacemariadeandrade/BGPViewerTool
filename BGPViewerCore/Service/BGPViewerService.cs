@@ -426,9 +426,25 @@ namespace BGPViewerCore.Service
             };
         }
 
-        public Task<PrefixDetailModel> GetPrefixDetailsAsync(string prefix, byte cidr)
+        public async Task<PrefixDetailModel> GetPrefixDetailsAsync(string prefix, byte cidr)
         {
-            throw new NotImplementedException();
+            var jsonData = await _jsonApi.RetrievePrefixDetailsAsync(prefix, cidr);
+            ValidateStatus(jsonData);
+            var dataElement = jsonData.RootElement.GetProperty("data");
+            return new PrefixDetailModel 
+            {
+                Name = dataElement.GetProperty("name").GetString(),
+                Description = dataElement.GetProperty("description_short").GetString(),
+                Prefix = $"{prefix}/{cidr}",
+                ParentAsns = dataElement.GetProperty("asns")
+                    .EnumerateArray()
+                    .Select(asn => new AsnModel {
+                        ASN = asn.GetProperty("asn").GetInt32(),
+                        Name = asn.GetProperty("name").GetString(),
+                        Description = asn.GetProperty("description").GetString(),
+                        CountryCode = asn.GetProperty("country_code").GetString()
+                    })
+            };
         }
 
         public Task<SearchModel> SearchByAsync(string queryTerm)

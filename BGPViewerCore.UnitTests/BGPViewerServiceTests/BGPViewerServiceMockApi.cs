@@ -99,9 +99,7 @@ namespace BGPViewerCore.UnitTests.BGPViewerServiceTests
         }
 
         public Task<JsonDocument> RetrievePrefixDetailsAsync(string prefix, byte cidr)
-        {
-            throw new System.NotImplementedException();
-        }
+            => Task.FromResult(RetrievePrefixDetails(prefix, cidr));
 
         public JsonDocument RetrieveSearchBy(string queryTerm)
         {
