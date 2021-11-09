@@ -594,9 +594,11 @@ namespace BGPViewerCore.Service
         }
 
         public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnDownstreamsAsync(int asNumber)
-        {
-            throw new NotImplementedException();
-        }
+            => Task.FromResult(new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(
+                new AsnDetailsModel[]{}, 
+                new AsnDetailsModel[]{}
+            ));    
+        
 
         public Task<IEnumerable<IxModel>> GetAsnIxsAsync(int asNumber)
         {

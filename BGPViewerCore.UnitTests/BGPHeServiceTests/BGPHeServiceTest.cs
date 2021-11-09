@@ -413,5 +413,16 @@ namespace BGPViewerCore.UnitTests.BGPHeServiceTests
         {
             await Assert.ThrowsAsync<KeyNotFoundException>(() => Service.GetAsnDetailsAsync(-1));
         }
+
+        [Fact]
+        public async void GetAsnDownstreamsShouldAlwaysReturnEmptyObjectsAsync()
+        {
+            Assert.Empty((await Service.GetAsnDownstreamsAsync(15169)).Item1);
+            Assert.Empty((await Service.GetAsnDownstreamsAsync(15169)).Item2);
+            Assert.Empty((await Service.GetAsnDownstreamsAsync(268003)).Item1);
+            Assert.Empty((await Service.GetAsnDownstreamsAsync(268003)).Item2);
+            Assert.Empty((await Service.GetAsnDownstreamsAsync(53181)).Item1);
+            Assert.Empty((await Service.GetAsnDownstreamsAsync(53181)).Item2);
+        }
     }
 }
