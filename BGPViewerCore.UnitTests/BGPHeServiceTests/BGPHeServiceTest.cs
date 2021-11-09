@@ -376,5 +376,42 @@ namespace BGPViewerCore.UnitTests.BGPHeServiceTests
             Assert.Equal("Ascenty Data Centers e Telecomunicaï¿½ï¿½es S/A", lastIpv4.Name);
             Assert.Equal("Ascenty Data Centers e Telecomunicaï¿½ï¿½es S/A", lastIpv4.Description);
         }
+
+        [Fact]
+        public async void GetAsnDetailsAsync()
+        {
+            var retrievedAsnDetails = await Service.GetAsnDetailsAsync(15169);
+            Assert.Equal(15169, retrievedAsnDetails.ASN);   
+            Assert.Equal("Google LLC", retrievedAsnDetails.Name);   
+            Assert.Equal("Google LLC", retrievedAsnDetails.Description);   
+            Assert.Equal("US", retrievedAsnDetails.CountryCode);
+            Assert.Equal(string.Join(", ", new string[]{"network-abuse@google.com", "arin-contact@google.com", "arin-contact@google.com"}), string.Join(", ", retrievedAsnDetails.EmailContacts));
+            Assert.Equal(string.Join(", ", new string[]{"network-abuse@google.com", "arin-contact@google.com", "arin-contact@google.com"}), string.Join(", ", retrievedAsnDetails.AbuseContacts));
+            Assert.Null(retrievedAsnDetails.LookingGlassUrl);
+
+            retrievedAsnDetails = await Service.GetAsnDetailsAsync(268003);
+            Assert.Equal(268003, retrievedAsnDetails.ASN);   
+            Assert.Equal("CITY NET INTERNET EIRELI ME", retrievedAsnDetails.Name);   
+            Assert.Equal("CITY NET INTERNET EIRELI ME", retrievedAsnDetails.Description);   
+            Assert.Equal("BR", retrievedAsnDetails.CountryCode);
+            Assert.Equal(string.Join(", ", new string[]{"citynet.telecom@hotmail.com"}), string.Join(", ", retrievedAsnDetails.EmailContacts));
+            Assert.Equal(string.Join(", ", new string[]{"citynet.telecom@hotmail.com"}), string.Join(", ", retrievedAsnDetails.AbuseContacts));
+            Assert.Null(retrievedAsnDetails.LookingGlassUrl);
+
+            retrievedAsnDetails = await Service.GetAsnDetailsAsync(53181);
+            Assert.Equal(53181, retrievedAsnDetails.ASN);   
+            Assert.Equal("K2 Telecom e Multimidia LTDA ME", retrievedAsnDetails.Name);   
+            Assert.Equal("K2 Telecom e Multimidia LTDA ME", retrievedAsnDetails.Description);   
+            Assert.Equal("BR", retrievedAsnDetails.CountryCode);
+            Assert.Equal(string.Join(", ", new string[]{"engenharia@k2telecom.com.br"}), string.Join(", ", retrievedAsnDetails.EmailContacts));
+            Assert.Equal(string.Join(", ", new string[]{"engenharia@k2telecom.com.br"}), string.Join(", ", retrievedAsnDetails.AbuseContacts));
+            Assert.Equal("https://lg.k2telecom.net.br/", retrievedAsnDetails.LookingGlassUrl);
+        }
+
+        [Fact]
+        public async void GetDetailsFromNonExistentAsnAsync()
+        {
+            await Assert.ThrowsAsync<KeyNotFoundException>(() => Service.GetAsnDetailsAsync(-1));
+        }
     }
 }

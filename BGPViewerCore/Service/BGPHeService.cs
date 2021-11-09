@@ -18,6 +18,7 @@ namespace BGPViewerCore.Service
             public string AsNumberStr { get; set; }
         }
 
+        private const string BASE_ENDPOINT_URL = "https://bgp.he.net";
         private const string EMAIL_PATTERN = @"([a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)";
         private readonly IWebDriver _driver;
         private readonly TimeSpan _timeout;
@@ -29,6 +30,8 @@ namespace BGPViewerCore.Service
         }
 
         #region Routines
+
+        private string BuildAsnDetailsEndpoint(int asNumber) => $"{BASE_ENDPOINT_URL}/AS{asNumber}";
 
         private IWebDriver GetDriverWithValidatedResponseFrom(string url)
         {
@@ -164,6 +167,23 @@ namespace BGPViewerCore.Service
             }
         }
 
+        private async Task<string> ExtractCountryCodeFromDivWhoisAsync(string divWhois)
+        {
+            using(var reader = new StringReader(divWhois))
+            {
+                while(reader.Peek() > 0)
+                {
+                    var line = await reader.ReadLineAsync();
+                    if(Regex.IsMatch(line, "Country:") || Regex.IsMatch(line, "country:"))
+                    {
+                        var splitted = line.Split(new string[]{" "}, StringSplitOptions.None);
+                        return splitted.Last();
+                    }
+                }
+                return null;
+            }
+        }
+
         private AsnDetailsModel ExtractAsDetailsFromDriver(IWebDriver driver, int asNumber)
         {
             var h1TitleElement = driver.FindElement(By.TagName("h1"));
@@ -178,6 +198,38 @@ namespace BGPViewerCore.Service
 
             var divWhois = ExtractDivWhoisFrom(driver.PageSource);
             var countryCode = ExtractCountryCodeFromDivWhois(divWhois);
+            
+            var indexOfLookingGlassDiv = leftDivs.IndexOf(leftDivs.SingleOrDefault(div => div.Text.Contains("Looking Glass")));
+            var lookingGlass = indexOfLookingGlassDiv != -1 ? rightDivs.ElementAt(indexOfLookingGlassDiv).Text : null;
+
+            var emails = ExtractEmailsFrom(divWhois);
+
+            return new AsnDetailsModel
+            {
+                ASN = int.Parse(asn),
+                Name = name,
+                Description = description,
+                CountryCode = countryCode,
+                EmailContacts = emails,
+                AbuseContacts = emails,
+                LookingGlassUrl = lookingGlass
+            };
+        }
+
+        private async Task<AsnDetailsModel> ExtractAsDetailsFromDriverAsync(IWebDriver driver, int asNumber)
+        {
+            var h1TitleElement = driver.FindElement(By.TagName("h1"));
+            var asn = h1TitleElement.Text.Split(new string[]{" "}, StringSplitOptions.None)[0].Substring(2);
+            var name = h1TitleElement.Text.Replace($"AS{asn} ", "");
+            var description = name;
+
+            // divs with classes "asleft" and "asright" are always present,
+            // so we can use them to get country code and looking glass url
+            var leftDivs = driver.FindElements(By.ClassName("asleft"));
+            var rightDivs = driver.FindElements(By.ClassName("asright"));
+
+            var divWhois = ExtractDivWhoisFrom(driver.PageSource);
+            var countryCode = await ExtractCountryCodeFromDivWhoisAsync(divWhois);
             
             var indexOfLookingGlassDiv = leftDivs.IndexOf(leftDivs.SingleOrDefault(div => div.Text.Contains("Looking Glass")));
             var lookingGlass = indexOfLookingGlassDiv != -1 ? rightDivs.ElementAt(indexOfLookingGlassDiv).Text : null;
@@ -537,7 +589,8 @@ namespace BGPViewerCore.Service
 
         public Task<AsnDetailsModel> GetAsnDetailsAsync(int asNumber)
         {
-            throw new NotImplementedException();
+            var driver = GetDriverWithValidatedResponseFrom(BuildAsnDetailsEndpoint(asNumber));
+            return ExtractAsDetailsFromDriverAsync(driver, asNumber);
         }
 
         public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnDownstreamsAsync(int asNumber)
