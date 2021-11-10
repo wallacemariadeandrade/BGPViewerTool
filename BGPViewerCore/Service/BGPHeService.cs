@@ -603,10 +603,7 @@ namespace BGPViewerCore.Service
         public Task<IEnumerable<IxModel>> GetAsnIxsAsync(int asNumber) => Task.FromResult(GetAsnIxs(asNumber));
 
         public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnPeersAsync(int asNumber)
-        {
-            throw new NotImplementedException();
-        }
-
+            => Task.FromResult(GetAsnPeers(asNumber));
         public Task<AsnPrefixesModel> GetAsnPrefixesAsync(int asNumber)
         {
             throw new NotImplementedException();
