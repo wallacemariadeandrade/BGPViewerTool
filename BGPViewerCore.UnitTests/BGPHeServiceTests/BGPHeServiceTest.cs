@@ -487,5 +487,15 @@ namespace BGPViewerCore.UnitTests.BGPHeServiceTests
             Assert.Equal("K2 Telecom e Multimidia LTDA ME", lastPeerIpv6.Description);
             Assert.Null(lastPeerIpv6.CountryCode);
         }
+
+        [Fact]
+        public async void GetAsnPrefixesAsync()
+        {
+            var prefixes = await Service.GetAsnPrefixesAsync(268003);
+            Assert.Equal(268003, prefixes.ASN);
+            Assert.Equal("45.167.100.0/24", prefixes.IPv4.First());
+            Assert.Equal("45.167.103.0/24", prefixes.IPv4.Last());
+            Assert.Equal("2804:567c::/32", prefixes.IPv6.First());
+        }
     }
 }
