@@ -600,10 +600,7 @@ namespace BGPViewerCore.Service
             ));    
         
 
-        public Task<IEnumerable<IxModel>> GetAsnIxsAsync(int asNumber)
-        {
-            throw new NotImplementedException();
-        }
+        public Task<IEnumerable<IxModel>> GetAsnIxsAsync(int asNumber) => Task.FromResult(GetAsnIxs(asNumber));
 
         public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnPeersAsync(int asNumber)
         {

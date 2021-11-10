@@ -424,5 +424,38 @@ namespace BGPViewerCore.UnitTests.BGPHeServiceTests
             Assert.Empty((await Service.GetAsnDownstreamsAsync(53181)).Item1);
             Assert.Empty((await Service.GetAsnDownstreamsAsync(53181)).Item2);
         }
+
+        [Fact]
+        public async void GetAsnIxsAsync()
+        {   
+            var ixs = await Service.GetAsnIxsAsync(268003);
+            Assert.Empty(ixs);
+
+            ixs = Service.GetAsnIxs(15169);
+            var firstIx = ixs.First();
+            Assert.Equal("AMS-IX", firstIx.Name);
+            Assert.Equal("AMS-IX", firstIx.FullName);
+            Assert.Equal("NL", firstIx.CountryCode);
+            Assert.Equal("80.249.208.247", firstIx.IPv4);
+            Assert.Equal("2001:7f8:1::a501:5169:1", firstIx.IPv6);
+
+            var lastIx = ixs.Last();
+            Assert.Equal("YYCIX", lastIx.Name);
+            Assert.Equal("YYCIX", lastIx.FullName);
+            Assert.Equal("CA", lastIx.CountryCode);
+            Assert.Equal("206.126.225.128", lastIx.IPv4);
+            Assert.Equal("2001:504:2f::1:5169:1", lastIx.IPv6);
+        }
+
+        [Fact]
+        public async void AsnIxSpeedShouldAlwaysBeZeroWhenApiDoesNotProvideThisInformationAsync()
+        {
+            var ixs = await Service.GetAsnIxsAsync(15169);
+            Assert.True(ixs.Count(ix => ix.AsnSpeed == 0) == ixs.Count());
+            ixs = await Service.GetAsnIxsAsync(268003);
+            Assert.True(ixs.Count(ix => ix.AsnSpeed == 0) == ixs.Count());
+            ixs = await Service.GetAsnIxsAsync(53181);
+            Assert.True(ixs.Count(ix => ix.AsnSpeed == 0) == ixs.Count());
+        }
     }
 }
