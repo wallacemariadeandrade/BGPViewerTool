@@ -497,5 +497,24 @@ namespace BGPViewerCore.UnitTests.BGPHeServiceTests
             Assert.Equal("45.167.103.0/24", prefixes.IPv4.Last());
             Assert.Equal("2804:567c::/32", prefixes.IPv6.First());
         }
+    
+        [Fact]
+        public async void GetAsnUpstreamsAsync()
+        {
+            var upstreams = await Service.GetAsnUpstreamsAsync(53181);
+            Assert.True(upstreams.Item1.Count() == 5);
+            Assert.True(upstreams.Item2.Count() == 6);
+            var firstIpv4Upstream = upstreams.Item1.First();
+            Assert.Equal(6762, firstIpv4Upstream.ASN);
+            Assert.Equal("TELECOM ITALIA SPARKLE S.p.A.", firstIpv4Upstream.Name);
+            Assert.Equal("TELECOM ITALIA SPARKLE S.p.A.", firstIpv4Upstream.Description);
+            Assert.Null(firstIpv4Upstream.CountryCode);
+
+            var firstIpv6Upstream = upstreams.Item2.First();
+            Assert.Equal(4230,firstIpv6Upstream.ASN);
+            Assert.Equal("CLARO S.A.", firstIpv6Upstream.Name);
+            Assert.Equal("CLARO S.A.", firstIpv6Upstream.Description);
+            Assert.Null(firstIpv6Upstream.CountryCode);
+        }
     }
 }

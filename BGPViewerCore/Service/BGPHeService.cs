@@ -79,6 +79,29 @@ namespace BGPViewerCore.Service
             }
         }
 
+        private async Task<IEnumerable<AsnModel>> ExtractAsnsAndNamesFromToppertableAsync(string toppeertableText)
+        {            
+            using(var reader = new StringReader(toppeertableText.Split(new string[]{"ASN Name"}, StringSplitOptions.None)[1].TrimStart()))
+            {
+                var separator = new string[]{" "};
+                var set = new HashSet<AsnModel>();
+                while(reader.Peek() > 0)
+                {
+                    var line = await reader.ReadLineAsync();
+                    var asnAndName = line.Split(separator, StringSplitOptions.None);
+                    var asn = asnAndName[0].Substring(2);
+                    var name = line.Replace($"AS{asn}", "").TrimStart();
+                    set.Add(new AsnModel {
+                        ASN = int.Parse(asn),
+                        Name = name,
+                        Description = name,
+                        CountryCode = null
+                    });
+                }
+                return set;
+            }
+        }
+
         private IEnumerable<PrefixModel> ExtractPrefixesFromTablePrefixes(IWebElement tablePrefixes)
             => tablePrefixes.FindElement(By.TagName("tbody"))
                             .FindElements(By.TagName("tr"))
@@ -606,9 +629,22 @@ namespace BGPViewerCore.Service
             => Task.FromResult(GetAsnPeers(asNumber));
         public Task<AsnPrefixesModel> GetAsnPrefixesAsync(int asNumber) => Task.FromResult(GetAsnPrefixes(asNumber));
 
-        public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnUpstreamsAsync(int asNumber)
+        public async Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnUpstreamsAsync(int asNumber)
         {
-            throw new NotImplementedException();
+            var toppeertables = GetDriverWithValidatedResponseFrom(BuildAsnDetailsEndpoint(asNumber))
+            .FindElements(By.ClassName("toppeertable"))
+            .Select(table => table.Text);   
+            
+            var hasIpv4Upstreams = toppeertables.Count() >= 1;
+            var hasIpv6Upstreams = toppeertables.Count() >= 2;
+
+            var ipv4Upstreams = hasIpv4Upstreams ? await ExtractAsnsAndNamesFromToppertableAsync(toppeertables.ElementAt(0))
+                    : new AsnModel[]{};
+
+            var ipv6Upstreams = hasIpv6Upstreams ? await ExtractAsnsAndNamesFromToppertableAsync(toppeertables.ElementAt(1))
+                    : new AsnModel[]{};
+
+            return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(ipv4Upstreams, ipv6Upstreams);
         }
 
         public Task<IpDetailModel> GetIpDetailsAsync(string ipAddress)
