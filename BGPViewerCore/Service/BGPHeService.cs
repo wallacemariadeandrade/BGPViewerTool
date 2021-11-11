@@ -647,9 +647,39 @@ namespace BGPViewerCore.Service
             return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(ipv4Upstreams, ipv6Upstreams);
         }
 
-        public Task<IpDetailModel> GetIpDetailsAsync(string ipAddress)
+        public async Task<IpDetailModel> GetIpDetailsAsync(string ipAddress)
         {
-            throw new NotImplementedException();
+            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/ip/{ipAddress}");
+            var ipInfoElement = driver.FindElement(By.Id("ipinfo"));
+
+            var ipDetails = new IpDetailModel { IPAddress = ipAddress };
+
+            using(var reader = new StringReader(ipInfoElement.Text))
+            {
+                // reads the first line, which contains ip address and, sometimes, dns record between ()
+                // Ex 8.8.8.8 (dns.google)
+                var ipAndPtrRecord = await reader.ReadLineAsync();
+                var hasPtrRecord = ipAndPtrRecord.Contains("(");
+                ipDetails.PtrRecord = hasPtrRecord ? Regex.Match(ipAndPtrRecord, @"\(([^\)]+)\)").Value.Trim('(', ')') : null;
+            }
+            
+            ipDetails.RelatedPrefixes = ExtractAsDataFromIpInfoElement(ipInfoElement)
+                .GroupBy(data => data.Prefix)
+                .Select(px => new PrefixDetailModel {
+                    Prefix = px.Key,
+                    Name = px.ElementAt(0).Name,
+                    Description = px.ElementAt(0).Description,
+                    ParentAsns = px.Select(x => new AsnModel {
+                        ASN = int.Parse(x.AsNumberStr),
+                        Name = x.Name,
+                        Description = x.Description,
+                        CountryCode = null
+                    })});
+
+            ipDetails.RIRAllocationPrefix = ipDetails.RelatedPrefixes.ElementAt(0).Prefix;
+            ipDetails.CountryCode = await ExtractCountryCodeFromDivWhoisAsync(ExtractDivWhoisFrom(driver.PageSource));
+            
+            return ipDetails;
         }
 
         public Task<PrefixDetailModel> GetPrefixDetailsAsync(string prefix, byte cidr)
