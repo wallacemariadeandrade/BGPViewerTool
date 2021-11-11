@@ -32,6 +32,7 @@ namespace BGPViewerCore.Service
         #region Routines
 
         private string BuildAsnDetailsEndpoint(int asNumber) => $"{BASE_ENDPOINT_URL}/AS{asNumber}";
+        private string BuildPrefixDetailsEndpoint(string prefix, byte cidr) => $"{BASE_ENDPOINT_URL}/net/{prefix}/{cidr}";
 
         private IWebDriver GetDriverWithValidatedResponseFrom(string url)
         {
@@ -682,9 +683,28 @@ namespace BGPViewerCore.Service
             return ipDetails;
         }
 
-        public Task<PrefixDetailModel> GetPrefixDetailsAsync(string prefix, byte cidr)
+        public async Task<PrefixDetailModel> GetPrefixDetailsAsync(string prefix, byte cidr)
         {
-            throw new NotImplementedException();
+            var driver = GetDriverWithValidatedResponseFrom(BuildPrefixDetailsEndpoint(prefix, cidr));
+            
+            var asnDetailsExtractedFromNetinfoDiv = ExtractPrefixAndAsnInfoFromNetInfoDivTable(driver)
+                .GroupBy(data => data.AsNumberStr)
+                .Select(grouped => new AsnModel {
+                    ASN = int.Parse(grouped.ElementAt(0).AsNumberStr),
+                    Name = grouped.ElementAt(0).Name,
+                    Description = grouped.ElementAt(0).Description,
+                    CountryCode = null
+                }).ToArray();
+
+            var ownerPrefix = asnDetailsExtractedFromNetinfoDiv[0];
+            ownerPrefix.CountryCode = await ExtractCountryCodeFromDivWhoisAsync(ExtractDivWhoisFrom(driver.PageSource));
+
+            return new PrefixDetailModel {
+                Prefix = $"{prefix}/{cidr}",
+                Name = ownerPrefix.Name,
+                Description = ownerPrefix.Description,
+                ParentAsns = asnDetailsExtractedFromNetinfoDiv
+            };
         }
 
         public Task<SearchModel> SearchByAsync(string queryTerm)
