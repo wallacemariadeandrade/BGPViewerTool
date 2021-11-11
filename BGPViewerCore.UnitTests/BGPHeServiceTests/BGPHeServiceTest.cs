@@ -639,5 +639,106 @@ namespace BGPViewerCore.UnitTests.BGPHeServiceTests
             Assert.Null(lastParentAsn.CountryCode);
         }
     
+        [Fact]
+        public async void SearchByAsnAsync()
+        {
+            var searchResult = await Service.SearchByAsync("53181");
+            
+            Assert.True(searchResult.RelatedAsns.Count() == 1);
+            Assert.Equal(53181, searchResult.RelatedAsns.First().ASN);
+            Assert.Equal("K2 Telecom e Multimidia LTDA ME", searchResult.RelatedAsns.First().Name);
+            Assert.Equal("K2 Telecom e Multimidia LTDA ME", searchResult.RelatedAsns.First().Description);
+            Assert.Equal("BR", searchResult.RelatedAsns.First().CountryCode);
+            
+            Assert.True(searchResult.RelatedAsns.First().EmailContacts.Count() == 1, $"Should have only one contact email and actually has {searchResult.RelatedAsns.First().AbuseContacts.Count()}.");
+            Assert.True(searchResult.RelatedAsns.First().AbuseContacts.Count() == 1, $"Should have only one abuse email and actually has {searchResult.RelatedAsns.First().AbuseContacts.Count()}.");
+            
+            Assert.Equal("engenharia@k2telecom.com.br", searchResult.RelatedAsns.First().EmailContacts.First());
+            Assert.Equal("engenharia@k2telecom.com.br", searchResult.RelatedAsns.First().AbuseContacts.First());
+            
+            var firstIpv4 = searchResult.IPv4.First();
+            Assert.Equal("191.241.64.0/20", firstIpv4.Prefix);
+            Assert.Equal("K2 Telecom e Multimidia LTDA ME", firstIpv4.Name);
+            Assert.Equal("K2 Telecom e Multimidia LTDA ME", firstIpv4.Description);
+
+            var lastIpv6 = searchResult.IPv6.Last();
+            Assert.Equal("2804:113c:fc00::/38", lastIpv6.Prefix);
+            Assert.Equal(string.Empty, lastIpv6.Name);
+            Assert.Equal(string.Empty, lastIpv6.Description);
+        }
+
+        [Fact]
+        public async void SearchByIPAddressAsync()
+        {
+            var searchResult = await Service.SearchByAsync("196.100.100.0");
+            Assert.True(searchResult.RelatedAsns.Count() == 2, $"Should be 2 and is {searchResult.RelatedAsns.Count()}");
+            Assert.Equal("Safaricom Limited", searchResult.RelatedAsns.First().Name);
+            Assert.Equal("Safaricom Limited", searchResult.RelatedAsns.First().Description);
+
+            Assert.Equal("Used by safaricom 2G/3G/4G  subscribers.", searchResult.RelatedAsns.Last().Name);
+            Assert.Equal("Used by safaricom 2G/3G/4G  subscribers.", searchResult.RelatedAsns.Last().Description);
+            
+            Assert.True(searchResult.RelatedAsns.Count(x => x.CountryCode == null) == 2, $"Country codes should be nulls");
+            
+            foreach(var asn in searchResult.RelatedAsns)
+            {
+                Assert.Empty(asn.AbuseContacts);
+                Assert.Empty(asn.EmailContacts);
+            }
+
+            var firstIpv4 = searchResult.IPv4.First(); 
+            Assert.Equal("196.96.0.0/12", firstIpv4.Prefix);
+            Assert.Equal("Safaricom Limited", firstIpv4.Name);
+            Assert.Equal("Safaricom Limited", firstIpv4.Description);
+
+            Assert.Empty(searchResult.IPv6);
+        }
+
+        [Fact]
+        public async void SearchbyPrefixAsync()
+        {
+            var searchResult = await Service.SearchByAsync("196.96.0.0/12");
+            
+            Assert.True(searchResult.RelatedAsns.Count() == 1, $"Should be 1 and is {searchResult.RelatedAsns.Count()}");
+            
+            Assert.Equal(33771, searchResult.RelatedAsns.First().ASN);
+            Assert.Equal("Safaricom Limited", searchResult.RelatedAsns.First().Name);
+            Assert.Equal("Safaricom Limited", searchResult.RelatedAsns.First().Description);
+            
+            Assert.Empty(searchResult.RelatedAsns.First().EmailContacts);
+            Assert.Empty(searchResult.RelatedAsns.First().AbuseContacts); 
+
+            var firstIpv4 = searchResult.IPv4.First(); 
+            Assert.Equal("196.96.0.0/12", firstIpv4.Prefix);
+            Assert.Equal("Safaricom Limited", firstIpv4.Name);
+            Assert.Equal("Safaricom Limited", firstIpv4.Description);
+
+            Assert.Empty(searchResult.IPv6);
+        }
+
+        [Fact]
+        public async void SearchByKeywordAsync()
+        {
+            var searchResult = await Service.SearchByAsync("ascenty");
+
+            Assert.True(searchResult.RelatedAsns.Count() == 2, $"Should be 2 ases and is {searchResult.RelatedAsns.Count()}");
+            Assert.True(searchResult.IPv4.Count() == 7, $"Should be 7 v4 prefixes and is {searchResult.IPv4.Count()}");
+            Assert.True(searchResult.IPv6.Count() == 5, $"Should be 5 v6 prefixes and is {searchResult.IPv6.Count()}");
+
+            var ases = searchResult.RelatedAsns.Select(x => x.ASN);
+            Assert.Contains(52925, ases);
+            Assert.Contains(28630, ases);
+
+            var firstIpv6 = searchResult.IPv6.First();
+            Assert.Equal("2804:ad4:ff:6::/64", firstIpv6.Prefix);
+            Assert.Equal("Ascenty Data Centers e Telecomunicaï¿½ï¿½es S/A", firstIpv6.Name);
+            Assert.Equal("Ascenty Data Centers e Telecomunicaï¿½ï¿½es S/A", firstIpv6.Description);
+
+            var lastIpv4 = searchResult.IPv4.Last();
+            Assert.Equal("138.118.140.0/22", lastIpv4.Prefix);
+            Assert.Equal("Ascenty Data Centers e Telecomunicaï¿½ï¿½es S/A", lastIpv4.Name);
+            Assert.Equal("Ascenty Data Centers e Telecomunicaï¿½ï¿½es S/A", lastIpv4.Description);
+        }
+
     }
 }
