@@ -13,13 +13,14 @@ namespace BGPViewerCore.Service
 {
     public class BGPHeService : IBGPViewerService
     {
+        private const string BASE_ENDPOINT_URL = "https://bgp.he.net";
+        private const string EMAIL_PATTERN = @"([a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)";
+
         protected class PrefixWithAsNumber : PrefixModel
         {
             public string AsNumberStr { get; set; }
         }
-
-        private const string BASE_ENDPOINT_URL = "https://bgp.he.net";
-        private const string EMAIL_PATTERN = @"([a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)";
+        
         private readonly IWebDriver _driver;
         private readonly TimeSpan _timeout;
         
@@ -103,22 +104,7 @@ namespace BGPViewerCore.Service
             }
         }
 
-        private IEnumerable<PrefixModel> ExtractPrefixesFromTablePrefixes(IWebElement tablePrefixes)
-            => tablePrefixes.FindElement(By.TagName("tbody"))
-                            .FindElements(By.TagName("tr"))
-                            .Select(tr => tr.FindElements(By.TagName("td")))
-                            .Select(tds => new PrefixModel {
-                                Prefix = tds.ElementAt(0).FindElement(By.TagName("a")).GetAttribute("innerHTML"),
-                                Name = tds.ElementAt(1).Text,
-                                Description = tds.ElementAt(1).Text
-                            });
-
-        // For better performance while querying only prefixes
-        private IEnumerable<string> ExtractPrefixesFromTablePrefixes(IWebElement tablePrefixes, string pattern)
-            => Regex.Matches(tablePrefixes.GetAttribute("innerHTML"), pattern)
-                    .Cast<Match>()
-                    .Select(x => x.Value)
-                    .Distinct();
+        
 
         private IEnumerable<AsnModel> ExtractAsnsInfoFromPeerTable(IWebElement peerTable)
         {
@@ -348,21 +334,19 @@ namespace BGPViewerCore.Service
             return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(ipv4Peers, ipv6Peers);
         }
 
+        
+
         public AsnPrefixesModel GetAsnPrefixes(int asNumber)
         {
-            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}");
+            var driver = GetDriverWithValidatedResponseFrom(BuildAsnDetailsEndpoint(asNumber));
 
-            var hasIpv4Prefixes = driver.PageSource.Contains("table_prefixes4");
-            var hasIpv6Prefixes = driver.PageSource.Contains("table_prefixes6");
-
-            var ipv4Prefixes = hasIpv4Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes4")), IPV4_PREFIX_PATTERN) : Enumerable.Empty<string>();
-            var ipv6Prefixes = hasIpv6Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes6")), IPV6_PREFIX_PATTERN) : Enumerable.Empty<string>();
+            var prefixes = ExtractPrefixesFromDriver(driver);
 
             return new AsnPrefixesModel
             {
                 ASN = asNumber,
-                IPv4 = ipv4Prefixes,
-                IPv6 = ipv6Prefixes
+                IPv4 = prefixes.Item1.Select(model => model.Prefix),
+                IPv6 = prefixes.Item2.Select(model => model.Prefix)
             };  
         }
 
@@ -707,26 +691,10 @@ namespace BGPViewerCore.Service
             };
         }
 
+
         public async Task<SearchModel> SearchByAsync(string queryTerm)
         {
-            if(int.TryParse(queryTerm, out int asNumber))
-            {
-                var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}");
-                
-                var hasIpv4Prefixes = driver.PageSource.Contains("table_prefixes4");
-                var hasIpv6Prefixes = driver.PageSource.Contains("table_prefixes6");
-
-                var ipv4Prefixes = hasIpv4Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes4"))) : Enumerable.Empty<PrefixModel>();
-                var ipv6Prefixes = hasIpv6Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes6"))) : Enumerable.Empty<PrefixModel>();
-                
-                var asDetails = await ExtractAsDetailsFromDriverAsync(driver, asNumber);
-                return new SearchModel
-                {
-                    RelatedAsns = new AsnDetailsModel[] { asDetails },
-                    IPv4 = ipv4Prefixes,
-                    IPv6 = ipv6Prefixes
-                };
-            }
+            if(int.TryParse(queryTerm, out int asNumber)) return await SearchingByAsnAsync(asNumber);
             else if(Regex.IsMatch(queryTerm, IPV4_PREFIX_PATTERN))
             {
                 var prefix = queryTerm.Split('/')[0];
@@ -872,5 +840,64 @@ namespace BGPViewerCore.Service
                 };
             }
         }
+
+        private async Task<SearchModel> SearchingByAsnAsync(int asNumber)
+        {
+            var driver = GetDriverWithValidatedResponseFrom(BuildAsnDetailsEndpoint(asNumber));
+            var prefixes = ExtractPrefixesFromDriver(driver);
+            var asDetails = await ExtractAsDetailsFromDriverAsync(driver, asNumber);
+
+            return new SearchModel
+            {
+                RelatedAsns = new AsnDetailsModel[] { asDetails },
+                IPv4 = prefixes.Item1,
+                IPv6 = prefixes.Item2
+            };   
+        }
+
+        private Tuple<IEnumerable<PrefixModel>,IEnumerable<PrefixModel>> ExtractPrefixesFromDriver(IWebDriver driver, string pattern = null)
+        {
+            var hasIpv4Prefixes = driver.PageSource.Contains("table_prefixes4");
+            var hasIpv6Prefixes = driver.PageSource.Contains("table_prefixes6");
+
+            if(string.IsNullOrEmpty(pattern) && string.IsNullOrWhiteSpace(pattern))
+            {
+                var ipv4Prefixes = hasIpv4Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes4")), IPV4_PREFIX_PATTERN) : Enumerable.Empty<string>();
+                var ipv6Prefixes = hasIpv6Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes6")), IPV6_PREFIX_PATTERN) : Enumerable.Empty<string>();
+
+                return new Tuple<IEnumerable<PrefixModel>, IEnumerable<PrefixModel>>(
+                    ipv4Prefixes.Select(prefixV4 => new PrefixModel {
+                        Prefix = prefixV4
+                    }),
+                    ipv6Prefixes.Select(prefixV6 => new PrefixModel{
+                        Prefix = prefixV6
+                    })
+                );
+            }
+            else
+            {
+                var ipv4Prefixes = hasIpv4Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes4"))) : Enumerable.Empty<PrefixModel>();
+                var ipv6Prefixes = hasIpv6Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes6"))) : Enumerable.Empty<PrefixModel>();
+
+                return new Tuple<IEnumerable<PrefixModel>, IEnumerable<PrefixModel>>(ipv4Prefixes, ipv6Prefixes);
+            }
+        }
+
+        private IEnumerable<PrefixModel> ExtractPrefixesFromTablePrefixes(IWebElement tablePrefixes)
+            => tablePrefixes.FindElement(By.TagName("tbody"))
+                            .FindElements(By.TagName("tr"))
+                            .Select(tr => tr.FindElements(By.TagName("td")))
+                            .Select(tds => new PrefixModel {
+                                Prefix = tds.ElementAt(0).FindElement(By.TagName("a")).GetAttribute("innerHTML"),
+                                Name = tds.ElementAt(1).Text,
+                                Description = tds.ElementAt(1).Text
+                            });
+
+        // For better performance while querying only prefixes
+        private IEnumerable<string> ExtractPrefixesFromTablePrefixes(IWebElement tablePrefixes, string pattern)
+            => Regex.Matches(tablePrefixes.GetAttribute("innerHTML"), pattern)
+                    .Cast<Match>()
+                    .Select(x => x.Value)
+                    .Distinct();        
     }
 }
