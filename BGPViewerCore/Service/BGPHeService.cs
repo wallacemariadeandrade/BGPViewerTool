@@ -340,7 +340,7 @@ namespace BGPViewerCore.Service
         {
             var driver = GetDriverWithValidatedResponseFrom(BuildAsnDetailsEndpoint(asNumber));
 
-            var prefixes = ExtractPrefixesFromDriver(driver);
+            var prefixes = ExtractPrefixesFromDriver(driver, true);
 
             return new AsnPrefixesModel
             {
@@ -844,7 +844,7 @@ namespace BGPViewerCore.Service
         private async Task<SearchModel> SearchingByAsnAsync(int asNumber)
         {
             var driver = GetDriverWithValidatedResponseFrom(BuildAsnDetailsEndpoint(asNumber));
-            var prefixes = ExtractPrefixesFromDriver(driver);
+            var prefixes = ExtractPrefixesFromDriver(driver, false);
             var asDetails = await ExtractAsDetailsFromDriverAsync(driver, asNumber);
 
             return new SearchModel
@@ -855,12 +855,12 @@ namespace BGPViewerCore.Service
             };   
         }
 
-        private Tuple<IEnumerable<PrefixModel>,IEnumerable<PrefixModel>> ExtractPrefixesFromDriver(IWebDriver driver, string pattern = null)
+        private Tuple<IEnumerable<PrefixModel>,IEnumerable<PrefixModel>> ExtractPrefixesFromDriver(IWebDriver driver, bool onlyPrefixes)
         {
             var hasIpv4Prefixes = driver.PageSource.Contains("table_prefixes4");
             var hasIpv6Prefixes = driver.PageSource.Contains("table_prefixes6");
 
-            if(string.IsNullOrEmpty(pattern) && string.IsNullOrWhiteSpace(pattern))
+            if(onlyPrefixes)
             {
                 var ipv4Prefixes = hasIpv4Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes4")), IPV4_PREFIX_PATTERN) : Enumerable.Empty<string>();
                 var ipv6Prefixes = hasIpv6Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes6")), IPV6_PREFIX_PATTERN) : Enumerable.Empty<string>();
