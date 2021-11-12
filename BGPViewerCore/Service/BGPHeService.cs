@@ -30,267 +30,28 @@ namespace BGPViewerCore.Service
             _driver = driver;
         }
 
-        #region Routines
+        public AsnDetailsModel GetAsnDetails(int asNumber) 
+            => GetAsnDetailsAsync(asNumber).GetAwaiter().GetResult();
 
-        private string BuildAsnDetailsEndpoint(int asNumber) => $"{BASE_ENDPOINT_URL}/AS{asNumber}";
-        private string BuildPrefixDetailsEndpoint(string prefix, byte cidr) => $"{BASE_ENDPOINT_URL}/net/{prefix}/{cidr}";
-        private string BuildIpDetailsEndpoint(string ipAddress) => $"{BASE_ENDPOINT_URL}/ip/{ipAddress}";
-        private string BuildSearchByQueryEndpoint(string queryTerm) => $"{BASE_ENDPOINT_URL}/search?search%5Bsearch%5D={queryTerm.Replace(' ', '+')}&commit=Search";
-        private IWebDriver GetDriverWithValidatedResponseFrom(string url)
+        public Task<AsnDetailsModel> GetAsnDetailsAsync(int asNumber)
         {
-            var wb = new WebDriverWait(_driver, _timeout);
-            _driver.Navigate().GoToUrl(url);
-            wb.Until(x => x.Url == url);
-            if(!CheckIfDataExists(_driver))
-                throw new KeyNotFoundException("Your query did not return any results.");
-            return _driver;
+            var driver = GetDriverWithValidatedResponseFrom(BuildAsnDetailsEndpoint(asNumber));
+            return ExtractAsDetailsFromDriverAsync(driver, asNumber);
         }
-
-        private bool CheckIfDataExists(IWebDriver driver) => driver.FindElements(By.Id("error")).Count <= 0;
-
-        private IEnumerable<string> ExtractEmailsFrom(string content)
-            => Regex.Matches(content, EMAIL_PATTERN)
-            .Cast<Match>()
-            .Select(match => match.Value);
-                
-        private string ExtractDivWhoisFrom(string content)
-        {
-            var whoisDivStartIndex = content.IndexOf(@"<div id=""whois"" class=""tabdata hidden"">");
-            if(whoisDivStartIndex < 0) throw new System.ArgumentException($"{content} doesn't contains div whois.");
-            var whoisDivlength = content.IndexOf("</div>", whoisDivStartIndex) - whoisDivStartIndex;
-            return  content.Substring(whoisDivStartIndex, whoisDivlength);
-        }
-
-        private IEnumerable<AsnModel> ExtractAsnsAndNamesFromToppertable(string toppeertableText)
-        {            
-            using(var reader = new StringReader(toppeertableText.Split(new string[]{"ASN Name"}, StringSplitOptions.None)[1].TrimStart()))
-            {
-                var separator = new string[]{" "};
-                while(reader.Peek() > 0)
-                {
-                    var line = reader.ReadLine();
-                    var asnAndName = line.Split(separator, StringSplitOptions.None);
-                    var asn = asnAndName[0].Substring(2);
-                    var name = line.Replace($"AS{asn}", "").TrimStart();
-                    yield return new AsnModel {
-                        ASN = int.Parse(asn),
-                        Name = name,
-                        Description = name,
-                        CountryCode = null
-                    };
-                }
-            }
-        }
-
-        private async Task<IEnumerable<AsnModel>> ExtractAsnsAndNamesFromToppertableAsync(string toppeertableText)
-        {            
-            using(var reader = new StringReader(toppeertableText.Split(new string[]{"ASN Name"}, StringSplitOptions.None)[1].TrimStart()))
-            {
-                var separator = new string[]{" "};
-                var set = new HashSet<AsnModel>();
-                while(reader.Peek() > 0)
-                {
-                    var line = await reader.ReadLineAsync();
-                    var asnAndName = line.Split(separator, StringSplitOptions.None);
-                    var asn = asnAndName[0].Substring(2);
-                    var name = line.Replace($"AS{asn}", "").TrimStart();
-                    set.Add(new AsnModel {
-                        ASN = int.Parse(asn),
-                        Name = name,
-                        Description = name,
-                        CountryCode = null
-                    });
-                }
-                return set;
-            }
-        }
-
         
-
-        private IEnumerable<AsnModel> ExtractAsnsInfoFromPeerTable(IWebElement peerTable)
-        {
-            var tdList = peerTable.FindElement(By.TagName("tbody"))
-                .FindElements(By.TagName("tr"))
-                .Select(tr => tr.FindElements(By.TagName("td")));
-            foreach (var td in tdList)
-            {
-                var asn = td.ElementAt(3).FindElement(By.TagName("a")).GetAttribute("innerHTML").Substring(2);
-                var tdWithNameAndCountry = td.ElementAt(1);
-                var innerHtmlOfTdWithNameAndCountry = tdWithNameAndCountry.GetAttribute("innerHTML");
-                var name = innerHtmlOfTdWithNameAndCountry.Substring(0, innerHtmlOfTdWithNameAndCountry.IndexOf("<div")); // Gets only the portion with asn name
-                var description = name;
-                yield return new AsnModel {
-                    ASN = int.Parse(asn),
-                    Name = name,
-                    Description = name,
-                    CountryCode = null
-                };
-            }
-        }
-
-        private IEnumerable<PrefixWithAsNumber> ExtractPrefixAndAsnInfoFromNetInfoDivTable(IWebDriver driver) 
-        {
-            var tables = driver.FindElement(By.Id("netinfo"))
-                .FindElements(By.TagName("table"));
-
-            int correctNumberOfTableRows = 3; // Each table has to match 3 rows (asn, prefix and name)
-
-            foreach (var table in tables)
-            {
-                var matches = Regex.Matches(table.GetAttribute("innerHTML"), @"<a.*>.*<\/a>|<td>.*<\/td>");
-                var isNumberOfRowsCorrect = matches.Count % correctNumberOfTableRows == 0; 
-                if(!isNumberOfRowsCorrect) throw new ArgumentException($"Incorrect input HTML. It was expected 3 matches and got {matches.Count}.", "tableInnerHtml");
-
-                for (int i = 0; i < matches.Count; i+=3)
-                {
-                    var asnStr = Regex.Match(matches[i].Value, ASN_PATTERN).Value.Substring(2);
-
-                    var prefix = Regex.IsMatch(matches[i+1].Value, IPV4_PREFIX_PATTERN) ? 
-                        Regex.Match(matches[i+1].Value, IPV4_PREFIX_PATTERN).Value : Regex.Match(matches[i+1].Value, IPV6_PREFIX_PATTERN).Value;
-
-                    var nameOrDescription = matches[i+2].Value.Replace("<td>", "").Replace("</td>", "");
-
-                    yield return new PrefixWithAsNumber {
-                        AsNumberStr = asnStr,
-                        Name = nameOrDescription,
-                        Description = nameOrDescription,
-                        Prefix = prefix
-                    };
-                }
-            }
-        }
-
-        private string ExtractCountryCodeFromDivWhois(string divWhois)
-        {
-            using(var reader = new StringReader(divWhois))
-            {
-                while(reader.Peek() > 0)
-                {
-                    var line = reader.ReadLine();
-                    System.Diagnostics.Debug.WriteLine(line);
-                    if(Regex.IsMatch(line, "Country:") || Regex.IsMatch(line, "country:"))
-                    {
-                        var splitted = line.Split(new string[]{" "}, StringSplitOptions.None);
-                        return splitted.Last();
-                    }
-                }
-                return null;
-            }
-        }
-
-        private async Task<string> ExtractCountryCodeFromDivWhoisAsync(string divWhois)
-        {
-            using(var reader = new StringReader(divWhois))
-            {
-                while(reader.Peek() > 0)
-                {
-                    var line = await reader.ReadLineAsync();
-                    if(Regex.IsMatch(line, "Country:") || Regex.IsMatch(line, "country:"))
-                    {
-                        var splitted = line.Split(new string[]{" "}, StringSplitOptions.None);
-                        return splitted.Last();
-                    }
-                }
-                return null;
-            }
-        }
-
-        private AsnDetailsModel ExtractAsDetailsFromDriver(IWebDriver driver, int asNumber)
-        {
-            var h1TitleElement = driver.FindElement(By.TagName("h1"));
-            var asn = h1TitleElement.Text.Split(new string[]{" "}, StringSplitOptions.None)[0].Substring(2);
-            var name = h1TitleElement.Text.Replace($"AS{asn} ", "");
-            var description = name;
-
-            // divs with classes "asleft" and "asright" are always present,
-            // so we can use them to get country code and looking glass url
-            var leftDivs = driver.FindElements(By.ClassName("asleft"));
-            var rightDivs = driver.FindElements(By.ClassName("asright"));
-
-            var divWhois = ExtractDivWhoisFrom(driver.PageSource);
-            var countryCode = ExtractCountryCodeFromDivWhois(divWhois);
-            
-            var indexOfLookingGlassDiv = leftDivs.IndexOf(leftDivs.SingleOrDefault(div => div.Text.Contains("Looking Glass")));
-            var lookingGlass = indexOfLookingGlassDiv != -1 ? rightDivs.ElementAt(indexOfLookingGlassDiv).Text : null;
-
-            var emails = ExtractEmailsFrom(divWhois);
-
-            return new AsnDetailsModel
-            {
-                ASN = int.Parse(asn),
-                Name = name,
-                Description = description,
-                CountryCode = countryCode,
-                EmailContacts = emails,
-                AbuseContacts = emails,
-                LookingGlassUrl = lookingGlass
-            };
-        }
-
-        private async Task<AsnDetailsModel> ExtractAsDetailsFromDriverAsync(IWebDriver driver, int asNumber)
-        {
-            var h1TitleElement = driver.FindElement(By.TagName("h1"));
-            var asn = h1TitleElement.Text.Split(new string[]{" "}, StringSplitOptions.None)[0].Substring(2);
-            var name = h1TitleElement.Text.Replace($"AS{asn} ", "");
-            var description = name;
-
-            // divs with classes "asleft" and "asright" are always present,
-            // so we can use them to get country code and looking glass url
-            var leftDivs = driver.FindElements(By.ClassName("asleft"));
-            var rightDivs = driver.FindElements(By.ClassName("asright"));
-
-            var divWhois = ExtractDivWhoisFrom(driver.PageSource);
-            var countryCode = await ExtractCountryCodeFromDivWhoisAsync(divWhois);
-            
-            var indexOfLookingGlassDiv = leftDivs.IndexOf(leftDivs.SingleOrDefault(div => div.Text.Contains("Looking Glass")));
-            var lookingGlass = indexOfLookingGlassDiv != -1 ? rightDivs.ElementAt(indexOfLookingGlassDiv).Text : null;
-
-            var emails = ExtractEmailsFrom(divWhois);
-
-            return new AsnDetailsModel
-            {
-                ASN = int.Parse(asn),
-                Name = name,
-                Description = description,
-                CountryCode = countryCode,
-                EmailContacts = emails,
-                AbuseContacts = emails,
-                LookingGlassUrl = lookingGlass
-            };
-        } 
-
-        private IEnumerable<PrefixWithAsNumber> ExtractAsDataFromIpInfoElement(IWebElement ipInfoElement)
-            => ipInfoElement.FindElement(By.TagName("table"))
-                .FindElement(By.TagName("tbody"))
-                .FindElements(By.TagName("tr"))
-                .Select(tr => tr.FindElements(By.TagName("td")))
-                .Select(tds => new PrefixWithAsNumber {
-                    AsNumberStr = tds.ElementAt(0).FindElement(By.TagName("a")).GetAttribute("innerHTML").Substring(2),
-                    Prefix = tds.ElementAt(1).FindElement(By.TagName("a")).GetAttribute("innerHTML"),
-                    Name = tds.ElementAt(2).GetAttribute("innerHTML"),
-                    Description = tds.ElementAt(2).GetAttribute("innerHTML")
-                });
-
-        #endregion
-
-        public AsnDetailsModel GetAsnDetails(int asNumber)
-        {
-            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}");
-            return ExtractAsDetailsFromDriver(driver, asNumber);
-        }
-
-        // Not supported by bgp.he.net
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnDownstreams(int asNumber)
-        {
-            return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(
+            => GetAsnDownstreamsAsync(asNumber).GetAwaiter().GetResult();
+
+        // Not supported by bgp.he.net, so return a Null Object
+        public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnDownstreamsAsync(int asNumber)
+            => Task.FromResult(new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(
                 new AsnDetailsModel[]{}, 
                 new AsnDetailsModel[]{}
-            );    
-        }
+            ));    
 
         public IEnumerable<IxModel> GetAsnIxs(int asNumber)
         {
-            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}");
+            var driver = GetDriverWithValidatedResponseFrom(BuildAsnDetailsEndpoint(asNumber));
             var brTagSplitArg = new string[]{"<br>"};
             if(driver.PageSource.Contains("exchange_table"))
             {
@@ -317,11 +78,14 @@ namespace BGPViewerCore.Service
                     }
                 }   
             }
-        }
+        }        
+
+        public Task<IEnumerable<IxModel>> GetAsnIxsAsync(int asNumber) 
+            => Task.FromResult(GetAsnIxs(asNumber));
 
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnPeers(int asNumber)
         {
-            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}");
+            var driver = GetDriverWithValidatedResponseFrom(BuildAsnDetailsEndpoint(asNumber));
             
             var hasIPv4Peers = driver.PageSource.Contains("table_peers4");
             var hasIPv6Peers = driver.PageSource.Contains("table_peers6");
@@ -335,14 +99,13 @@ namespace BGPViewerCore.Service
             return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(ipv4Peers, ipv6Peers);
         }
 
-        
+        public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnPeersAsync(int asNumber)
+            => Task.FromResult(GetAsnPeers(asNumber));
 
         public AsnPrefixesModel GetAsnPrefixes(int asNumber)
         {
             var driver = GetDriverWithValidatedResponseFrom(BuildAsnDetailsEndpoint(asNumber));
-
             var prefixes = ExtractPrefixesFromDriver(driver, true);
-
             return new AsnPrefixesModel
             {
                 ASN = asNumber,
@@ -351,105 +114,11 @@ namespace BGPViewerCore.Service
             };  
         }
 
+        public Task<AsnPrefixesModel> GetAsnPrefixesAsync(int asNumber) 
+            => Task.FromResult(GetAsnPrefixes(asNumber));
+
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnUpstreams(int asNumber)
-        {
-            var toppeertables = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}")
-                .FindElements(By.ClassName("toppeertable"))
-                .Select(table => table.Text);   
-            
-            var hasIpv4Upstreams = toppeertables.Count() >= 1;
-            var hasIpv6Upstreams = toppeertables.Count() >= 2;
-
-            var ipv4Upstreams = hasIpv4Upstreams ? ExtractAsnsAndNamesFromToppertable(toppeertables.ElementAt(0))
-                    : new AsnModel[]{};
-
-            var ipv6Upstreams = hasIpv6Upstreams ? ExtractAsnsAndNamesFromToppertable(toppeertables.ElementAt(1))
-                    : new AsnModel[]{};
-
-            return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(ipv4Upstreams, ipv6Upstreams);
-        }
-
-        public IpDetailModel GetIpDetails(string ipAddress)
-        {
-            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/ip/{ipAddress}");
-            var ipInfoElement = driver.FindElement(By.Id("ipinfo"));
-
-            var ipDetails = new IpDetailModel { IPAddress = ipAddress };
-
-            using(var reader = new StringReader(ipInfoElement.Text))
-            {
-                // reads the first line, which contains ip address and, sometimes, dns record between ()
-                // Ex 8.8.8.8 (dns.google)
-                var ipAndPtrRecord = reader.ReadLine();
-                var hasPtrRecord = ipAndPtrRecord.Contains("(");
-                ipDetails.PtrRecord = hasPtrRecord ? Regex.Match(ipAndPtrRecord, @"\(([^\)]+)\)").Value.Trim('(', ')') : null;
-            }
-            
-            ipDetails.RelatedPrefixes = ExtractAsDataFromIpInfoElement(ipInfoElement)
-                .GroupBy(data => data.Prefix)
-                .Select(px => new PrefixDetailModel {
-                    Prefix = px.Key,
-                    Name = px.ElementAt(0).Name,
-                    Description = px.ElementAt(0).Description,
-                    ParentAsns = px.Select(x => new AsnModel {
-                        ASN = int.Parse(x.AsNumberStr),
-                        Name = x.Name,
-                        Description = x.Description,
-                        CountryCode = null
-                    })});
-
-            ipDetails.RIRAllocationPrefix = ipDetails.RelatedPrefixes.ElementAt(0).Prefix;
-            ipDetails.CountryCode = ExtractCountryCodeFromDivWhois(ExtractDivWhoisFrom(driver.PageSource));
-            
-            return ipDetails;
-        }
-
-        public PrefixDetailModel GetPrefixDetails(string prefix, byte cidr)
-        {
-            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/net/{prefix}/{cidr}");
-            
-            var asnDetailsExtractedFromNetinfoDiv = ExtractPrefixAndAsnInfoFromNetInfoDivTable(driver)
-                .GroupBy(data => data.AsNumberStr)
-                .Select(grouped => new AsnModel {
-                    ASN = int.Parse(grouped.ElementAt(0).AsNumberStr),
-                    Name = grouped.ElementAt(0).Name,
-                    Description = grouped.ElementAt(0).Description,
-                    CountryCode = null
-                }).ToArray();
-
-            var ownerPrefix = asnDetailsExtractedFromNetinfoDiv[0];
-            ownerPrefix.CountryCode = ExtractCountryCodeFromDivWhois(ExtractDivWhoisFrom(driver.PageSource));
-
-            return new PrefixDetailModel {
-                Prefix = $"{prefix}/{cidr}",
-                Name = ownerPrefix.Name,
-                Description = ownerPrefix.Description,
-                ParentAsns = asnDetailsExtractedFromNetinfoDiv
-            };
-        }
-
-        
-
-        public void Dispose() => _driver.Dispose();
-
-        public Task<AsnDetailsModel> GetAsnDetailsAsync(int asNumber)
-        {
-            var driver = GetDriverWithValidatedResponseFrom(BuildAsnDetailsEndpoint(asNumber));
-            return ExtractAsDetailsFromDriverAsync(driver, asNumber);
-        }
-
-        public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnDownstreamsAsync(int asNumber)
-            => Task.FromResult(new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(
-                new AsnDetailsModel[]{}, 
-                new AsnDetailsModel[]{}
-            ));    
-        
-
-        public Task<IEnumerable<IxModel>> GetAsnIxsAsync(int asNumber) => Task.FromResult(GetAsnIxs(asNumber));
-
-        public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnPeersAsync(int asNumber)
-            => Task.FromResult(GetAsnPeers(asNumber));
-        public Task<AsnPrefixesModel> GetAsnPrefixesAsync(int asNumber) => Task.FromResult(GetAsnPrefixes(asNumber));
+            => GetAsnUpstreamsAsync(asNumber).GetAwaiter().GetResult();
 
         public async Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnUpstreamsAsync(int asNumber)
         {
@@ -469,9 +138,12 @@ namespace BGPViewerCore.Service
             return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(ipv4Upstreams, ipv6Upstreams);
         }
 
+        public IpDetailModel GetIpDetails(string ipAddress) 
+            => GetIpDetailsAsync(ipAddress).GetAwaiter().GetResult();
+
         public async Task<IpDetailModel> GetIpDetailsAsync(string ipAddress)
         {
-            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/ip/{ipAddress}");
+            var driver = GetDriverWithValidatedResponseFrom(BuildIpDetailsEndpoint(ipAddress));
             var ipInfoElement = driver.FindElement(By.Id("ipinfo"));
 
             var ipDetails = new IpDetailModel { IPAddress = ipAddress };
@@ -504,6 +176,9 @@ namespace BGPViewerCore.Service
             return ipDetails;
         }
 
+        public PrefixDetailModel GetPrefixDetails(string prefix, byte cidr)
+            => GetPrefixDetailsAsync(prefix, cidr).GetAwaiter().GetResult();
+
         public async Task<PrefixDetailModel> GetPrefixDetailsAsync(string prefix, byte cidr)
         {
             var driver = GetDriverWithValidatedResponseFrom(BuildPrefixDetailsEndpoint(prefix, cidr));
@@ -529,6 +204,7 @@ namespace BGPViewerCore.Service
         }
 
         public SearchModel SearchBy(string queryTerm) => SearchByAsync(queryTerm).GetAwaiter().GetResult();        
+        
         public async Task<SearchModel> SearchByAsync(string queryTerm)
         {
             if(int.TryParse(queryTerm, out int asNumber)) return await SearchingByAsnAsync(asNumber);
@@ -628,6 +304,176 @@ namespace BGPViewerCore.Service
             };
         }
 
+        public void Dispose() => _driver.Dispose();
+
+        #region Routines
+
+        private string BuildAsnDetailsEndpoint(int asNumber) => $"{BASE_ENDPOINT_URL}/AS{asNumber}";
+        private string BuildPrefixDetailsEndpoint(string prefix, byte cidr) => $"{BASE_ENDPOINT_URL}/net/{prefix}/{cidr}";
+        private string BuildIpDetailsEndpoint(string ipAddress) => $"{BASE_ENDPOINT_URL}/ip/{ipAddress}";
+        private string BuildSearchByQueryEndpoint(string queryTerm) => $"{BASE_ENDPOINT_URL}/search?search%5Bsearch%5D={queryTerm.Replace(' ', '+')}&commit=Search";
+        private IWebDriver GetDriverWithValidatedResponseFrom(string url)
+        {
+            var wb = new WebDriverWait(_driver, _timeout);
+            _driver.Navigate().GoToUrl(url);
+            wb.Until(x => x.Url == url);
+            if(!CheckIfDataExists(_driver))
+                throw new KeyNotFoundException("Your query did not return any results.");
+            return _driver;
+        }
+
+        private bool CheckIfDataExists(IWebDriver driver) => driver.FindElements(By.Id("error")).Count <= 0;
+
+        private IEnumerable<string> ExtractEmailsFrom(string content)
+            => Regex.Matches(content, EMAIL_PATTERN)
+            .Cast<Match>()
+            .Select(match => match.Value);
+                
+        private string ExtractDivWhoisFrom(string content)
+        {
+            var whoisDivStartIndex = content.IndexOf(@"<div id=""whois"" class=""tabdata hidden"">");
+            if(whoisDivStartIndex < 0) throw new System.ArgumentException($"{content} doesn't contains div whois.");
+            var whoisDivlength = content.IndexOf("</div>", whoisDivStartIndex) - whoisDivStartIndex;
+            return  content.Substring(whoisDivStartIndex, whoisDivlength);
+        }
+
+        private async Task<IEnumerable<AsnModel>> ExtractAsnsAndNamesFromToppertableAsync(string toppeertableText)
+        {            
+            using(var reader = new StringReader(toppeertableText.Split(new string[]{"ASN Name"}, StringSplitOptions.None)[1].TrimStart()))
+            {
+                var separator = new string[]{" "};
+                var set = new HashSet<AsnModel>();
+                while(reader.Peek() > 0)
+                {
+                    var line = await reader.ReadLineAsync();
+                    var asnAndName = line.Split(separator, StringSplitOptions.None);
+                    var asn = asnAndName[0].Substring(2);
+                    var name = line.Replace($"AS{asn}", "").TrimStart();
+                    set.Add(new AsnModel {
+                        ASN = int.Parse(asn),
+                        Name = name,
+                        Description = name,
+                        CountryCode = null
+                    });
+                }
+                return set;
+            }
+        }
+
+        private IEnumerable<AsnModel> ExtractAsnsInfoFromPeerTable(IWebElement peerTable)
+        {
+            var tdList = peerTable.FindElement(By.TagName("tbody"))
+                .FindElements(By.TagName("tr"))
+                .Select(tr => tr.FindElements(By.TagName("td")));
+            foreach (var td in tdList)
+            {
+                var asn = td.ElementAt(3).FindElement(By.TagName("a")).GetAttribute("innerHTML").Substring(2);
+                var tdWithNameAndCountry = td.ElementAt(1);
+                var innerHtmlOfTdWithNameAndCountry = tdWithNameAndCountry.GetAttribute("innerHTML");
+                var name = innerHtmlOfTdWithNameAndCountry.Substring(0, innerHtmlOfTdWithNameAndCountry.IndexOf("<div")); // Gets only the portion with asn name
+                var description = name;
+                yield return new AsnModel {
+                    ASN = int.Parse(asn),
+                    Name = name,
+                    Description = name,
+                    CountryCode = null
+                };
+            }
+        }
+
+        private IEnumerable<PrefixWithAsNumber> ExtractPrefixAndAsnInfoFromNetInfoDivTable(IWebDriver driver) 
+        {
+            var tables = driver.FindElement(By.Id("netinfo"))
+                .FindElements(By.TagName("table"));
+
+            int correctNumberOfTableRows = 3; // Each table has to match 3 rows (asn, prefix and name)
+
+            foreach (var table in tables)
+            {
+                var matches = Regex.Matches(table.GetAttribute("innerHTML"), @"<a.*>.*<\/a>|<td>.*<\/td>");
+                var isNumberOfRowsCorrect = matches.Count % correctNumberOfTableRows == 0; 
+                if(!isNumberOfRowsCorrect) throw new ArgumentException($"Incorrect input HTML. It was expected 3 matches and got {matches.Count}.", "tableInnerHtml");
+
+                for (int i = 0; i < matches.Count; i+=3)
+                {
+                    var asnStr = Regex.Match(matches[i].Value, ASN_PATTERN).Value.Substring(2);
+
+                    var prefix = Regex.IsMatch(matches[i+1].Value, IPV4_PREFIX_PATTERN) ? 
+                        Regex.Match(matches[i+1].Value, IPV4_PREFIX_PATTERN).Value : Regex.Match(matches[i+1].Value, IPV6_PREFIX_PATTERN).Value;
+
+                    var nameOrDescription = matches[i+2].Value.Replace("<td>", "").Replace("</td>", "");
+
+                    yield return new PrefixWithAsNumber {
+                        AsNumberStr = asnStr,
+                        Name = nameOrDescription,
+                        Description = nameOrDescription,
+                        Prefix = prefix
+                    };
+                }
+            }
+        }
+
+        private async Task<string> ExtractCountryCodeFromDivWhoisAsync(string divWhois)
+        {
+            using(var reader = new StringReader(divWhois))
+            {
+                while(reader.Peek() > 0)
+                {
+                    var line = await reader.ReadLineAsync();
+                    if(Regex.IsMatch(line, "Country:") || Regex.IsMatch(line, "country:"))
+                    {
+                        var splitted = line.Split(new string[]{" "}, StringSplitOptions.None);
+                        return splitted.Last();
+                    }
+                }
+                return null;
+            }
+        }
+
+        private async Task<AsnDetailsModel> ExtractAsDetailsFromDriverAsync(IWebDriver driver, int asNumber)
+        {
+            var h1TitleElement = driver.FindElement(By.TagName("h1"));
+            var asn = h1TitleElement.Text.Split(new string[]{" "}, StringSplitOptions.None)[0].Substring(2);
+            var name = h1TitleElement.Text.Replace($"AS{asn} ", "");
+            var description = name;
+
+            // divs with classes "asleft" and "asright" are always present,
+            // so we can use them to get country code and looking glass url
+            var leftDivs = driver.FindElements(By.ClassName("asleft"));
+            var rightDivs = driver.FindElements(By.ClassName("asright"));
+
+            var divWhois = ExtractDivWhoisFrom(driver.PageSource);
+            var countryCode = await ExtractCountryCodeFromDivWhoisAsync(divWhois);
+            
+            var indexOfLookingGlassDiv = leftDivs.IndexOf(leftDivs.SingleOrDefault(div => div.Text.Contains("Looking Glass")));
+            var lookingGlass = indexOfLookingGlassDiv != -1 ? rightDivs.ElementAt(indexOfLookingGlassDiv).Text : null;
+
+            var emails = ExtractEmailsFrom(divWhois);
+
+            return new AsnDetailsModel
+            {
+                ASN = int.Parse(asn),
+                Name = name,
+                Description = description,
+                CountryCode = countryCode,
+                EmailContacts = emails,
+                AbuseContacts = emails,
+                LookingGlassUrl = lookingGlass
+            };
+        } 
+
+        private IEnumerable<PrefixWithAsNumber> ExtractAsDataFromIpInfoElement(IWebElement ipInfoElement)
+            => ipInfoElement.FindElement(By.TagName("table"))
+                .FindElement(By.TagName("tbody"))
+                .FindElements(By.TagName("tr"))
+                .Select(tr => tr.FindElements(By.TagName("td")))
+                .Select(tds => new PrefixWithAsNumber {
+                    AsNumberStr = tds.ElementAt(0).FindElement(By.TagName("a")).GetAttribute("innerHTML").Substring(2),
+                    Prefix = tds.ElementAt(1).FindElement(By.TagName("a")).GetAttribute("innerHTML"),
+                    Name = tds.ElementAt(2).GetAttribute("innerHTML"),
+                    Description = tds.ElementAt(2).GetAttribute("innerHTML")
+                });
+
         private SearchModel SearchingByPrefix(string prefix, string cidr, bool ipv6Output = false)
         {
             var driver = GetDriverWithValidatedResponseFrom(BuildPrefixDetailsEndpoint(prefix, byte.Parse(cidr)));
@@ -712,6 +558,8 @@ namespace BGPViewerCore.Service
             => Regex.Matches(tablePrefixes.GetAttribute("innerHTML"), pattern)
                     .Cast<Match>()
                     .Select(x => x.Value)
-                    .Distinct();        
+                    .Distinct();       
+
+        #endregion
     }
 }
