@@ -28,4 +28,4 @@ jobs:
       env:
         NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         SOURCE: ${{ secrets.NUGET_SERVER }}
-      run: dotnet nuget push *.nupkg --api-key $NUGET_API_KEY --source $SOURCE --skip-duplicate
+      run: dotnet nuget push *.nupkg --api-key $NUGET_API_KEY --source $SOURCE
