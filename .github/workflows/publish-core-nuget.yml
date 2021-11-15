@@ -28,5 +28,5 @@ jobs:
       env:
         NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         VERSION: ${{ 1.0.0 }}
-        SOURCE: ${{ https://api.nuget.org/v3/index.json }}
-      run: dotnet nuget push BGPViewerCore.$VERSION.nupkg --api-key $NUGET_API_KEY --source $SOURCE
+        SOURCE: ${{ secrets.NUGET_SERVER }}
+      run: dotnet nuget push *.nupkg --api-key $NUGET_API_KEY --source $SOURCE --skip-duplicate
