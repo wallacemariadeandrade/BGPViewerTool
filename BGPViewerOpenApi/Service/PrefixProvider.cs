@@ -12,11 +12,7 @@ namespace BGPViewerOpenApi.Service
             this.apiProvider = apiProvider;
         }
 
-        internal async Task<PrefixDetailModel> GetDetailsAsync(int apiId, string prefix, byte cidr)
-        {
-            var api = apiProvider.GetApiById(apiId);
-
-            return await Task.FromResult(api.GetPrefixDetails(prefix, cidr));
-        }
+        internal Task<PrefixDetailModel> GetDetailsAsync(int apiId, string prefix, byte cidr)
+            => apiProvider.GetApiById(apiId).GetPrefixDetailsAsync(prefix, cidr);
     }
 }

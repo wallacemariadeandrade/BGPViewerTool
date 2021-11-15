@@ -11,11 +11,7 @@ namespace BGPViewerOpenApi.Service
             this.apiProvider = apiProvider;
         }
 
-        internal async Task<IpDetailModel> GetDetailsAsync(string ipAddress, int apiId)
-        {
-            var api = apiProvider.GetApiById(apiId);
-
-            return await Task.FromResult(api.GetIpDetails(ipAddress));
-        }
+        internal Task<IpDetailModel> GetDetailsAsync(string ipAddress, int apiId)
+            => apiProvider.GetApiById(apiId).GetIpDetailsAsync(ipAddress);
     }
 }

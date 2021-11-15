@@ -14,18 +14,14 @@ namespace BGPViewerOpenApi.Service
             this.apiProvider = apiProvider;
         }
 
-        internal async Task<AsnDetailsModel> GetDetailsAsync(int apiId, int asNumber)
-        {
-            var api = apiProvider.GetApiById(apiId);
-
-            return await Task.FromResult(api.GetAsnDetails(asNumber));
-        }
+        internal Task<AsnDetailsModel> GetDetailsAsync(int apiId, int asNumber)
+            => apiProvider.GetApiById(apiId).GetAsnDetailsAsync(asNumber);
 
         internal async Task<Peers> GetPeersAsync(int apiId, int asNumber)
         {
             var api = apiProvider.GetApiById(apiId);
 
-            var peersTuple = await Task.FromResult(api.GetAsnPeers(asNumber));
+            var peersTuple = await api.GetAsnPeersAsync(asNumber);
 
             return new Peers {
                 IPv4 = peersTuple.Item1,
@@ -37,7 +33,7 @@ namespace BGPViewerOpenApi.Service
         {
             var api = apiProvider.GetApiById(apiId);
 
-            var upstreamsTuple = await Task.FromResult(api.GetAsnUpstreams(asNumber));
+            var upstreamsTuple = await api.GetAsnUpstreamsAsync(asNumber);
 
             return new Peers {
                 IPv4 = upstreamsTuple.Item1,
@@ -49,7 +45,7 @@ namespace BGPViewerOpenApi.Service
         {
             var api = apiProvider.GetApiById(apiId);
 
-            var downstreamsTuple = await Task.FromResult(api.GetAsnDownstreams(asNumber));
+            var downstreamsTuple = await api.GetAsnDownstreamsAsync(asNumber);
 
             return new Peers {
                 IPv4 = downstreamsTuple.Item1,
@@ -57,18 +53,10 @@ namespace BGPViewerOpenApi.Service
             };
         }
 
-        internal async Task<IEnumerable<IxModel>> GetIxsAsync(int apiId, int asNumber)
-        {
-            var api = apiProvider.GetApiById(apiId);
+        internal Task<IEnumerable<IxModel>> GetIxsAsync(int apiId, int asNumber)
+            => apiProvider.GetApiById(apiId).GetAsnIxsAsync(asNumber);
 
-            return await Task.FromResult(api.GetAsnIxs(asNumber));
-        }
-
-        internal async Task<AsnPrefixesModel> GetPrefixesAsync(int apiId, int asNumber)
-        {
-            var api = apiProvider.GetApiById(apiId);
-
-            return await Task.FromResult(api.GetAsnPrefixes(asNumber));
-        }
+        internal Task<AsnPrefixesModel> GetPrefixesAsync(int apiId, int asNumber)
+            => apiProvider.GetApiById(apiId).GetAsnPrefixesAsync(asNumber);
     }
 }
