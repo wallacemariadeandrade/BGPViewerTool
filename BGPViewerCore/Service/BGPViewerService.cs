@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace BGPViewerCore.Service
 {
@@ -29,9 +30,126 @@ namespace BGPViewerCore.Service
         /// <returns> 
         /// An AsnDetailsModel containg some data like description, name, contacts, etc.
          /// </returns>
-        public AsnDetailsModel GetAsnDetails(int asNumber)
+        public AsnDetailsModel GetAsnDetails(int asNumber) 
+            => GetAsnDetailsAsync(asNumber).GetAwaiter().GetResult();
+
+        /// <summary>
+        /// Retrieve provided AS's known prefixes.
+        /// </summary>
+        /// <param name="asNumber">The AS number that prefixes are being looked for.</param>
+        /// <returns> 
+        /// Known IPv4 and IPv6 prefixes.
+        /// </returns>
+        public AsnPrefixesModel GetAsnPrefixes(int asNumber)
+            => GetAsnPrefixesAsync(asNumber).GetAwaiter().GetResult();
+
+        /// <summary>
+        /// Retrieve provided AS peers.
+        /// </summary>
+        /// <param name="asNumber">The AS number that is being looked for.</param>
+        /// <returns> 
+        /// Known IPv4 and IPv6 peers.
+        /// </returns>
+        /// <remarks>
+        /// Tuple item1 contains IPv4 peers and item2 IPv6 peers.
+        /// </remarks>
+        public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnPeers(int asNumber)
+            => GetAsnPeersAsync(asNumber).GetAwaiter().GetResult();
+
+        /// <summary>
+        /// Retrieve provided AS upstreams.
+        /// </summary>
+        /// <param name="asNumber">The AS number that is being looked for.</param>
+        /// <returns> 
+        /// Known IPv4 and IPv6 upstreams.
+        /// </returns>
+        /// <remarks>
+        /// Tuple item1 contains IPv4 upstreams and item2 IPv6 upstreams.
+        /// </remarks>
+        public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnUpstreams(int asNumber)
+            => GetAsnUpstreamsAsync(asNumber).GetAwaiter().GetResult();
+
+        /// <summary>
+        /// Retrieve provided AS peers.
+        /// </summary>
+        /// <param name="asNumber">The AS number that is being looked for.</param>
+        /// <returns> 
+        /// Known IPv4 and IPv6 peers.
+        /// </returns>
+        /// <remarks>
+        /// Tuple item1 contains IPv4 peers and item2 IPv6 peers.
+        /// </remarks>
+        public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnDownstreams(int asNumber)
+            => GetAsnDownstreamsAsync(asNumber).GetAwaiter().GetResult();
+
+        /// <summary>
+        /// Retrieve IX's where provided AS is present.
+        /// </summary>
+        /// <param name="asNumber">The IX's AS number participant.</param>
+        /// <returns> 
+        /// A collection containg known IX's where provided AS is present.
+        /// </returns>
+        public IEnumerable<IxModel> GetAsnIxs(int asNumber)
+            => GetAsnIxsAsync(asNumber).GetAwaiter().GetResult();
+
+        /// <summary>
+        /// Retrieve provided IP details.
+        /// </summary>
+        /// <param name="ipAddress">The IP address that is being looked for.</param>
+        /// <returns> 
+        /// Details about provided IP address like PTR record, country code, allocation prefix and so on.
+        /// </returns>
+        public IpDetailModel GetIpDetails(string ipAddress)
+            => GetIpDetailsAsync(ipAddress).GetAwaiter().GetResult();
+
+        /// <summary>
+        /// Retrieve provided prefix details.
+        /// </summary>
+        /// <param name="prefix">The prefix that is being looked for.</param>
+        /// <param name="cidr">The prefix cidr.</param>
+        /// <returns> 
+        /// Details about provided prefix like parent AS numbers, name, description and so on.
+        /// </returns>
+        public PrefixDetailModel GetPrefixDetails(string prefix, byte cidr)
+            => GetPrefixDetailsAsync(prefix, cidr).GetAwaiter().GetResult();
+
+        /// <summary>
+        /// Searches data on API based on provided term.
+        /// </summary>
+        /// <param name="queryTerm">The query term that will be used to look for.</param>
+        /// <returns> 
+        /// Details about provided prefix like parent AS numbers, name, description and so on.
+        /// </returns>
+        /// <remarks>
+        /// Common query terms are AS number, name, description, IP address and prefix.
+        /// </remarks>
+        public SearchModel SearchBy(string queryTerm)
+            => SearchByAsync(queryTerm).GetAwaiter().GetResult();
+
+        private IEnumerable<AsnModel> ExtractInfoFromArray(JsonElement jsonArrayElement)
+            => jsonArrayElement.EnumerateArray()
+                .Select(peer => new AsnModel {
+                    ASN = peer.GetProperty("asn").GetInt32(),
+                    Name = peer.GetProperty("name").GetString(),
+                    Description = peer.GetProperty("description").GetString(),
+                    CountryCode = peer.GetProperty("country_code").GetString()
+                }
+            );
+    
+        private void ValidateStatus(JsonDocument rawJson)
         {
-            var jsonData = _jsonApi.RetrieveAsnDetails(asNumber);
+            if(rawJson.RootElement.GetProperty("status").GetString() != "ok")
+                throw new ArgumentException(rawJson.RootElement.GetProperty("status_message").GetString());
+        }
+
+        public void Dispose()
+        {
+            _jsonApi = null;
+        }
+
+        public async Task<AsnDetailsModel> GetAsnDetailsAsync(int asNumber)
+        {
+            var jsonData = await _jsonApi.RetrieveAsnDetailsAsync(asNumber);
             ValidateStatus(jsonData);
             var dataElement = jsonData.RootElement.GetProperty("data");   
             return new AsnDetailsModel 
@@ -52,16 +170,52 @@ namespace BGPViewerCore.Service
             };
         }
 
-        /// <summary>
-        /// Retrieve provided AS's known prefixes.
-        /// </summary>
-        /// <param name="asNumber">The AS number that prefixes are being looked for.</param>
-        /// <returns> 
-        /// Known IPv4 and IPv6 prefixes.
-        /// </returns>
-        public AsnPrefixesModel GetAsnPrefixes(int asNumber)
+        public async Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnDownstreamsAsync(int asNumber)
         {
-            var jsonData = _jsonApi.RetrieveAsnPrefixes(asNumber);
+            var jsonData = await _jsonApi.RetrieveAsnDownstreamsAsync(asNumber);
+            ValidateStatus(jsonData);
+            var dataElement = jsonData.RootElement.GetProperty("data");
+            return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(
+                item1: ExtractInfoFromArray(dataElement.GetProperty("ipv4_downstreams")),
+                item2: ExtractInfoFromArray(dataElement.GetProperty("ipv6_downstreams"))
+            );
+        }
+
+        public async Task<IEnumerable<IxModel>> GetAsnIxsAsync(int asNumber)
+        {
+            var jsonData = await _jsonApi.RetrieveAsnIxsAsync(asNumber);
+            ValidateStatus(jsonData);
+            var dataElement = jsonData.RootElement.GetProperty("data");
+            return ExtractIxModelFromJsonArray(dataElement);
+        }
+
+        private IEnumerable<IxModel> ExtractIxModelFromJsonArray(JsonElement jsonArray)
+        {
+            foreach(var ixJson in jsonArray.EnumerateArray())
+                yield return new IxModel {
+                    Name = ixJson.GetProperty("name").GetString(),
+                    FullName = ixJson.GetProperty("name_full").GetString(),
+                    CountryCode = ixJson.GetProperty("country_code").GetString(),
+                    IPv4 = ixJson.GetProperty("ipv4_address").GetString(),
+                    IPv6 = ixJson.GetProperty("ipv6_address").GetString(),
+                    AsnSpeed = ixJson.GetProperty("speed").GetInt32()
+                };
+        }
+
+        public async Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnPeersAsync(int asNumber)
+        {
+            var jsonData = await _jsonApi.RetrieveAsnPeersAsync(asNumber);
+            ValidateStatus(jsonData);
+            var dataElement = jsonData.RootElement.GetProperty("data");
+            return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(
+                item1: ExtractInfoFromArray(dataElement.GetProperty("ipv4_peers")),
+                item2: ExtractInfoFromArray(dataElement.GetProperty("ipv6_peers"))
+            );
+        }
+
+        public async Task<AsnPrefixesModel> GetAsnPrefixesAsync(int asNumber)
+        {
+            var jsonData = await _jsonApi.RetrieveAsnPrefixesAsync(asNumber);
             ValidateStatus(jsonData);
             var dataElement = jsonData.RootElement.GetProperty("data");
             return new AsnPrefixesModel
@@ -76,42 +230,11 @@ namespace BGPViewerCore.Service
                 .EnumerateArray()
                 .Select(prefix => prefix.GetProperty("prefix").GetString()),
             };
-        } 
-
-        /// <summary>
-        /// Retrieve provided AS peers.
-        /// </summary>
-        /// <param name="asNumber">The AS number that is being looked for.</param>
-        /// <returns> 
-        /// Known IPv4 and IPv6 peers.
-        /// </returns>
-        /// <remarks>
-        /// Tuple item1 contains IPv4 peers and item2 IPv6 peers.
-        /// </remarks>
-        public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnPeers(int asNumber)
-        {
-            var jsonData = _jsonApi.RetrieveAsnPeers(asNumber);
-            ValidateStatus(jsonData);
-            var dataElement = jsonData.RootElement.GetProperty("data");
-            return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(
-                item1: ExtractInfoFromArray(dataElement.GetProperty("ipv4_peers")),
-                item2: ExtractInfoFromArray(dataElement.GetProperty("ipv6_peers"))
-            );
         }
 
-        /// <summary>
-        /// Retrieve provided AS upstreams.
-        /// </summary>
-        /// <param name="asNumber">The AS number that is being looked for.</param>
-        /// <returns> 
-        /// Known IPv4 and IPv6 upstreams.
-        /// </returns>
-        /// <remarks>
-        /// Tuple item1 contains IPv4 upstreams and item2 IPv6 upstreams.
-        /// </remarks>
-        public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnUpstreams(int asNumber)
+        public async Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnUpstreamsAsync(int asNumber)
         {
-            var jsonData = _jsonApi.RetrieveAsnUpstreams(asNumber);
+            var jsonData = await _jsonApi.RetrieveAsnUpstreamsAsync(asNumber);
             ValidateStatus(jsonData);
             var dataElement = jsonData.RootElement.GetProperty("data");
             return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(
@@ -120,60 +243,9 @@ namespace BGPViewerCore.Service
             );
         }
 
-        /// <summary>
-        /// Retrieve provided AS peers.
-        /// </summary>
-        /// <param name="asNumber">The AS number that is being looked for.</param>
-        /// <returns> 
-        /// Known IPv4 and IPv6 peers.
-        /// </returns>
-        /// <remarks>
-        /// Tuple item1 contains IPv4 peers and item2 IPv6 peers.
-        /// </remarks>
-        public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnDownstreams(int asNumber)
+        public async Task<IpDetailModel> GetIpDetailsAsync(string ipAddress)
         {
-            var jsonData = _jsonApi.RetrieveAsnDownstreams(asNumber);
-            ValidateStatus(jsonData);
-            var dataElement = jsonData.RootElement.GetProperty("data");
-            return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(
-                item1: ExtractInfoFromArray(dataElement.GetProperty("ipv4_downstreams")),
-                item2: ExtractInfoFromArray(dataElement.GetProperty("ipv6_downstreams"))
-            );
-        }
-
-        /// <summary>
-        /// Retrieve IX's where provided AS is present.
-        /// </summary>
-        /// <param name="asNumber">The IX's AS number participant.</param>
-        /// <returns> 
-        /// A collection containg known IX's where provided AS is present.
-        /// </returns>
-        public IEnumerable<IxModel> GetAsnIxs(int asNumber)
-        {
-            var jsonData =  _jsonApi.RetrieveAsnIxs(asNumber);
-            ValidateStatus(jsonData);
-            var dataElement = jsonData.RootElement.GetProperty("data");
-            foreach(var ixJson in dataElement.EnumerateArray())
-                yield return new IxModel {
-                    Name = ixJson.GetProperty("name").GetString(),
-                    FullName = ixJson.GetProperty("name_full").GetString(),
-                    CountryCode = ixJson.GetProperty("country_code").GetString(),
-                    IPv4 = ixJson.GetProperty("ipv4_address").GetString(),
-                    IPv6 = ixJson.GetProperty("ipv6_address").GetString(),
-                    AsnSpeed = ixJson.GetProperty("speed").GetInt32()
-                };
-        }
-
-        /// <summary>
-        /// Retrieve provided IP details.
-        /// </summary>
-        /// <param name="ipAddress">The IP address that is being looked for.</param>
-        /// <returns> 
-        /// Details about provided IP address like PTR record, country code, allocation prefix and so on.
-        /// </returns>
-        public IpDetailModel GetIpDetails(string ipAddress)
-        {
-            var jsonData = _jsonApi.RetrieveIpDetails(ipAddress);
+            var jsonData = await _jsonApi.RetrieveIpDetailsAsync(ipAddress);
             ValidateStatus(jsonData);
             var dataElement = jsonData.RootElement.GetProperty("data");
             return new IpDetailModel 
@@ -200,17 +272,9 @@ namespace BGPViewerCore.Service
             };
         }
 
-        /// <summary>
-        /// Retrieve provided prefix details.
-        /// </summary>
-        /// <param name="prefix">The prefix that is being looked for.</param>
-        /// <param name="cidr">The prefix cidr.</param>
-        /// <returns> 
-        /// Details about provided prefix like parent AS numbers, name, description and so on.
-        /// </returns>
-        public PrefixDetailModel GetPrefixDetails(string prefix, byte cidr)
+        public async Task<PrefixDetailModel> GetPrefixDetailsAsync(string prefix, byte cidr)
         {
-            var jsonData = _jsonApi.RetrievePrefixDetails(prefix, cidr);
+            var jsonData = await _jsonApi.RetrievePrefixDetailsAsync(prefix, cidr);
             ValidateStatus(jsonData);
             var dataElement = jsonData.RootElement.GetProperty("data");
             return new PrefixDetailModel 
@@ -229,19 +293,9 @@ namespace BGPViewerCore.Service
             };
         }
 
-        /// <summary>
-        /// Searches data on API based on provided term.
-        /// </summary>
-        /// <param name="queryTerm">The query term that will be used to look for.</param>
-        /// <returns> 
-        /// Details about provided prefix like parent AS numbers, name, description and so on.
-        /// </returns>
-        /// <remarks>
-        /// Common query terms are AS number, name, description, IP address and prefix.
-        /// </remarks>
-        public SearchModel SearchBy(string queryTerm)
+        public async Task<SearchModel> SearchByAsync(string queryTerm)
         {
-            var jsonData = _jsonApi.RetrieveSearchBy(queryTerm);
+            var jsonData = await _jsonApi.RetrieveSearchByAsync(queryTerm);
             ValidateStatus(jsonData);
             var dataElement = jsonData.RootElement.GetProperty("data");
             return new SearchModel
@@ -277,27 +331,6 @@ namespace BGPViewerCore.Service
                         Description = x.GetProperty("description").GetString()
                     }) 
             };
-        }
-
-        private IEnumerable<AsnModel> ExtractInfoFromArray(JsonElement jsonArrayElement)
-            => jsonArrayElement.EnumerateArray()
-                .Select(peer => new AsnModel {
-                    ASN = peer.GetProperty("asn").GetInt32(),
-                    Name = peer.GetProperty("name").GetString(),
-                    Description = peer.GetProperty("description").GetString(),
-                    CountryCode = peer.GetProperty("country_code").GetString()
-                }
-            );
-    
-        private void ValidateStatus(JsonDocument rawJson)
-        {
-            if(rawJson.RootElement.GetProperty("status").GetString() != "ok")
-                throw new ArgumentException(rawJson.RootElement.GetProperty("status_message").GetString());
-        }
-
-        public void Dispose()
-        {
-            _jsonApi = null;
         }
     }
 }

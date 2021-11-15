@@ -7,17 +7,20 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System.IO;
 using static BGPViewerCore.Service.RegexPatterns;
+using System.Threading.Tasks;
 
 namespace BGPViewerCore.Service
 {
     public class BGPHeService : IBGPViewerService
     {
+        private const string BASE_ENDPOINT_URL = "https://bgp.he.net";
+        private const string EMAIL_PATTERN = @"([a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)";
+
         protected class PrefixWithAsNumber : PrefixModel
         {
             public string AsNumberStr { get; set; }
         }
-
-        private const string EMAIL_PATTERN = @"([a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)";
+        
         private readonly IWebDriver _driver;
         private readonly TimeSpan _timeout;
         
@@ -27,8 +30,288 @@ namespace BGPViewerCore.Service
             _driver = driver;
         }
 
+        public AsnDetailsModel GetAsnDetails(int asNumber) 
+            => GetAsnDetailsAsync(asNumber).GetAwaiter().GetResult();
+
+        public Task<AsnDetailsModel> GetAsnDetailsAsync(int asNumber)
+        {
+            var driver = GetDriverWithValidatedResponseFrom(BuildAsnDetailsEndpoint(asNumber));
+            return ExtractAsDetailsFromDriverAsync(driver, asNumber);
+        }
+        
+        public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnDownstreams(int asNumber)
+            => GetAsnDownstreamsAsync(asNumber).GetAwaiter().GetResult();
+
+        // Not supported by bgp.he.net, so return a Null Object
+        public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnDownstreamsAsync(int asNumber)
+            => Task.FromResult(new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(
+                new AsnDetailsModel[]{}, 
+                new AsnDetailsModel[]{}
+            ));    
+
+        public IEnumerable<IxModel> GetAsnIxs(int asNumber)
+        {
+            var driver = GetDriverWithValidatedResponseFrom(BuildAsnDetailsEndpoint(asNumber));
+            var brTagSplitArg = new string[]{"<br>"};
+            if(driver.PageSource.Contains("exchange_table"))
+            {
+                foreach(var item in driver.FindElement(By.Id("exchange_table"))
+                    .FindElement(By.TagName("tbody")).FindElements(By.TagName("tr")).Select(x => x.FindElements(By.TagName("td"))))
+                {
+                    var ixName = item.ElementAt(0).FindElement(By.TagName("a")).GetAttribute("innerHTML").TrimStart().TrimEnd();
+                    var ixCountryCode = item.ElementAt(1).GetAttribute("innerHTML").TrimStart().TrimEnd();
+                    var ixIpv4Addresses = item.ElementAt(3).GetAttribute("innerHTML").TrimStart().TrimEnd().Split(brTagSplitArg, StringSplitOptions.None);
+                    var ixIpv6Addresses = item.ElementAt(4).GetAttribute("innerHTML").TrimStart().TrimEnd().Split(brTagSplitArg, StringSplitOptions.None);
+                    var ixIpv6AddressesCount = ixIpv6Addresses.Count();
+                    // We loop by IPv4 cause it'll be always equal to or 
+                    // greater than IPv6
+                    for(int index=0; index < ixIpv4Addresses.Count(); index++)
+                    {
+                        yield return new IxModel {
+                            Name = ixName,
+                            FullName = ixName,
+                            CountryCode = ixCountryCode,
+                            AsnSpeed = 0, // Information not given by bgp.he.net
+                            IPv4 = ixIpv4Addresses.ElementAt(index),
+                            IPv6 = index < ixIpv6AddressesCount ? ixIpv6Addresses.ElementAt(index) : null
+                        };             
+                    }
+                }   
+            }
+        }        
+
+        public Task<IEnumerable<IxModel>> GetAsnIxsAsync(int asNumber) 
+            => Task.FromResult(GetAsnIxs(asNumber));
+
+        public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnPeers(int asNumber)
+        {
+            var driver = GetDriverWithValidatedResponseFrom(BuildAsnDetailsEndpoint(asNumber));
+            
+            var hasIPv4Peers = driver.PageSource.Contains("table_peers4");
+            var hasIPv6Peers = driver.PageSource.Contains("table_peers6");
+            
+            var ipv4Peers = hasIPv4Peers ? ExtractAsnsInfoFromPeerTable(driver.FindElement(By.Id("peers")))
+                : new AsnModel[]{};
+
+            var ipv6Peers = hasIPv6Peers ? ExtractAsnsInfoFromPeerTable(driver.FindElement(By.Id("peers6")))
+                : new AsnModel[]{};
+            
+            return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(ipv4Peers, ipv6Peers);
+        }
+
+        public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnPeersAsync(int asNumber)
+            => Task.FromResult(GetAsnPeers(asNumber));
+
+        public AsnPrefixesModel GetAsnPrefixes(int asNumber)
+        {
+            var driver = GetDriverWithValidatedResponseFrom(BuildAsnDetailsEndpoint(asNumber));
+            var prefixes = ExtractPrefixesFromDriver(driver, true);
+            return new AsnPrefixesModel
+            {
+                ASN = asNumber,
+                IPv4 = prefixes.Item1.Select(model => model.Prefix),
+                IPv6 = prefixes.Item2.Select(model => model.Prefix)
+            };  
+        }
+
+        public Task<AsnPrefixesModel> GetAsnPrefixesAsync(int asNumber) 
+            => Task.FromResult(GetAsnPrefixes(asNumber));
+
+        public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnUpstreams(int asNumber)
+            => GetAsnUpstreamsAsync(asNumber).GetAwaiter().GetResult();
+
+        public async Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnUpstreamsAsync(int asNumber)
+        {
+            var toppeertables = GetDriverWithValidatedResponseFrom(BuildAsnDetailsEndpoint(asNumber))
+            .FindElements(By.ClassName("toppeertable"))
+            .Select(table => table.Text);   
+            
+            var hasIpv4Upstreams = toppeertables.Count() >= 1;
+            var hasIpv6Upstreams = toppeertables.Count() >= 2;
+
+            var ipv4Upstreams = hasIpv4Upstreams ? await ExtractAsnsAndNamesFromToppertableAsync(toppeertables.ElementAt(0))
+                    : new AsnModel[]{};
+
+            var ipv6Upstreams = hasIpv6Upstreams ? await ExtractAsnsAndNamesFromToppertableAsync(toppeertables.ElementAt(1))
+                    : new AsnModel[]{};
+
+            return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(ipv4Upstreams, ipv6Upstreams);
+        }
+
+        public IpDetailModel GetIpDetails(string ipAddress) 
+            => GetIpDetailsAsync(ipAddress).GetAwaiter().GetResult();
+
+        public async Task<IpDetailModel> GetIpDetailsAsync(string ipAddress)
+        {
+            var driver = GetDriverWithValidatedResponseFrom(BuildIpDetailsEndpoint(ipAddress));
+            var ipInfoElement = driver.FindElement(By.Id("ipinfo"));
+
+            var ipDetails = new IpDetailModel { IPAddress = ipAddress };
+
+            using(var reader = new StringReader(ipInfoElement.Text))
+            {
+                // reads the first line, which contains ip address and, sometimes, dns record between ()
+                // Ex 8.8.8.8 (dns.google)
+                var ipAndPtrRecord = await reader.ReadLineAsync();
+                var hasPtrRecord = ipAndPtrRecord.Contains("(");
+                ipDetails.PtrRecord = hasPtrRecord ? Regex.Match(ipAndPtrRecord, @"\(([^\)]+)\)").Value.Trim('(', ')') : null;
+            }
+            
+            ipDetails.RelatedPrefixes = ExtractAsDataFromIpInfoElement(ipInfoElement)
+                .GroupBy(data => data.Prefix)
+                .Select(px => new PrefixDetailModel {
+                    Prefix = px.Key,
+                    Name = px.ElementAt(0).Name,
+                    Description = px.ElementAt(0).Description,
+                    ParentAsns = px.Select(x => new AsnModel {
+                        ASN = int.Parse(x.AsNumberStr),
+                        Name = x.Name,
+                        Description = x.Description,
+                        CountryCode = null
+                    })});
+
+            ipDetails.RIRAllocationPrefix = ipDetails.RelatedPrefixes.ElementAt(0).Prefix;
+            ipDetails.CountryCode = await ExtractCountryCodeFromDivWhoisAsync(ExtractDivWhoisFrom(driver.PageSource));
+            
+            return ipDetails;
+        }
+
+        public PrefixDetailModel GetPrefixDetails(string prefix, byte cidr)
+            => GetPrefixDetailsAsync(prefix, cidr).GetAwaiter().GetResult();
+
+        public async Task<PrefixDetailModel> GetPrefixDetailsAsync(string prefix, byte cidr)
+        {
+            var driver = GetDriverWithValidatedResponseFrom(BuildPrefixDetailsEndpoint(prefix, cidr));
+            
+            var asnDetailsExtractedFromNetinfoDiv = ExtractPrefixAndAsnInfoFromNetInfoDivTable(driver)
+                .GroupBy(data => data.AsNumberStr)
+                .Select(grouped => new AsnModel {
+                    ASN = int.Parse(grouped.ElementAt(0).AsNumberStr),
+                    Name = grouped.ElementAt(0).Name,
+                    Description = grouped.ElementAt(0).Description,
+                    CountryCode = null
+                }).ToArray();
+
+            var ownerPrefix = asnDetailsExtractedFromNetinfoDiv[0];
+            ownerPrefix.CountryCode = await ExtractCountryCodeFromDivWhoisAsync(ExtractDivWhoisFrom(driver.PageSource));
+
+            return new PrefixDetailModel {
+                Prefix = $"{prefix}/{cidr}",
+                Name = ownerPrefix.Name,
+                Description = ownerPrefix.Description,
+                ParentAsns = asnDetailsExtractedFromNetinfoDiv
+            };
+        }
+
+        public SearchModel SearchBy(string queryTerm) => SearchByAsync(queryTerm).GetAwaiter().GetResult();        
+        
+        public async Task<SearchModel> SearchByAsync(string queryTerm)
+        {
+            if(int.TryParse(queryTerm, out int asNumber)) return await SearchingByAsnAsync(asNumber);
+            else if(Regex.IsMatch(queryTerm, IPV4_PREFIX_PATTERN))
+            {
+                var prefix = queryTerm.Split('/')[0];
+                var cidr = queryTerm.Split('/')[1];
+                return SearchingByPrefix(prefix, cidr);
+            }
+            else if(Regex.IsMatch(queryTerm, IPV6_PREFIX_PATTERN))
+            {
+                var prefix = queryTerm.Split('/')[0];
+                var cidr = queryTerm.Split('/')[1];
+                return SearchingByPrefix(cidr, prefix, true);
+            }
+            else if(Regex.IsMatch(queryTerm, IPV4_ADDRESS_PATTERN)) return SearchingByIpAddress(queryTerm);
+            else if(Regex.IsMatch(queryTerm, IPV6_ADDRESS_PATTERN)) return SearchingByIpAddress(queryTerm, true);
+            else
+            {
+                var driver = GetDriverWithValidatedResponseFrom(BuildSearchByQueryEndpoint(queryTerm));
+                var relatedAsns = new List<AsnWithContactsModel>();
+                var ipv4Prefixes = new List<PrefixModel>();
+                var ipv6Prefixes = new List<PrefixModel>();
+
+
+                var trs = driver.FindElement(By.TagName("tbody"))
+                    .FindElements(By.TagName("tr"))
+                    .Skip(1) // The first row is irrelevant, so skip it
+                    .Select(tr => tr.FindElements(By.TagName("td")));
+                
+                foreach(var tds in trs)
+                {
+                    var firstTdAnchorHref = tds.ElementAt(0).FindElement(By.TagName("a")).GetAttribute("href");
+                    var name = tds.ElementAt(1).Text;
+                    
+                    if(Regex.IsMatch(firstTdAnchorHref, ASN_PATTERN))
+                    {
+                        relatedAsns.Add(new AsnWithContactsModel {   
+                            ASN = int.Parse(Regex.Match(firstTdAnchorHref, ASN_PATTERN).Value.Substring(2)),
+                            Name = name,
+                            Description = name,
+                            CountryCode = null,
+                            AbuseContacts = Enumerable.Empty<string>(),
+                            EmailContacts = Enumerable.Empty<string>()
+                        });
+                    }
+                    else if(Regex.IsMatch(firstTdAnchorHref, IPV6_PREFIX_PATTERN))
+                    {
+                        ipv6Prefixes.Add(new PrefixModel {
+                            Prefix = Regex.Match(firstTdAnchorHref, IPV6_PREFIX_PATTERN).Value,
+                            Name = name,
+                            Description = name
+                        });
+                    }
+                    else 
+                    {
+                        ipv4Prefixes.Add(new PrefixModel {
+                            Prefix = Regex.Match(firstTdAnchorHref, IPV4_PREFIX_PATTERN).Value,
+                            Name = name,
+                            Description = name
+                        });
+                    }
+                }
+
+                return new SearchModel
+                {
+                    RelatedAsns = relatedAsns,
+                    IPv4 = ipv4Prefixes,
+                    IPv6 = ipv6Prefixes
+                };
+            }
+        }
+
+        private SearchModel SearchingByIpAddress(string ipAddress, bool ipv6Output = false)
+        {
+            var driver = GetDriverWithValidatedResponseFrom(BuildIpDetailsEndpoint(ipAddress));
+            var data = ExtractAsDataFromIpInfoElement(driver.FindElement(By.Id("ipinfo")));
+            return new SearchModel
+            {
+                RelatedAsns = data.Select(x => new AsnWithContactsModel {
+                    ASN = int.Parse(x.AsNumberStr),
+                    Name = x.Name,
+                    Description = x.Description,
+                    EmailContacts = Enumerable.Empty<string>(),
+                    AbuseContacts = Enumerable.Empty<string>()
+                }),
+                IPv4 = ipv6Output ? Enumerable.Empty<PrefixModel>() : data.Select(x => new PrefixModel {
+                    Prefix = x.Prefix,
+                    Name = x.Name,
+                    Description = x.Description
+                }),
+                IPv6 = ipv6Output ? data.Select(x => new PrefixModel {
+                    Prefix = x.Prefix,
+                    Name = x.Name,
+                    Description = x.Description
+                }) : Enumerable.Empty<PrefixModel>()
+            };
+        }
+
+        public void Dispose() => _driver.Dispose();
+
         #region Routines
 
+        private string BuildAsnDetailsEndpoint(int asNumber) => $"{BASE_ENDPOINT_URL}/AS{asNumber}";
+        private string BuildPrefixDetailsEndpoint(string prefix, byte cidr) => $"{BASE_ENDPOINT_URL}/net/{prefix}/{cidr}";
+        private string BuildIpDetailsEndpoint(string ipAddress) => $"{BASE_ENDPOINT_URL}/ip/{ipAddress}";
+        private string BuildSearchByQueryEndpoint(string queryTerm) => $"{BASE_ENDPOINT_URL}/search?search%5Bsearch%5D={queryTerm.Replace(' ', '+')}&commit=Search";
         private IWebDriver GetDriverWithValidatedResponseFrom(string url)
         {
             var wb = new WebDriverWait(_driver, _timeout);
@@ -54,43 +337,28 @@ namespace BGPViewerCore.Service
             return  content.Substring(whoisDivStartIndex, whoisDivlength);
         }
 
-        private IEnumerable<AsnModel> ExtractAsnsAndNamesFromToppertable(string toppeertableText)
+        private async Task<IEnumerable<AsnModel>> ExtractAsnsAndNamesFromToppertableAsync(string toppeertableText)
         {            
             using(var reader = new StringReader(toppeertableText.Split(new string[]{"ASN Name"}, StringSplitOptions.None)[1].TrimStart()))
             {
                 var separator = new string[]{" "};
+                var set = new HashSet<AsnModel>();
                 while(reader.Peek() > 0)
                 {
-                    var line = reader.ReadLine();
+                    var line = await reader.ReadLineAsync();
                     var asnAndName = line.Split(separator, StringSplitOptions.None);
                     var asn = asnAndName[0].Substring(2);
                     var name = line.Replace($"AS{asn}", "").TrimStart();
-                    yield return new AsnModel {
+                    set.Add(new AsnModel {
                         ASN = int.Parse(asn),
                         Name = name,
                         Description = name,
                         CountryCode = null
-                    };
+                    });
                 }
+                return set;
             }
         }
-
-        private IEnumerable<PrefixModel> ExtractPrefixesFromTablePrefixes(IWebElement tablePrefixes)
-            => tablePrefixes.FindElement(By.TagName("tbody"))
-                            .FindElements(By.TagName("tr"))
-                            .Select(tr => tr.FindElements(By.TagName("td")))
-                            .Select(tds => new PrefixModel {
-                                Prefix = tds.ElementAt(0).FindElement(By.TagName("a")).GetAttribute("innerHTML"),
-                                Name = tds.ElementAt(1).Text,
-                                Description = tds.ElementAt(1).Text
-                            });
-
-        // For better performance while querying only prefixes
-        private IEnumerable<string> ExtractPrefixesFromTablePrefixes(IWebElement tablePrefixes, string pattern)
-            => Regex.Matches(tablePrefixes.GetAttribute("innerHTML"), pattern)
-                    .Cast<Match>()
-                    .Select(x => x.Value)
-                    .Distinct();
 
         private IEnumerable<AsnModel> ExtractAsnsInfoFromPeerTable(IWebElement peerTable)
         {
@@ -145,14 +413,13 @@ namespace BGPViewerCore.Service
             }
         }
 
-        private string ExtractCountryCodeFromDivWhois(string divWhois)
+        private async Task<string> ExtractCountryCodeFromDivWhoisAsync(string divWhois)
         {
             using(var reader = new StringReader(divWhois))
             {
                 while(reader.Peek() > 0)
                 {
-                    var line = reader.ReadLine();
-                    System.Diagnostics.Debug.WriteLine(line);
+                    var line = await reader.ReadLineAsync();
                     if(Regex.IsMatch(line, "Country:") || Regex.IsMatch(line, "country:"))
                     {
                         var splitted = line.Split(new string[]{" "}, StringSplitOptions.None);
@@ -163,7 +430,7 @@ namespace BGPViewerCore.Service
             }
         }
 
-        private AsnDetailsModel ExtractAsDetailsFromDriver(IWebDriver driver, int asNumber)
+        private async Task<AsnDetailsModel> ExtractAsDetailsFromDriverAsync(IWebDriver driver, int asNumber)
         {
             var h1TitleElement = driver.FindElement(By.TagName("h1"));
             var asn = h1TitleElement.Text.Split(new string[]{" "}, StringSplitOptions.None)[0].Substring(2);
@@ -176,7 +443,7 @@ namespace BGPViewerCore.Service
             var rightDivs = driver.FindElements(By.ClassName("asright"));
 
             var divWhois = ExtractDivWhoisFrom(driver.PageSource);
-            var countryCode = ExtractCountryCodeFromDivWhois(divWhois);
+            var countryCode = await ExtractCountryCodeFromDivWhoisAsync(divWhois);
             
             var indexOfLookingGlassDiv = leftDivs.IndexOf(leftDivs.SingleOrDefault(div => div.Text.Contains("Looking Glass")));
             var lookingGlass = indexOfLookingGlassDiv != -1 ? rightDivs.ElementAt(indexOfLookingGlassDiv).Text : null;
@@ -207,331 +474,92 @@ namespace BGPViewerCore.Service
                     Description = tds.ElementAt(2).GetAttribute("innerHTML")
                 });
 
-        #endregion
-
-        public AsnDetailsModel GetAsnDetails(int asNumber)
+        private SearchModel SearchingByPrefix(string prefix, string cidr, bool ipv6Output = false)
         {
-            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}");
-            return ExtractAsDetailsFromDriver(driver, asNumber);
-        }
+            var driver = GetDriverWithValidatedResponseFrom(BuildPrefixDetailsEndpoint(prefix, byte.Parse(cidr)));
+            var data = ExtractPrefixAndAsnInfoFromNetInfoDivTable(driver);
 
-        // Not supported by bgp.he.net
-        public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnDownstreams(int asNumber)
-        {
-            return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(
-                new AsnDetailsModel[]{}, 
-                new AsnDetailsModel[]{}
-            );    
-        }
-
-        public IEnumerable<IxModel> GetAsnIxs(int asNumber)
-        {
-            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}");
-            var brTagSplitArg = new string[]{"<br>"};
-            if(driver.PageSource.Contains("exchange_table"))
+            return new SearchModel
             {
-                foreach(var item in driver.FindElement(By.Id("exchange_table"))
-                    .FindElement(By.TagName("tbody")).FindElements(By.TagName("tr")).Select(x => x.FindElements(By.TagName("td"))))
-                {
-                    var ixName = item.ElementAt(0).FindElement(By.TagName("a")).GetAttribute("innerHTML").TrimStart().TrimEnd();
-                    var ixCountryCode = item.ElementAt(1).GetAttribute("innerHTML").TrimStart().TrimEnd();
-                    var ixIpv4Addresses = item.ElementAt(3).GetAttribute("innerHTML").TrimStart().TrimEnd().Split(brTagSplitArg, StringSplitOptions.None);
-                    var ixIpv6Addresses = item.ElementAt(4).GetAttribute("innerHTML").TrimStart().TrimEnd().Split(brTagSplitArg, StringSplitOptions.None);
-                    var ixIpv6AddressesCount = ixIpv6Addresses.Count();
-                    // We loop by IPv4 cause it'll be always equal to or 
-                    // greater than IPv6
-                    for(int index=0; index < ixIpv4Addresses.Count(); index++)
-                    {
-                        yield return new IxModel {
-                            Name = ixName,
-                            FullName = ixName,
-                            CountryCode = ixCountryCode,
-                            AsnSpeed = 0, // Information not given by bgp.he.net
-                            IPv4 = ixIpv4Addresses.ElementAt(index),
-                            IPv6 = index < ixIpv6AddressesCount ? ixIpv6Addresses.ElementAt(index) : null
-                        };             
-                    }
-                }   
-            }
-        }
-
-        public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnPeers(int asNumber)
-        {
-            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}");
-            
-            var hasIPv4Peers = driver.PageSource.Contains("table_peers4");
-            var hasIPv6Peers = driver.PageSource.Contains("table_peers6");
-            
-            var ipv4Peers = hasIPv4Peers ? ExtractAsnsInfoFromPeerTable(driver.FindElement(By.Id("peers")))
-                : new AsnModel[]{};
-
-            var ipv6Peers = hasIPv6Peers ? ExtractAsnsInfoFromPeerTable(driver.FindElement(By.Id("peers6")))
-                : new AsnModel[]{};
-            
-            return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(ipv4Peers, ipv6Peers);
-        }
-
-        public AsnPrefixesModel GetAsnPrefixes(int asNumber)
-        {
-            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}");
-
-            var hasIpv4Prefixes = driver.PageSource.Contains("table_prefixes4");
-            var hasIpv6Prefixes = driver.PageSource.Contains("table_prefixes6");
-
-            var ipv4Prefixes = hasIpv4Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes4")), IPV4_PREFIX_PATTERN) : Enumerable.Empty<string>();
-            var ipv6Prefixes = hasIpv6Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes6")), IPV6_PREFIX_PATTERN) : Enumerable.Empty<string>();
-
-            return new AsnPrefixesModel
-            {
-                ASN = asNumber,
-                IPv4 = ipv4Prefixes,
-                IPv6 = ipv6Prefixes
-            };  
-        }
-
-        public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnUpstreams(int asNumber)
-        {
-            var toppeertables = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}")
-                .FindElements(By.ClassName("toppeertable"))
-                .Select(table => table.Text);   
-            
-            var hasIpv4Upstreams = toppeertables.Count() >= 1;
-            var hasIpv6Upstreams = toppeertables.Count() >= 2;
-
-            var ipv4Upstreams = hasIpv4Upstreams ? ExtractAsnsAndNamesFromToppertable(toppeertables.ElementAt(0))
-                    : new AsnModel[]{};
-
-            var ipv6Upstreams = hasIpv6Upstreams ? ExtractAsnsAndNamesFromToppertable(toppeertables.ElementAt(1))
-                    : new AsnModel[]{};
-
-            return new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(ipv4Upstreams, ipv6Upstreams);
-        }
-
-        public IpDetailModel GetIpDetails(string ipAddress)
-        {
-            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/ip/{ipAddress}");
-            var ipInfoElement = driver.FindElement(By.Id("ipinfo"));
-
-            var ipDetails = new IpDetailModel { IPAddress = ipAddress };
-
-            using(var reader = new StringReader(ipInfoElement.Text))
-            {
-                // reads the first line, which contains ip address and, sometimes, dns record between ()
-                // Ex 8.8.8.8 (dns.google)
-                var ipAndPtrRecord = reader.ReadLine();
-                var hasPtrRecord = ipAndPtrRecord.Contains("(");
-                ipDetails.PtrRecord = hasPtrRecord ? Regex.Match(ipAndPtrRecord, @"\(([^\)]+)\)").Value.Trim('(', ')') : null;
-            }
-            
-            ipDetails.RelatedPrefixes = ExtractAsDataFromIpInfoElement(ipInfoElement)
-                .GroupBy(data => data.Prefix)
-                .Select(px => new PrefixDetailModel {
-                    Prefix = px.Key,
-                    Name = px.ElementAt(0).Name,
-                    Description = px.ElementAt(0).Description,
-                    ParentAsns = px.Select(x => new AsnModel {
-                        ASN = int.Parse(x.AsNumberStr),
-                        Name = x.Name,
-                        Description = x.Description,
-                        CountryCode = null
-                    })});
-
-            ipDetails.RIRAllocationPrefix = ipDetails.RelatedPrefixes.ElementAt(0).Prefix;
-            ipDetails.CountryCode = ExtractCountryCodeFromDivWhois(ExtractDivWhoisFrom(driver.PageSource));
-            
-            return ipDetails;
-        }
-
-        public PrefixDetailModel GetPrefixDetails(string prefix, byte cidr)
-        {
-            var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/net/{prefix}/{cidr}");
-            
-            var asnDetailsExtractedFromNetinfoDiv = ExtractPrefixAndAsnInfoFromNetInfoDivTable(driver)
-                .GroupBy(data => data.AsNumberStr)
-                .Select(grouped => new AsnModel {
-                    ASN = int.Parse(grouped.ElementAt(0).AsNumberStr),
-                    Name = grouped.ElementAt(0).Name,
-                    Description = grouped.ElementAt(0).Description,
-                    CountryCode = null
-                }).ToArray();
-
-            var ownerPrefix = asnDetailsExtractedFromNetinfoDiv[0];
-            ownerPrefix.CountryCode = ExtractCountryCodeFromDivWhois(ExtractDivWhoisFrom(driver.PageSource));
-
-            return new PrefixDetailModel {
-                Prefix = $"{prefix}/{cidr}",
-                Name = ownerPrefix.Name,
-                Description = ownerPrefix.Description,
-                ParentAsns = asnDetailsExtractedFromNetinfoDiv
+                RelatedAsns = data.Select(x => new AsnWithContactsModel {
+                    ASN = int.Parse(x.AsNumberStr),
+                    Name = x.Name,
+                    Description = x.Description,
+                    EmailContacts = Enumerable.Empty<string>(),
+                    AbuseContacts = Enumerable.Empty<string>()
+                }),
+                IPv4 = ipv6Output ? Enumerable.Empty<PrefixModel>() : data.Select(x => new PrefixModel {
+                    Prefix = x.Prefix,
+                    Name = x.Name,
+                    Description = x.Description
+                }),
+                IPv6 = ipv6Output ? data.Select(x => new PrefixModel {
+                    Prefix = x.Prefix,
+                    Name = x.Name,
+                    Description = x.Description
+                }) : Enumerable.Empty<PrefixModel>()
             };
         }
 
-        public SearchModel SearchBy(string queryTerm)
+        private async Task<SearchModel> SearchingByAsnAsync(int asNumber)
         {
-            if(int.TryParse(queryTerm, out int asNumber))
-            {
-                var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/AS{asNumber}");
-                
-                var hasIpv4Prefixes = driver.PageSource.Contains("table_prefixes4");
-                var hasIpv6Prefixes = driver.PageSource.Contains("table_prefixes6");
+            var driver = GetDriverWithValidatedResponseFrom(BuildAsnDetailsEndpoint(asNumber));
+            var prefixes = ExtractPrefixesFromDriver(driver, false);
+            var asDetails = await ExtractAsDetailsFromDriverAsync(driver, asNumber);
 
-                var ipv4Prefixes = hasIpv4Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes4"))) : Enumerable.Empty<PrefixModel>();
-                var ipv6Prefixes = hasIpv6Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes6"))) : Enumerable.Empty<PrefixModel>();
-                
-                var asDetails = ExtractAsDetailsFromDriver(driver, asNumber);
-                return new SearchModel
-                {
-                    RelatedAsns = new AsnDetailsModel[] { asDetails },
-                    IPv4 = ipv4Prefixes,
-                    IPv6 = ipv6Prefixes
-                };
-            }
-            else if(Regex.IsMatch(queryTerm, IPV4_PREFIX_PATTERN))
+            return new SearchModel
             {
-                var prefix = queryTerm.Split('/')[0];
-                var cidr = queryTerm.Split('/')[1];
-                var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/net/{prefix}/{cidr}");
-                var data = ExtractPrefixAndAsnInfoFromNetInfoDivTable(driver);
+                RelatedAsns = new AsnDetailsModel[] { asDetails },
+                IPv4 = prefixes.Item1,
+                IPv6 = prefixes.Item2
+            };   
+        }
 
-                return new SearchModel
-                {
-                    RelatedAsns = data.Select(x => new AsnWithContactsModel {
-                        ASN = int.Parse(x.AsNumberStr),
-                        Name = x.Name,
-                        Description = x.Description,
-                        EmailContacts = Enumerable.Empty<string>(),
-                        AbuseContacts = Enumerable.Empty<string>()
-                    }),
-                    IPv4 = data.Select(x => new PrefixModel {
-                        Prefix = x.Prefix,
-                        Name = x.Name,
-                        Description = x.Description
-                    }),
-                    IPv6 = Enumerable.Empty<PrefixModel>()
-                };
-            }
-            else if(Regex.IsMatch(queryTerm, IPV6_PREFIX_PATTERN))
+        private Tuple<IEnumerable<PrefixModel>,IEnumerable<PrefixModel>> ExtractPrefixesFromDriver(IWebDriver driver, bool onlyPrefixes)
+        {
+            var hasIpv4Prefixes = driver.PageSource.Contains("table_prefixes4");
+            var hasIpv6Prefixes = driver.PageSource.Contains("table_prefixes6");
+
+            if(onlyPrefixes)
             {
-                var prefix = queryTerm.Split('/')[0];
-                var cidr = queryTerm.Split('/')[1];
-                var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/net/{prefix}/{cidr}");
-                var data = ExtractPrefixAndAsnInfoFromNetInfoDivTable(driver);
+                var ipv4Prefixes = hasIpv4Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes4")), IPV4_PREFIX_PATTERN) : Enumerable.Empty<string>();
+                var ipv6Prefixes = hasIpv6Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes6")), IPV6_PREFIX_PATTERN) : Enumerable.Empty<string>();
 
-                return new SearchModel
-                {
-                    RelatedAsns = data.Select(x => new AsnWithContactsModel {
-                        ASN = int.Parse(x.AsNumberStr),
-                        Name = x.Name,
-                        Description = x.Description,
-                        EmailContacts = Enumerable.Empty<string>(),
-                        AbuseContacts = Enumerable.Empty<string>()
+                return new Tuple<IEnumerable<PrefixModel>, IEnumerable<PrefixModel>>(
+                    ipv4Prefixes.Select(prefixV4 => new PrefixModel {
+                        Prefix = prefixV4
                     }),
-                    IPv4 = Enumerable.Empty<PrefixModel>(),
-                    IPv6 = data.Select(x => new PrefixModel {
-                        Prefix = x.Prefix,
-                        Name = x.Name,
-                        Description = x.Description
+                    ipv6Prefixes.Select(prefixV6 => new PrefixModel{
+                        Prefix = prefixV6
                     })
-                };
-            }
-            else if(Regex.IsMatch(queryTerm, IPV4_ADDRESS_PATTERN))
-            {
-                var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/ip/{queryTerm}");
-                var data = ExtractAsDataFromIpInfoElement(driver.FindElement(By.Id("ipinfo")));
-                return new SearchModel
-                {
-                    RelatedAsns = data.Select(x => new AsnWithContactsModel {
-                        ASN = int.Parse(x.AsNumberStr),
-                        Name = x.Name,
-                        Description = x.Description,
-                        EmailContacts = Enumerable.Empty<string>(),
-                        AbuseContacts = Enumerable.Empty<string>()
-                    }),
-                    IPv4 = data.Select(x => new PrefixModel {
-                        Prefix = x.Prefix,
-                        Name = x.Name,
-                        Description = x.Description
-                    }),
-                    IPv6 = Enumerable.Empty<PrefixModel>()
-                };
-            }
-            else if(Regex.IsMatch(queryTerm, IPV6_ADDRESS_PATTERN))
-            {
-                var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/ip/{queryTerm}");
-                var data = ExtractAsDataFromIpInfoElement(driver.FindElement(By.Id("ipinfo")));
-                return new SearchModel
-                {
-                    RelatedAsns = data.Select(x => new AsnWithContactsModel {
-                        ASN = int.Parse(x.AsNumberStr),
-                        Name = x.Name,
-                        Description = x.Description,
-                        EmailContacts = Enumerable.Empty<string>(),
-                        AbuseContacts = Enumerable.Empty<string>()
-                    }),
-                    IPv4 = Enumerable.Empty<PrefixModel>(),
-                    IPv6 = data.Select(x => new PrefixModel {
-                        Prefix = x.Prefix,
-                        Name = x.Name,
-                        Description = x.Description
-                    })
-                };
+                );
             }
             else
             {
-                var driver = GetDriverWithValidatedResponseFrom($"https://bgp.he.net/search?search%5Bsearch%5D={queryTerm.Replace(' ', '+')}&commit=Search");
-                var relatedAsns = new List<AsnWithContactsModel>();
-                var ipv4Prefixes = new List<PrefixModel>();
-                var ipv6Prefixes = new List<PrefixModel>();
+                var ipv4Prefixes = hasIpv4Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes4"))) : Enumerable.Empty<PrefixModel>();
+                var ipv6Prefixes = hasIpv6Prefixes ? ExtractPrefixesFromTablePrefixes(driver.FindElement(By.Id("table_prefixes6"))) : Enumerable.Empty<PrefixModel>();
 
-
-                var trs = driver.FindElement(By.TagName("tbody"))
-                    .FindElements(By.TagName("tr"))
-                    .Skip(1) // The first row is irrelevant, so skip it
-                    .Select(tr => tr.FindElements(By.TagName("td")));
-                
-                foreach(var tds in trs)
-                {
-                    var firstTdAnchorHref = tds.ElementAt(0).FindElement(By.TagName("a")).GetAttribute("href");
-                    var name = tds.ElementAt(1).Text;
-                    
-                    if(Regex.IsMatch(firstTdAnchorHref, ASN_PATTERN))
-                    {
-                        relatedAsns.Add(new AsnWithContactsModel {   
-                            ASN = int.Parse(Regex.Match(firstTdAnchorHref, ASN_PATTERN).Value.Substring(2)),
-                            Name = name,
-                            Description = name,
-                            CountryCode = null,
-                            AbuseContacts = Enumerable.Empty<string>(),
-                            EmailContacts = Enumerable.Empty<string>()
-                        });
-                    }
-                    else if(Regex.IsMatch(firstTdAnchorHref, IPV6_PREFIX_PATTERN))
-                    {
-                        ipv6Prefixes.Add(new PrefixModel {
-                            Prefix = Regex.Match(firstTdAnchorHref, IPV6_PREFIX_PATTERN).Value,
-                            Name = name,
-                            Description = name
-                        });
-                    }
-                    else 
-                    {
-                        ipv4Prefixes.Add(new PrefixModel {
-                            Prefix = Regex.Match(firstTdAnchorHref, IPV4_PREFIX_PATTERN).Value,
-                            Name = name,
-                            Description = name
-                        });
-                    }
-                }
-
-                return new SearchModel
-                {
-                    RelatedAsns = relatedAsns,
-                    IPv4 = ipv4Prefixes,
-                    IPv6 = ipv6Prefixes
-                };
+                return new Tuple<IEnumerable<PrefixModel>, IEnumerable<PrefixModel>>(ipv4Prefixes, ipv6Prefixes);
             }
         }
 
-        public void Dispose() => _driver.Dispose();
+        private IEnumerable<PrefixModel> ExtractPrefixesFromTablePrefixes(IWebElement tablePrefixes)
+            => tablePrefixes.FindElement(By.TagName("tbody"))
+                            .FindElements(By.TagName("tr"))
+                            .Select(tr => tr.FindElements(By.TagName("td")))
+                            .Select(tds => new PrefixModel {
+                                Prefix = tds.ElementAt(0).FindElement(By.TagName("a")).GetAttribute("innerHTML"),
+                                Name = tds.ElementAt(1).Text,
+                                Description = tds.ElementAt(1).Text
+                            });
+
+        // For better performance while querying only prefixes
+        private IEnumerable<string> ExtractPrefixesFromTablePrefixes(IWebElement tablePrefixes, string pattern)
+            => Regex.Matches(tablePrefixes.GetAttribute("innerHTML"), pattern)
+                    .Cast<Match>()
+                    .Select(x => x.Value)
+                    .Distinct();       
+
+        #endregion
     }
 }

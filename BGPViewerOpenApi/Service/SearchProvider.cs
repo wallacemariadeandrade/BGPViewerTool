@@ -12,11 +12,7 @@ namespace BGPViewerOpenApi.Service
             this.apiProvider = apiProvider;
         }
 
-        internal async Task<SearchModel> Search(string queryTerm, int apiId)
-        {
-            var api = apiProvider.GetApiById(apiId);
-
-            return await Task.FromResult(api.SearchBy(queryTerm));
-        }
+        internal Task<SearchModel> Search(string queryTerm, int apiId)
+            => apiProvider.GetApiById(apiId).SearchByAsync(queryTerm);
     }
 }
