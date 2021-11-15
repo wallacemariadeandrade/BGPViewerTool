@@ -16,11 +16,9 @@ namespace BGPViewerCore.Service
 
         public static async Task<Stream> GetContentStreamFromAsync(string url)
         {
-            using(var response = await WebRequest.Create(url).GetResponseAsync())
-            {
-                return response.GetResponseStream();
-            }
-            
+            var response = await WebRequest.Create(url).GetResponseAsync();
+            // Do not closes the stream, just returns it!
+            return response.GetResponseStream();
         }
     }
 }

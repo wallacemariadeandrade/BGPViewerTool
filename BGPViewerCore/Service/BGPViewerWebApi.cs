@@ -21,7 +21,12 @@ namespace BGPViewerCore.Service
         #region INTERNAL OPERATIONS
         private JsonDocument ParseOperation(string url) => JsonDocument.Parse(WebService.GetContentFrom(url));
         private async Task<JsonDocument> ParseOperationAsync(string url) 
-            => await JsonDocument.ParseAsync(await WebService.GetContentStreamFromAsync(url));
+        {
+            using (var stream = await WebService.GetContentStreamFromAsync(url))
+            {
+                return await JsonDocument.ParseAsync(stream);
+            }
+        }
         #endregion
 
         #region SYNC APIs
