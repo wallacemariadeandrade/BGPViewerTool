@@ -1,5 +1,5 @@
 # NuGet restore
-FROM mcr.microsoft.com/dotnet/sdk:5.0.100 AS build
+FROM mcr.microsoft.com/dotnet/sdk:5.0.402 AS build
 WORKDIR /BGPViewerTool
 COPY *.sln .
 COPY BGPViewerConsoleTool/*.csproj BGPViewerConsoleTool/
@@ -15,7 +15,7 @@ FROM build AS publish
 WORKDIR /BGPViewerTool/BGPViewerOpenApi
 RUN dotnet build -o /BGPViewerTool/publish
 
-FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:5.0.11 AS runtime
 WORKDIR /BGPViewerTool
 COPY --from=publish /BGPViewerTool/publish .
 # ENTRYPOINT ["dotnet", "BGPViewerOpenApi.dll"]
