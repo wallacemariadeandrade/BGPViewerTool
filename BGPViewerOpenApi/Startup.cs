@@ -16,6 +16,7 @@ namespace BGPViewerOpenApi
     public class Startup
     {
         private const int TIMEOUT = 7;
+        private readonly string allowedOrigins = "_allowedOrigins";
 
         public Startup(IConfiguration configuration)
         {
@@ -27,6 +28,17 @@ namespace BGPViewerOpenApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options => {
+                options.AddPolicy(
+                    name: allowedOrigins,
+                    builder => {
+                        builder.WithOrigins(this.Configuration.GetSection("AllowedOrigins").Get<string[]>())
+                                .AllowAnyHeader()
+                                .AllowAnyMethod();
+                    }
+                );
+            });
+
             services.AddControllers();
 
             services.AddScoped<AsProvider>();
@@ -101,6 +113,8 @@ namespace BGPViewerOpenApi
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "BGPViewerOpenApi v1"));
 
             app.UseRouting();
+
+            app.UseCors(allowedOrigins);
 
             app.UseAuthorization();
 
