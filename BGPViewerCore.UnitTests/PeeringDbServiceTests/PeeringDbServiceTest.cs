@@ -69,5 +69,21 @@ namespace BGPViewerCore.UnitTests.PeeringDbServiceTests
             Assert.Equal(Enumerable.Empty<string>(), unregisteredDetails.AbuseContacts);
             Assert.Equal(string.Empty, unregisteredDetails.LookingGlassUrl);
         }
+
+        [Fact]
+        public void GetAsnDownstreams()
+        {
+            var downstreams16509 = GetService().GetAsnDownstreams(16509);
+            Assert.Empty(downstreams16509.Item1);
+            Assert.Empty(downstreams16509.Item2);
+        }
+
+        [Fact]
+        public async void GetAsnDownstreamsAsync()
+        {
+            var downstreams16509 = await GetService().GetAsnDownstreamsAsync(16509);
+            Assert.Empty(downstreams16509.Item1);
+            Assert.Empty(downstreams16509.Item2);
+        }
     }
 }
