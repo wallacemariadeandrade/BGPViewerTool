@@ -85,5 +85,33 @@ namespace BGPViewerCore.UnitTests.PeeringDbServiceTests
             Assert.Empty(downstreams16509.Item1);
             Assert.Empty(downstreams16509.Item2);
         }
+
+        [Fact]
+        public void GetAsnIxs()
+        {
+            var ixs60068 = GetService().GetAsnIxs(60068);
+            Assert.NotEmpty(ixs60068);
+            var ix = ixs60068.First();
+            Assert.Equal("MSK-IX Moscow: MSK-IX peering network", ix.Name);
+            Assert.Equal("MSK-IX Moscow: MSK-IX peering network", ix.FullName);
+            Assert.Equal(string.Empty, ix.CountryCode);
+            Assert.Equal("195.208.210.117", ix.IPv4);
+            Assert.Equal("2001:7f8:20:101::210:117", ix.IPv6);
+            Assert.Equal(100000, ix.AsnSpeed);
+        }
+
+        [Fact]
+        public async void GetAsnIxAsync()
+        {
+            var ixs53181 = await GetService().GetAsnIxsAsync(53181);
+            Assert.NotEmpty(ixs53181);
+            var ix = ixs53181.Last();
+            Assert.Equal("IX.br (PTT.br) Vitória: ATM/MPLA", ix.Name);
+            Assert.Equal("IX.br (PTT.br) Vitória: ATM/MPLA", ix.FullName);
+            Assert.Equal(string.Empty, ix.CountryCode);
+            Assert.Equal("187.16.194.72", ix.IPv4);
+            Assert.Equal("2001:12f8:0:17::72", ix.IPv6);
+            Assert.Equal(10000, ix.AsnSpeed);
+        }
     }
 }
