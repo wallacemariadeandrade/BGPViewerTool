@@ -113,5 +113,12 @@ namespace BGPViewerCore.UnitTests.PeeringDbServiceTests
             Assert.Equal("2001:12f8:0:17::72", ix.IPv6);
             Assert.Equal(10000, ix.AsnSpeed);
         }
+
+        [Fact]
+        public void GetAsWithoutIx()
+        {
+            var ixs1234 = GetService().GetAsnIxs(1234);
+            Assert.Empty(ixs1234);
+        }
     }
 }
