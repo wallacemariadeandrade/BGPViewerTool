@@ -90,63 +90,72 @@ namespace BGPViewerCore.Service
         }
 
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnPeers(int asNumber)
-        {
-            throw new NotImplementedException();
-        }
+            => new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(Enumerable.Empty<AsnModel>(), Enumerable.Empty<AsnModel>());
 
         public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnPeersAsync(int asNumber)
-        {
-            throw new NotImplementedException();
-        }
+            => Task.FromResult(GetAsnPeers(asNumber));
 
         public AsnPrefixesModel GetAsnPrefixes(int asNumber)
-        {
-            throw new NotImplementedException();
-        }
+            => new AsnPrefixesModel {
+                ASN = asNumber,
+                IPv4 = Enumerable.Empty<string>(),
+                IPv6 = Enumerable.Empty<string>()
+            };
 
         public Task<AsnPrefixesModel> GetAsnPrefixesAsync(int asNumber)
-        {
-            throw new NotImplementedException();
-        }
+            => Task.FromResult(GetAsnPrefixes(asNumber));
 
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnUpstreams(int asNumber)
-        {
-            throw new NotImplementedException();
-        }
+            => new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(Enumerable.Empty<AsnModel>(), Enumerable.Empty<AsnModel>());
 
         public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnUpstreamsAsync(int asNumber)
-        {
-            throw new NotImplementedException();
-        }
+            => Task.FromResult(GetAsnUpstreams(asNumber));
 
         public IpDetailModel GetIpDetails(string ipAddress)
-        {
-            throw new NotImplementedException();
-        }
+            => new IpDetailModel {
+                IPAddress = ipAddress,
+                RIRAllocationPrefix = string.Empty,
+                CountryCode = string.Empty,
+                PtrRecord = string.Empty,
+                RelatedPrefixes = Enumerable.Empty<PrefixDetailModel>()
+            };
 
         public Task<IpDetailModel> GetIpDetailsAsync(string ipAddress)
-        {
-            throw new NotImplementedException();
-        }
+            => Task.FromResult(GetIpDetails(ipAddress));
 
         public PrefixDetailModel GetPrefixDetails(string prefix, byte cidr)
-        {
-            throw new NotImplementedException();
-        }
+            => new PrefixDetailModel {
+                Name = string.Empty,
+                Description = string.Empty,
+                Prefix = $"{prefix}/{cidr}",
+                ParentAsns = Enumerable.Empty<AsnModel>()
+            };
 
         public Task<PrefixDetailModel> GetPrefixDetailsAsync(string prefix, byte cidr)
-        {
-            throw new NotImplementedException();
-        }
+            => Task.FromResult(GetPrefixDetails(prefix, cidr));
 
         public SearchModel SearchBy(string queryTerm)
-        {
-            throw new NotImplementedException();
-        }
+            => SearchByAsync(queryTerm).GetAwaiter().GetResult();
 
-        public Task<SearchModel> SearchByAsync(string queryTerm)
+        public async Task<SearchModel> SearchByAsync(string queryTerm)
         {
-            throw new NotImplementedException();
+            if(int.TryParse(queryTerm, out int asNumber))
+            {
+                var details = await GetAsnDetailsAsync(asNumber);
+                return new SearchModel
+                {
+                    IPv4 = Enumerable.Empty<PrefixDetailModel>(),
+                    IPv6 = Enumerable.Empty<PrefixDetailModel>(),
+                    RelatedAsns = new AsnWithContactsModel[]{ details }
+                };
+            }
+
+            return new SearchModel 
+            {
+                IPv4 = Enumerable.Empty<PrefixDetailModel>(),
+                IPv6 = Enumerable.Empty<PrefixDetailModel>(),
+                RelatedAsns = Enumerable.Empty<AsnWithContactsModel>()
+            };
         }
     }
 }

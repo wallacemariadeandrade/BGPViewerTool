@@ -71,7 +71,7 @@ namespace BGPViewerCore.UnitTests.PeeringDbServiceTests
         }
 
         [Fact]
-        public void GetAsnDownstreams()
+        public void GetAsnDownstreamsAlwaysReturnNullObject()
         {
             var downstreams16509 = GetService().GetAsnDownstreams(16509);
             Assert.Empty(downstreams16509.Item1);
@@ -79,7 +79,7 @@ namespace BGPViewerCore.UnitTests.PeeringDbServiceTests
         }
 
         [Fact]
-        public async void GetAsnDownstreamsAsync()
+        public async void GetAsnDownstreamsAlwaysReturnNullObjectAsync()
         {
             var downstreams16509 = await GetService().GetAsnDownstreamsAsync(16509);
             Assert.Empty(downstreams16509.Item1);
@@ -119,6 +119,198 @@ namespace BGPViewerCore.UnitTests.PeeringDbServiceTests
         {
             var ixs1234 = GetService().GetAsnIxs(1234);
             Assert.Empty(ixs1234);
+        }
+
+        [Fact]
+        public void GetAsnPeersAlwaysReturnNullObject()
+        {
+            var peers1234 = GetService().GetAsnPeers(1234);
+            Assert.Empty(peers1234.Item1);
+            Assert.Empty(peers1234.Item2);
+        }
+
+        [Fact]
+        public async void GetAsnPeersAlwaysReturnNullObjectAsync()
+        {
+            var peers1234 = await GetService().GetAsnPeersAsync(1234);
+            Assert.Empty(peers1234.Item1);
+            Assert.Empty(peers1234.Item2);
+        }
+
+        [Fact]
+        public void GetAsnPrefixesAlwaysReturnNullObject()
+        {
+            var prefixes = GetService().GetAsnPrefixes(1234);
+            Assert.Equal(1234, prefixes.ASN);
+            Assert.Empty(prefixes.IPv4);
+            Assert.Empty(prefixes.IPv6);
+        }
+
+        [Fact]
+        public async void GetAsnPrefixesAlwaysReturnNullObjectAsync()
+        {
+            var prefixes = await GetService().GetAsnPrefixesAsync(1234);
+            Assert.Equal(1234, prefixes.ASN);
+            Assert.Empty(prefixes.IPv4);
+            Assert.Empty(prefixes.IPv6);
+        }
+
+        [Fact]
+        public void GetAsnUpstreamsAlwaysReturnNullObject()
+        {
+            var upstreams1234 = GetService().GetAsnUpstreams(1234);
+            Assert.Empty(upstreams1234.Item1);
+            Assert.Empty(upstreams1234.Item2);
+        }
+
+        [Fact]
+        public async void GetAsnUpstreamsAlwaysReturnNullObjectAsync()
+        {
+            var upstreams1234 = await GetService().GetAsnUpstreamsAsync(1234);
+            Assert.Empty(upstreams1234.Item1);
+            Assert.Empty(upstreams1234.Item2);
+        }
+
+        [Fact]
+        public void GetIpDetailsAlwaysReturnNullObject()
+        {
+            var details = GetService().GetIpDetails("8.8.8.8");
+            Assert.Equal("8.8.8.8", details.IPAddress);
+            Assert.Equal(string.Empty, details.PtrRecord);
+            Assert.Equal(string.Empty, details.CountryCode);
+            Assert.Equal(string.Empty, details.RIRAllocationPrefix);
+            Assert.Empty(details.RelatedPrefixes);
+        }
+
+        [Fact]
+        public async void GetIpDetailsAlwaysReturnNullObjectAsync()
+        {
+            var details = await GetService().GetIpDetailsAsync("8.8.8.8");
+            Assert.Equal("8.8.8.8", details.IPAddress);
+            Assert.Equal(string.Empty, details.PtrRecord);
+            Assert.Equal(string.Empty, details.CountryCode);
+            Assert.Equal(string.Empty, details.RIRAllocationPrefix);
+            Assert.Empty(details.RelatedPrefixes);
+        }
+
+        [Fact]
+        public void GetPrefixDetailsAlwaysReturnNullObject()
+        {
+            var details = GetService().GetPrefixDetails("8.8.8.0", 24);
+            Assert.Equal(string.Empty, details.Name);
+            Assert.Equal(string.Empty, details.Description);
+            Assert.Equal("8.8.8.0/24", details.Prefix);
+            Assert.Empty(details.ParentAsns);
+        }
+
+        [Fact]
+        public async void GetPrefixDetailsAlwaysReturnNullObjectAsync()
+        {
+            var details = await GetService().GetPrefixDetailsAsync("1.1.1.0", 24);
+            Assert.Equal(string.Empty, details.Name);
+            Assert.Equal(string.Empty, details.Description);
+            Assert.Equal("1.1.1.0/24", details.Prefix);
+            Assert.Empty(details.ParentAsns);
+        }
+
+        [Fact]
+        public void SearchByAsn()
+        {
+            var result = GetService().SearchBy("53181");
+            Assert.NotNull(result);
+            Assert.Empty(result.IPv4);
+            Assert.Empty(result.IPv6);
+            Assert.Equal(1, result.RelatedAsns.Count());
+            var asn = result.RelatedAsns.First();
+            Assert.Equal(53181, asn.ASN);
+            Assert.Equal("K2 Telecom e Multimidia", asn.Name);
+            Assert.Equal("K2TELECOM", asn.Description);
+            Assert.Equal(Enumerable.Empty<string>(), asn.EmailContacts);
+            Assert.Equal(Enumerable.Empty<string>(), asn.AbuseContacts);
+            Assert.Equal(string.Empty, asn.CountryCode);
+        }
+
+        [Fact]
+        public async void SearchByAsnAsync()
+        {
+            var result = await GetService().SearchByAsync("53181");
+            Assert.NotNull(result);
+            Assert.Empty(result.IPv4);
+            Assert.Empty(result.IPv6);
+            Assert.Equal(1, result.RelatedAsns.Count());
+            var asn = result.RelatedAsns.First();
+            Assert.Equal(53181, asn.ASN);
+            Assert.Equal("K2 Telecom e Multimidia", asn.Name);
+            Assert.Equal("K2TELECOM", asn.Description);
+            Assert.Equal(Enumerable.Empty<string>(), asn.EmailContacts);
+            Assert.Equal(Enumerable.Empty<string>(), asn.AbuseContacts);
+            Assert.Equal(string.Empty, asn.CountryCode);
+        }
+
+        [Fact]
+        public void SearchByUnregisteredAsn()
+        {
+            var result = GetService().SearchBy("123456");
+            Assert.NotNull(result);
+            Assert.Empty(result.IPv4);
+            Assert.Empty(result.IPv6);
+            Assert.Equal(1, result.RelatedAsns.Count());
+            var asn = result.RelatedAsns.First();
+            Assert.Equal(123456, asn.ASN);
+            Assert.Equal(string.Empty, asn.Name);
+            Assert.Equal(string.Empty, asn.Description);
+            Assert.Equal(string.Empty, asn.CountryCode);
+            Assert.Equal(Enumerable.Empty<string>(), asn.EmailContacts);
+            Assert.Equal(Enumerable.Empty<string>(), asn.AbuseContacts);
+        }
+
+        [Fact]
+        public async void SearchByUnregisteredAsnAsync()
+        {
+            var result = await GetService().SearchByAsync("123456");
+            Assert.NotNull(result);
+            Assert.Empty(result.IPv4);
+            Assert.Empty(result.IPv6);
+            Assert.Equal(1, result.RelatedAsns.Count());
+            var asn = result.RelatedAsns.First();
+            Assert.Equal(123456, asn.ASN);
+            Assert.Equal(string.Empty, asn.Name);
+            Assert.Equal(string.Empty, asn.Description);
+            Assert.Equal(string.Empty, asn.CountryCode);
+            Assert.Equal(Enumerable.Empty<string>(), asn.EmailContacts);
+            Assert.Equal(Enumerable.Empty<string>(), asn.AbuseContacts);
+        }
+
+        [Fact]
+        public void SearchForAnythingExceptAnAsNumberAlwaysReturnNullObject()
+        {
+            var result1 = GetService().SearchBy("cloudflare");
+            Assert.NotNull(result1);
+            Assert.Empty(result1.IPv4);
+            Assert.Empty(result1.IPv6);
+            Assert.Empty(result1.RelatedAsns);
+
+            var result2 = GetService().SearchBy("8.8.8.8");
+            Assert.NotNull(result2);
+            Assert.Empty(result2.IPv4);
+            Assert.Empty(result2.IPv6);
+            Assert.Empty(result2.RelatedAsns);
+        }
+
+        [Fact]
+        public async void SearchForAnythingExceptAnAsNumberAlwaysReturnNullObjectAsync()
+        {
+            var result1 = await GetService().SearchByAsync("abc");
+            Assert.NotNull(result1);
+            Assert.Empty(result1.IPv4);
+            Assert.Empty(result1.IPv6);
+            Assert.Empty(result1.RelatedAsns);
+
+            var result2 = await GetService().SearchByAsync("2001:db8::/32");
+            Assert.NotNull(result2);
+            Assert.Empty(result2.IPv4);
+            Assert.Empty(result2.IPv6);
+            Assert.Empty(result2.RelatedAsns);
         }
     }
 }
