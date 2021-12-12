@@ -69,44 +69,32 @@ namespace BGPViewerCore.Service
             => Task.FromResult(GetAsnDownstreams(asNumber));
 
         public IEnumerable<IxModel> GetAsnIxs(int asNumber)
-        {
-            throw new NotImplementedException();
-        }
+            => Enumerable.Empty<IxModel>();
 
         public Task<IEnumerable<IxModel>> GetAsnIxsAsync(int asNumber)
-        {
-            throw new NotImplementedException();
-        }
+            => Task.FromResult(GetAsnIxs(asNumber));
 
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnPeers(int asNumber)
-        {
-            throw new NotImplementedException();
-        }
+            => new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(Enumerable.Empty<AsnModel>(), Enumerable.Empty<AsnModel>());
 
         public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnPeersAsync(int asNumber)
-        {
-            throw new NotImplementedException();
-        }
+            => Task.FromResult(GetAsnPeers(asNumber));
 
         public AsnPrefixesModel GetAsnPrefixes(int asNumber)
-        {
-            throw new NotImplementedException();
-        }
+            => new AsnPrefixesModel {
+                ASN = asNumber,
+                IPv4 = Enumerable.Empty<string>(),
+                IPv6 = Enumerable.Empty<string>()
+            };
 
         public Task<AsnPrefixesModel> GetAsnPrefixesAsync(int asNumber)
-        {
-            throw new NotImplementedException();
-        }
+            => Task.FromResult(GetAsnPrefixes(asNumber));
 
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnUpstreams(int asNumber)
-        {
-            throw new NotImplementedException();
-        }
+            => new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(Enumerable.Empty<AsnModel>(), Enumerable.Empty<AsnModel>());
 
         public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnUpstreamsAsync(int asNumber)
-        {
-            throw new NotImplementedException();
-        }
+            => Task.FromResult(GetAsnUpstreams(asNumber));
 
         public IpDetailModel GetIpDetails(string ipAddress)
         {

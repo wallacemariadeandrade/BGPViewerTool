@@ -85,5 +85,69 @@ namespace BGPViewerCore.UnitTests.ArinServiceTests
             Assert.Empty(downstreams16509.Item1);
             Assert.Empty(downstreams16509.Item2);
         }
+
+        [Fact]
+        public void GetAsnIxsAlwaysReturnNullObject()
+        {
+            var ixs = Service.GetAsnIxs(1234);
+            Assert.Empty(ixs);
+        }
+        
+        [Fact]
+        public async void GetAsnIxsAlwaysReturnNullObjectAsync()
+        {
+            var ixs = await Service.GetAsnIxsAsync(1234);
+            Assert.Empty(ixs);
+        }
+
+        [Fact]
+        public void GetAsnPeersAlwaysReturnNullObject()
+        {
+            var peers1234 = Service.GetAsnPeers(1234);
+            Assert.Empty(peers1234.Item1);
+            Assert.Empty(peers1234.Item2);
+        }
+
+        [Fact]
+        public async void GetAsnPeersAlwaysReturnNullObjectAsync()
+        {
+            var peers1234 = await Service.GetAsnPeersAsync(1234);
+            Assert.Empty(peers1234.Item1);
+            Assert.Empty(peers1234.Item2);
+        }
+
+        [Fact]
+        public void GetAsnPrefixesAlwaysReturnNullObject()
+        {
+            var prefixes = Service.GetAsnPrefixes(1234);
+            Assert.Equal(1234, prefixes.ASN);
+            Assert.Empty(prefixes.IPv4);
+            Assert.Empty(prefixes.IPv6);
+        }
+
+        [Fact]
+        public async void GetAsnPrefixesAlwaysReturnNullObjectAsync()
+        {
+            var prefixes = await Service.GetAsnPrefixesAsync(1234);
+            Assert.Equal(1234, prefixes.ASN);
+            Assert.Empty(prefixes.IPv4);
+            Assert.Empty(prefixes.IPv6);
+        }
+
+        [Fact]
+        public void GetAsnUpstreamsAlwaysReturnNullObject()
+        {
+            var upstreams1234 = Service.GetAsnUpstreams(1234);
+            Assert.Empty(upstreams1234.Item1);
+            Assert.Empty(upstreams1234.Item2);
+        }
+
+        [Fact]
+        public async void GetAsnUpstreamsAlwaysReturnNullObjectAsync()
+        {
+            var upstreams1234 = await Service.GetAsnUpstreamsAsync(1234);
+            Assert.Empty(upstreams1234.Item1);
+            Assert.Empty(upstreams1234.Item2);
+        }
     }
 }
