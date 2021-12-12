@@ -20,8 +20,11 @@ namespace BGPViewerCore.Service
 
         private bool ValidateData(JsonDocument data) => data.RootElement.GetRawText() != "{}";
         public AsnDetailsModel GetAsnDetails(int asNumber)
+            => GetAsnDetailsAsync(asNumber).GetAwaiter().GetResult();
+
+        public async Task<AsnDetailsModel> GetAsnDetailsAsync(int asNumber)
         {
-            var data = api.RetrieveAsnDetails(asNumber);
+            var data = await api.RetrieveAsnDetailsAsync(asNumber);
             if(!ValidateData(data))
             {
                 return new AsnDetailsModel 
@@ -59,20 +62,11 @@ namespace BGPViewerCore.Service
             return details;
         }
 
-        public Task<AsnDetailsModel> GetAsnDetailsAsync(int asNumber)
-        {
-            throw new NotImplementedException();
-        }
-
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnDownstreams(int asNumber)
-        {
-            throw new NotImplementedException();
-        }
+            => new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(Enumerable.Empty<AsnModel>(), Enumerable.Empty<AsnModel>());
 
         public Task<Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>> GetAsnDownstreamsAsync(int asNumber)
-        {
-            throw new NotImplementedException();
-        }
+            => Task.FromResult(GetAsnDownstreams(asNumber));
 
         public IEnumerable<IxModel> GetAsnIxs(int asNumber)
         {

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Threading.Tasks;
 using BGPViewerCore.Service;
 
 namespace BGPViewerCore.UnitTests.ArinServiceTests
@@ -14,5 +15,8 @@ namespace BGPViewerCore.UnitTests.ArinServiceTests
  
             return  DefaultReturn();
         }
+
+        public override Task<JsonDocument> RetrieveAsnDetailsAsync(int asNumber)
+            => Task.FromResult(RetrieveAsnDetails(asNumber));
     }
 }
