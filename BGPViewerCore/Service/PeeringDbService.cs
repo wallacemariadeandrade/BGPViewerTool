@@ -9,9 +9,9 @@ namespace BGPViewerCore.Service
 {
     public class PeeringDbService : IBGPViewerService
     {
-        private IBGPViewerApi _api;
+        private PeeringDbWebApi _api;
 
-        public PeeringDbService(IBGPViewerApi api)
+        public PeeringDbService(PeeringDbWebApi api)
         {
             _api = api;
         }
