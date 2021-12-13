@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -13,17 +14,40 @@ namespace BGPViewerCore.Service
 
         private string BuildAsnDetailsEndpoint(int asNumber) => $"{BASE_ENDPOINT_URL}/asn/{asNumber}";
         private string BuildIpDetailsEndpoint(string ipAddress) => $"{BASE_ENDPOINT_URL}/ip/{ipAddress}";
-        protected JsonDocument DefaultReturn() => JsonDocument.Parse(@"{}");
         
+        protected JsonDocument ErrorResult(string content)
+        {
+            var result = @"{ ""error_title"": ""<error_title>"", ""error_message"": ""<error_message>"" }";
+
+            var startTitleIndex = content.IndexOf("<th>");
+            var endTitleIndex = content.IndexOf("</th>");
+            var title = content.Substring(startTitleIndex, endTitleIndex - startTitleIndex).Replace("<th>", "");
+
+            var startMessageIndex = content.IndexOf("<td>");
+            var endMessageIndex = content.IndexOf("</td>");
+            var message = content.Substring(startMessageIndex, endMessageIndex - startMessageIndex).Replace("<td>", "");
+
+            return JsonDocument.Parse(result.Replace("<error_title>", title).Replace("<error_message>", message));
+        }
+
+        protected JsonDocument ErrorResult(Stream content)
+        {
+            using(var reader = new StreamReader(content))
+            {
+                return ErrorResult(reader.ReadToEnd());
+            }           
+        }
+
         public virtual JsonDocument RetrieveAsnDetails(int asNumber)
         {
+            var content = WebService.GetContentFrom(BuildAsnDetailsEndpoint(asNumber), headers);
             try
             {
-                return JsonDocument.Parse(WebService.GetContentFrom(BuildAsnDetailsEndpoint(asNumber), headers));
+                return JsonDocument.Parse(content);
             }
             catch (JsonException)
             {
-                return DefaultReturn();
+                return ErrorResult(content);
             }
         }
         
@@ -37,20 +61,21 @@ namespace BGPViewerCore.Service
                 }
                 catch (JsonException)
                 {
-                    return DefaultReturn();
+                    return ErrorResult(stream);
                 }
             }
         }
 
         public virtual JsonDocument RetrieveIpDetails(string ipAddress)
         {
+            var content = WebService.GetContentFrom(BuildIpDetailsEndpoint(ipAddress), headers);
             try
             {
-                return JsonDocument.Parse(WebService.GetContentFrom(BuildIpDetailsEndpoint(ipAddress), headers));
+                return JsonDocument.Parse(content);
             }
             catch (JsonException)
             {
-                return DefaultReturn();
+                return ErrorResult(content);
             }
         }
 
@@ -64,7 +89,7 @@ namespace BGPViewerCore.Service
                 }
                 catch (JsonException)
                 {
-                    return DefaultReturn();
+                    return ErrorResult(stream);
                 }
             }
         }

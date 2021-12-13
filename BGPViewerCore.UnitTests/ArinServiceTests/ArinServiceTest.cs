@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using BGPViewerCore.Service;
 using Xunit;
@@ -58,16 +59,18 @@ namespace BGPViewerCore.UnitTests.ArinServiceTests
         }
 
         [Fact]
-        public void GetDetailsFromUnregisteredAs()
+        public void TryGettingInvalidAsnDetails()
         {
-            var unregisteredDetails = Service.GetAsnDetails(123456);
-            Assert.Equal(123456, unregisteredDetails.ASN);
-            Assert.Equal(string.Empty, unregisteredDetails.Name);
-            Assert.Equal(string.Empty, unregisteredDetails.Description);
-            Assert.Equal(string.Empty, unregisteredDetails.CountryCode);
-            Assert.Equal(Enumerable.Empty<string>(), unregisteredDetails.EmailContacts);
-            Assert.Equal(Enumerable.Empty<string>(), unregisteredDetails.AbuseContacts);
-            Assert.Equal(string.Empty, unregisteredDetails.LookingGlassUrl);
+            Assert.Throws<ArgumentException>(() => 
+            {
+                Service.GetAsnDetails(101010101);
+            });
+        }
+
+        [Fact]
+        public async void TryGettingInvalidAsnDetailsAsync()
+        {
+            await Assert.ThrowsAsync<ArgumentException>(() => Service.GetAsnDetailsAsync(101010101));
         }
 
         [Fact]
@@ -148,6 +151,94 @@ namespace BGPViewerCore.UnitTests.ArinServiceTests
             var upstreams1234 = await Service.GetAsnUpstreamsAsync(1234);
             Assert.Empty(upstreams1234.Item1);
             Assert.Empty(upstreams1234.Item2);
+        }
+
+        [Fact]
+        public void GetIpDetails()
+        {
+            var ip8888 = Service.GetIpDetails("8.8.8.8");
+            Assert.Equal("8.8.8.8", ip8888.IPAddress);
+            Assert.Equal(string.Empty, ip8888.PtrRecord);
+            Assert.Equal("8.8.8.0/24", ip8888.RIRAllocationPrefix);
+            Assert.Equal(string.Empty, ip8888.CountryCode);
+            Assert.True(ip8888.RelatedPrefixes.Count() == 1);
+            var p8888 = ip8888.RelatedPrefixes.First();
+            Assert.Equal("8.8.8.0/24", p8888.Prefix);
+            Assert.Equal("LVLT-GOGL-8-8-8", p8888.Name);
+            Assert.Equal("Reallocated", p8888.Description);
+            Assert.Empty(p8888.ParentAsns);
+
+            var ipv6 = Service.GetIpDetails("2804:2a7c::2a");
+            Assert.Equal("2804:2a7c::2a", ipv6.IPAddress);
+            Assert.Equal(string.Empty, ipv6.PtrRecord);
+            Assert.Equal("2800::/12", ipv6.RIRAllocationPrefix);
+            Assert.Equal(string.Empty, ipv6.CountryCode);
+            Assert.True(ipv6.RelatedPrefixes.Count() == 1);
+            var ipv6Prefix = ipv6.RelatedPrefixes.First();
+            Assert.Equal("2800::/12", ipv6Prefix.Prefix);
+            Assert.Equal("LACNIC-V6-NET", ipv6Prefix.Name);
+            Assert.Equal("Allocated to LACNIC", ipv6Prefix.Description);
+            Assert.Empty(ipv6Prefix.ParentAsns);
+        }
+
+        [Fact]
+        public async void GetIpDetailsAsync()
+        {
+            var ip8888 = await Service.GetIpDetailsAsync("8.8.8.8");
+            Assert.Equal("8.8.8.8", ip8888.IPAddress);
+            Assert.Equal(string.Empty, ip8888.PtrRecord);
+            Assert.Equal("8.8.8.0/24", ip8888.RIRAllocationPrefix);
+            Assert.Equal(string.Empty, ip8888.CountryCode);
+            Assert.True(ip8888.RelatedPrefixes.Count() == 1);
+            var p8888 = ip8888.RelatedPrefixes.First();
+            Assert.Equal("8.8.8.0/24", p8888.Prefix);
+            Assert.Equal("LVLT-GOGL-8-8-8", p8888.Name);
+            Assert.Equal("Reallocated", p8888.Description);
+            Assert.Empty(p8888.ParentAsns);
+
+            var ipv6 = await Service.GetIpDetailsAsync("2804:2a7c::2a");
+            Assert.Equal("2804:2a7c::2a", ipv6.IPAddress);
+            Assert.Equal(string.Empty, ipv6.PtrRecord);
+            Assert.Equal("2800::/12", ipv6.RIRAllocationPrefix);
+            Assert.Equal(string.Empty, ipv6.CountryCode);
+            Assert.True(ipv6.RelatedPrefixes.Count() == 1);
+            var ipv6Prefix = ipv6.RelatedPrefixes.First();
+            Assert.Equal("2800::/12", ipv6Prefix.Prefix);
+            Assert.Equal("LACNIC-V6-NET", ipv6Prefix.Name);
+            Assert.Equal("Allocated to LACNIC", ipv6Prefix.Description);
+            Assert.Empty(ipv6Prefix.ParentAsns);
+        }
+
+        [Fact]
+        public void TryGetIpAddressDetailsWithMalformedInput()
+        {
+            Assert.Throws<ArgumentException>(() => 
+            {
+                Service.GetIpDetails("192.168");
+            });
+
+            Assert.Throws<ArgumentException>(() => 
+            {
+                Service.GetIpDetails("177.75.40.256");
+            });
+
+            Assert.Throws<ArgumentException>(() => 
+            {
+                Service.GetIpDetails("192.168.10.10.1");
+            });
+
+            Assert.Throws<ArgumentException>(() => 
+            {
+                Service.GetIpDetails("2001:db8:");
+            });
+        }
+
+        [Fact]
+        public async void TryGetIpAddressDetailsWithMalformedInputAsync()
+        {
+            await Assert.ThrowsAsync<ArgumentException>(() => Service.GetIpDetailsAsync("192.168"));
+            await Assert.ThrowsAsync<ArgumentException>(() => Service.GetIpDetailsAsync("177.75.40.256"));
+            await Assert.ThrowsAsync<ArgumentException>(() => Service.GetIpDetailsAsync("192.168.10.10.1"));
         }
     }
 }

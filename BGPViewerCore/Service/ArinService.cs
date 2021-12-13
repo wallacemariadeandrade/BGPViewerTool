@@ -18,26 +18,21 @@ namespace BGPViewerCore.Service
 
         public void Dispose() => this.api = null;
 
-        private bool ValidateData(JsonDocument data) => data.RootElement.GetRawText() != "{}";
+        private void ValidateData(JsonDocument data)
+        {
+            if(data.RootElement.TryGetProperty("error_message", out JsonElement message))
+            {
+                throw new ArgumentException($"{data.RootElement.GetProperty("error_title")}. {message.GetString()}");
+            }
+        }
+
         public AsnDetailsModel GetAsnDetails(int asNumber)
             => GetAsnDetailsAsync(asNumber).GetAwaiter().GetResult();
 
         public async Task<AsnDetailsModel> GetAsnDetailsAsync(int asNumber)
         {
             var data = await api.RetrieveAsnDetailsAsync(asNumber);
-            if(!ValidateData(data))
-            {
-                return new AsnDetailsModel 
-                {
-                    ASN = asNumber,
-                    Name = string.Empty,
-                    Description = string.Empty,
-                    CountryCode = string.Empty,
-                    EmailContacts = Enumerable.Empty<string>(),
-                    AbuseContacts = Enumerable.Empty<string>(),
-                    LookingGlassUrl = string.Empty,
-                };
-            }
+            ValidateData(data);
             var asn = data.RootElement.GetProperty("asn");
             
             var details = new AsnDetailsModel
@@ -97,13 +92,38 @@ namespace BGPViewerCore.Service
             => Task.FromResult(GetAsnUpstreams(asNumber));
 
         public IpDetailModel GetIpDetails(string ipAddress)
-        {
-            throw new NotImplementedException();
-        }
+            => GetIpDetailsAsync(ipAddress).GetAwaiter().GetResult();
 
-        public Task<IpDetailModel> GetIpDetailsAsync(string ipAddress)
+        public async Task<IpDetailModel> GetIpDetailsAsync(string ipAddress)
         {
-            throw new NotImplementedException();
+            var data = await api.RetrieveIpDetailsAsync(ipAddress);
+            ValidateData(data);
+            
+            var name = data.RootElement.GetProperty("net")
+                .GetProperty("name")
+                .GetProperty("$")
+                .GetString();
+
+            var netBlock = data.RootElement.GetProperty("net")
+                .GetProperty("netBlocks")
+                .GetProperty("netBlock");
+
+            var prefix = $"{netBlock.GetProperty("startAddress").GetProperty("$").GetString()}/{netBlock.GetProperty("cidrLength").GetProperty("$").GetString()}";
+
+            return new IpDetailModel {
+                IPAddress = ipAddress,
+                PtrRecord = string.Empty,
+                RIRAllocationPrefix = prefix,
+                CountryCode = string.Empty,
+                RelatedPrefixes = new PrefixDetailModel[] {
+                    new PrefixDetailModel {
+                        Name = name,
+                        Description = netBlock.GetProperty("description").GetProperty("$").GetString(),
+                        Prefix = prefix,
+                        ParentAsns = Enumerable.Empty<AsnModel>()
+                    }
+                }
+            };
         }
 
         public PrefixDetailModel GetPrefixDetails(string prefix, byte cidr)
