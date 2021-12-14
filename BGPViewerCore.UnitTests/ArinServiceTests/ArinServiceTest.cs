@@ -240,5 +240,63 @@ namespace BGPViewerCore.UnitTests.ArinServiceTests
             await Assert.ThrowsAsync<ArgumentException>(() => Service.GetIpDetailsAsync("177.75.40.256"));
             await Assert.ThrowsAsync<ArgumentException>(() => Service.GetIpDetailsAsync("192.168.10.10.1"));
         }
+
+        [Fact]
+        public void GetPrefixDetailsAlwaysReturnNullObject()
+        {
+            var details = Service.GetPrefixDetails("8.8.8.0", 24);
+            Assert.Equal(string.Empty, details.Name);
+            Assert.Equal(string.Empty, details.Description);
+            Assert.Equal("8.8.8.0/24", details.Prefix);
+            Assert.Empty(details.ParentAsns);
+        }
+
+        [Fact]
+        public async void GetPrefixDetailsAlwaysReturnNullObjectAsync()
+        {
+            var details = await Service.GetPrefixDetailsAsync("1.1.1.0", 24);
+            Assert.Equal(string.Empty, details.Name);
+            Assert.Equal(string.Empty, details.Description);
+            Assert.Equal("1.1.1.0/24", details.Prefix);
+            Assert.Empty(details.ParentAsns);
+        }
+
+        [Fact]
+        public void SearchByAlwaysReturnNullObject()
+        {
+            var result1 = Service.SearchBy("abc");
+            Assert.Empty(result1.IPv4);
+            Assert.Empty(result1.IPv6);
+            Assert.Empty(result1.RelatedAsns);
+
+            var result2 = Service.SearchBy("google");
+            Assert.Empty(result2.IPv4);
+            Assert.Empty(result2.IPv6);
+            Assert.Empty(result2.RelatedAsns);
+
+            var result3 = Service.SearchBy("1.1.1.1");
+            Assert.Empty(result3.IPv4);
+            Assert.Empty(result3.IPv6);
+            Assert.Empty(result3.RelatedAsns);
+        }
+        
+        [Fact]
+        public async void SearchByAlwaysReturnNullObjectAsync()
+        {
+            var result1 = await Service.SearchByAsync("abc");
+            Assert.Empty(result1.IPv4);
+            Assert.Empty(result1.IPv6);
+            Assert.Empty(result1.RelatedAsns);
+
+            var result2 = await Service.SearchByAsync("google");
+            Assert.Empty(result2.IPv4);
+            Assert.Empty(result2.IPv6);
+            Assert.Empty(result2.RelatedAsns);
+
+            var result3 = await Service.SearchByAsync("1.1.1.1");
+            Assert.Empty(result3.IPv4);
+            Assert.Empty(result3.IPv6);
+            Assert.Empty(result3.RelatedAsns);
+        }
     }
 }

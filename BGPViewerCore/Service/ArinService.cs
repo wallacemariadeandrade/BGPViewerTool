@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BGPViewerCore.Models;
+using static BGPViewerCore.Service.RegexPatterns;
 
 namespace BGPViewerCore.Service
 {
@@ -127,23 +129,24 @@ namespace BGPViewerCore.Service
         }
 
         public PrefixDetailModel GetPrefixDetails(string prefix, byte cidr)
-        {
-            throw new NotImplementedException();
-        }
+            => new PrefixDetailModel {
+                Name = string.Empty,
+                Description = string.Empty,
+                Prefix = $"{prefix}/{cidr}",
+                ParentAsns = Enumerable.Empty<AsnModel>()
+            };
 
         public Task<PrefixDetailModel> GetPrefixDetailsAsync(string prefix, byte cidr)
-        {
-            throw new NotImplementedException();
-        }
+            => Task.FromResult(GetPrefixDetails(prefix, cidr));
 
         public SearchModel SearchBy(string queryTerm)
-        {
-            throw new NotImplementedException();
-        }
+            => new SearchModel {
+            IPv4 = Enumerable.Empty<PrefixDetailModel>(),
+            IPv6 = Enumerable.Empty<PrefixDetailModel>(),
+            RelatedAsns = Enumerable.Empty<AsnWithContactsModel>()
+        };
 
         public Task<SearchModel> SearchByAsync(string queryTerm)
-        {
-            throw new NotImplementedException();
-        }
+            => Task.FromResult(SearchBy(queryTerm));
     }
 }
