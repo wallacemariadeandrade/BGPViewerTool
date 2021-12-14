@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace BGPViewerCore.Service
 {
-    public class RipeStatApi
+    public class RipeStatWebApi
     {
         private const string BASE_ENDPOINT = "https://stat.ripe.net/data";
         private string BuildAsnDetailsEndpoint(int asNumber) => $"{BASE_ENDPOINT}/as-overview/data.json?resource={asNumber}";
