@@ -1,3 +1,4 @@
+using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -12,7 +13,21 @@ namespace BGPViewerCore.Service
         private string BuildIpDetailsEndpoint(string ipAddress) => $"{BASE_ENDPOINT}/network-info/data.json?resource={ipAddress}";
         private string BuildPrefixDetailsEndpoint(string prefix, byte cidr) => $"{BASE_ENDPOINT}/prefix-overview/data.json?resource={prefix}/{cidr}";
 
-        private JsonDocument ParseOperation(string url) => JsonDocument.Parse(WebService.GetContentFrom(url));
+        private JsonDocument ParseOperation(string url)
+        {
+            try
+            {
+                return JsonDocument.Parse(WebService.GetContentFrom(url));
+            }
+            catch (System.Net.WebException ex)
+            {
+                using(var reader = new StreamReader(ex.Response.GetResponseStream()))
+                {
+                    return JsonDocument.Parse(reader.ReadToEnd());
+                }
+            }
+        }
+
         private async Task<JsonDocument> ParseOperationAsync(string url) 
         {
             try
