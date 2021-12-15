@@ -38,6 +38,8 @@ namespace BGPViewerCore.Service
             }           
         }
 
+        
+
         public virtual JsonDocument RetrieveAsnDetails(int asNumber)
         {
             var content = WebService.GetContentFrom(BuildAsnDetailsEndpoint(asNumber), headers);
