@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -38,62 +39,57 @@ namespace BGPViewerCore.Service
             }           
         }
 
-        
+        protected async Task<JsonDocument> ErrorResultAsync(Stream content)
+        {
+            using(var reader = new StreamReader(content))
+            {
+                return ErrorResult(await reader.ReadToEndAsync());
+            }           
+        }
+
+        private JsonDocument ParseOperation(string url, IEnumerable<Tuple<string,string>> headers = null)
+        {
+            try
+            {
+                return JsonDocument.Parse(WebService.GetContentFrom(url, headers));
+            }
+            catch (System.Net.WebException ex)
+            {
+                using(var stream = ex.Response.GetResponseStream())
+                {
+                    return ErrorResult(stream);
+                }
+            }
+        }
+
+        private async Task<JsonDocument> ParseOperationAsync(string url, IEnumerable<Tuple<string,string>> headers = null) 
+        {
+            try
+            {
+                using (var stream = await WebService.GetContentStreamFromAsync(url, headers))
+                {
+                    return await JsonDocument.ParseAsync(stream);    
+                }
+            }
+            catch (System.Net.WebException ex)
+            {
+                using(var stream = ex.Response.GetResponseStream())
+                {
+                    return await ErrorResultAsync(stream);
+                }
+            }
+        }
 
         public virtual JsonDocument RetrieveAsnDetails(int asNumber)
-        {
-            var content = WebService.GetContentFrom(BuildAsnDetailsEndpoint(asNumber), headers);
-            try
-            {
-                return JsonDocument.Parse(content);
-            }
-            catch (JsonException)
-            {
-                return ErrorResult(content);
-            }
-        }
+            => ParseOperation(BuildAsnDetailsEndpoint(asNumber), headers);
         
-        public virtual async Task<JsonDocument> RetrieveAsnDetailsAsync(int asNumber)
-        {
-            using (var stream = await WebService.GetContentStreamFromAsync(BuildAsnDetailsEndpoint(asNumber), headers))
-            {       
-                try
-                {
-                    return await JsonDocument.ParseAsync(stream);
-                }
-                catch (JsonException)
-                {
-                    return ErrorResult(stream);
-                }
-            }
-        }
+        public virtual Task<JsonDocument> RetrieveAsnDetailsAsync(int asNumber)
+            => ParseOperationAsync(BuildAsnDetailsEndpoint(asNumber), headers);
 
         public virtual JsonDocument RetrieveIpDetails(string ipAddress)
-        {
-            var content = WebService.GetContentFrom(BuildIpDetailsEndpoint(ipAddress), headers);
-            try
-            {
-                return JsonDocument.Parse(content);
-            }
-            catch (JsonException)
-            {
-                return ErrorResult(content);
-            }
-        }
+            => ParseOperation(BuildIpDetailsEndpoint(ipAddress), headers);
 
-        public virtual async Task<JsonDocument> RetrieveIpDetailsAsync(string ipAddress)
-        {
-            using (var stream = await WebService.GetContentStreamFromAsync(BuildIpDetailsEndpoint(ipAddress), headers))
-            {
-                try
-                {
-                    return await JsonDocument.ParseAsync(stream);
-                }
-                catch (JsonException)
-                {
-                    return ErrorResult(stream);
-                }
-            }
-        }
+        public virtual Task<JsonDocument> RetrieveIpDetailsAsync(string ipAddress)
+            => ParseOperationAsync(BuildIpDetailsEndpoint(ipAddress), headers);
     }
 }
