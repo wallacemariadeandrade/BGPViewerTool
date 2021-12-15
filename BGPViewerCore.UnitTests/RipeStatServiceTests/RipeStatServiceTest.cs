@@ -122,21 +122,45 @@ namespace BGPViewerCore.UnitTests.RipeStatServiceTests
         }
 
         [Fact]
-        public void GetAsnPrefixesAlwaysReturnNullObject()
+        public void GetAsnPrefixes()
         {
-            var prefixes = Service.GetAsnPrefixes(1234);
-            Assert.Equal(1234, prefixes.ASN);
-            Assert.Empty(prefixes.IPv4);
-            Assert.Empty(prefixes.IPv6);
+            var prefixes262950 = Service.GetAsnPrefixes(262950);
+            Assert.Equal(262950, prefixes262950.ASN);
+            Assert.True(prefixes262950.IPv4.Count() == 1);
+            Assert.True(prefixes262950.IPv4.Count(x => x == "186.235.120.0/21") == 1);
+            Assert.Empty(prefixes262950.IPv6);
+
+            var prefixes53181 = Service.GetAsnPrefixes(53181);
+            Assert.Equal(53181, prefixes53181.ASN);
+            Assert.True(prefixes53181.IPv4.Count() == 34);
+            Assert.True(prefixes53181.IPv4.Count(x => x == "191.241.78.0/23") == 1);
+            Assert.True(prefixes53181.IPv4.Count(x => x == "201.33.173.0/24") == 1);
+            Assert.True(prefixes53181.IPv4.Count(x => x == "191.241.64.0/20") == 1);
+            Assert.True(prefixes53181.IPv6.Count() == 13);
+            Assert.True(prefixes53181.IPv6.Count(x => x == "2804:113c:9400::/38") == 1);
+            Assert.True(prefixes53181.IPv6.Count(x => x == "2804:113c::/32") == 1);
+            Assert.True(prefixes53181.IPv6.Count(x => x == "2804:113c:8c00::/38") == 1);
         }
 
         [Fact]
-        public async void GetAsnPrefixesAlwaysReturnNullObjectAsync()
+        public async void GetAsnPrefixesAsync()
         {
-            var prefixes = await Service.GetAsnPrefixesAsync(1234);
-            Assert.Equal(1234, prefixes.ASN);
-            Assert.Empty(prefixes.IPv4);
-            Assert.Empty(prefixes.IPv6);
+            var prefixes262950 = await Service.GetAsnPrefixesAsync(262950);
+            Assert.Equal(262950, prefixes262950.ASN);
+            Assert.True(prefixes262950.IPv4.Count() == 1);
+            Assert.True(prefixes262950.IPv4.Count(x => x == "186.235.120.0/21") == 1);
+            Assert.Empty(prefixes262950.IPv6);
+
+            var prefixes53181 = await Service.GetAsnPrefixesAsync(53181);
+            Assert.Equal(53181, prefixes53181.ASN);
+            Assert.True(prefixes53181.IPv4.Count() == 34);
+            Assert.True(prefixes53181.IPv4.Count(x => x == "191.241.78.0/23") == 1);
+            Assert.True(prefixes53181.IPv4.Count(x => x == "201.33.173.0/24") == 1);
+            Assert.True(prefixes53181.IPv4.Count(x => x == "191.241.64.0/20") == 1);
+            Assert.True(prefixes53181.IPv6.Count() == 13);
+            Assert.True(prefixes53181.IPv6.Count(x => x == "2804:113c:9400::/38") == 1);
+            Assert.True(prefixes53181.IPv6.Count(x => x == "2804:113c::/32") == 1);
+            Assert.True(prefixes53181.IPv6.Count(x => x == "2804:113c:8c00::/38") == 1);
         }
 
         [Fact]

@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BGPViewerCore.Models;
+using static BGPViewerCore.Service.RegexPatterns;
 
 namespace BGPViewerCore.Service
 {
@@ -71,14 +73,24 @@ namespace BGPViewerCore.Service
             => Task.FromResult(GetAsnPeers(asNumber));
 
         public AsnPrefixesModel GetAsnPrefixes(int asNumber)
-            => new AsnPrefixesModel {
-                ASN = asNumber,
-                IPv4 = Enumerable.Empty<string>(),
-                IPv6 = Enumerable.Empty<string>()
-            };
+            => GetAsnPrefixesAsync(asNumber).GetAwaiter().GetResult();
 
-        public Task<AsnPrefixesModel> GetAsnPrefixesAsync(int asNumber)
-            => Task.FromResult(GetAsnPrefixes(asNumber));
+        public async Task<AsnPrefixesModel> GetAsnPrefixesAsync(int asNumber)
+        {
+            var jsonData = await api.RetrieveAsnPrefixesAsync(asNumber);
+            ValidateData(jsonData);
+            var prefixes = jsonData.RootElement
+                .GetProperty("data")
+                .GetProperty("prefixes")
+                .EnumerateArray()
+                .Select(x => x.GetProperty("prefix").GetString());
+
+            return new AsnPrefixesModel {
+                ASN = asNumber,
+                IPv4 = prefixes.Where(prefix => Regex.IsMatch(prefix, IPV4_PREFIX_PATTERN)),
+                IPv6 = prefixes.Where(prefix => Regex.IsMatch(prefix, IPV6_PREFIX_PATTERN))
+            };
+        }
 
         public Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>> GetAsnUpstreams(int asNumber)
             => new Tuple<IEnumerable<AsnModel>, IEnumerable<AsnModel>>(
