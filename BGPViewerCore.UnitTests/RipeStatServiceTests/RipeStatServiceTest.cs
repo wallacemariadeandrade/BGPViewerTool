@@ -193,7 +193,62 @@ namespace BGPViewerCore.UnitTests.RipeStatServiceTests
             Assert.Equal(string.Empty, asn2001.CountryCode);
         }
 
-        // ip details async
-        // ip malformed
+        [Fact]
+        public async void GetIpDetailsAsync()
+        {
+            var details191 = await Service.GetIpDetailsAsync("191.241.64.0");
+            Assert.Equal("191.241.64.0", details191.IPAddress);
+            Assert.Equal(string.Empty, details191.PtrRecord);
+            Assert.Equal("191.241.64.0/24", details191.RIRAllocationPrefix);
+            Assert.Equal(string.Empty, details191.CountryCode);
+            Assert.True(details191.RelatedPrefixes.Count() == 1);
+            var prefix191 = details191.RelatedPrefixes.First();
+            Assert.Equal(string.Empty, prefix191.Description);
+            Assert.Equal(string.Empty, prefix191.Name);
+            Assert.Equal("191.241.64.0/24", prefix191.Prefix);
+            Assert.True(prefix191.ParentAsns.Count() == 1);
+            var asn191 = prefix191.ParentAsns.First();
+            Assert.Equal(53181, asn191.ASN);
+            Assert.Equal(string.Empty, asn191.Name);
+            Assert.Equal(string.Empty, asn191.Description);
+            Assert.Equal(string.Empty, asn191.CountryCode);
+
+            var details2001 = await Service.GetIpDetailsAsync("2001:db8::");
+            Assert.Equal("2001:db8::", details2001.IPAddress);
+            Assert.Equal(string.Empty, details2001.PtrRecord);
+            Assert.Equal("2000::/3", details2001.RIRAllocationPrefix);
+            Assert.Equal(string.Empty, details2001.CountryCode);
+            Assert.True(details2001.RelatedPrefixes.Count() == 1);
+            var prefix2001 = details2001.RelatedPrefixes.First();
+            Assert.Equal(string.Empty, prefix2001.Description);
+            Assert.Equal(string.Empty, prefix2001.Name);
+            Assert.Equal("2000::/3", prefix2001.Prefix);
+            Assert.True(prefix2001.ParentAsns.Count() == 1);
+            var asn2001 = prefix2001.ParentAsns.First();
+            Assert.Equal(131111, asn2001.ASN);
+            Assert.Equal(string.Empty, asn2001.Name);
+            Assert.Equal(string.Empty, asn2001.Description);
+            Assert.Equal(string.Empty, asn2001.CountryCode);
+        }
+
+        [Fact]
+        public void TryGetIpAddressDetailsWithMalformedInput()
+        {
+            Assert.Throws<ArgumentException>(() => Service.GetIpDetails("192.168"));
+            Assert.Throws<ArgumentException>(() => Service.GetIpDetails("177.75.40.256"));
+            Assert.Throws<ArgumentException>(() => Service.GetIpDetails("192.168.10.10.1"));
+            Assert.Throws<ArgumentException>(() => Service.GetIpDetails("2001::db8::"));
+            Assert.Throws<ArgumentException>(() => Service.GetIpDetails("2001:db8:1:"));
+        }
+
+        [Fact]
+        public async void TryGetIpAddressDetailsWithMalformedInputAsync()
+        {
+            await Assert.ThrowsAsync<ArgumentException>(() => Service.GetIpDetailsAsync("192.168"));
+            await Assert.ThrowsAsync<ArgumentException>(() => Service.GetIpDetailsAsync("177.75.40.256"));
+            await Assert.ThrowsAsync<ArgumentException>(() => Service.GetIpDetailsAsync("192.168.10.10.1"));
+            await Assert.ThrowsAsync<ArgumentException>(() => Service.GetIpDetailsAsync("2001::db8::"));
+            await Assert.ThrowsAsync<ArgumentException>(() => Service.GetIpDetailsAsync("2001:db8:1:"));
+        }
     }
 }

@@ -15,9 +15,19 @@ namespace BGPViewerCore.Service
         private JsonDocument ParseOperation(string url) => JsonDocument.Parse(WebService.GetContentFrom(url));
         private async Task<JsonDocument> ParseOperationAsync(string url) 
         {
-            using (var stream = await WebService.GetContentStreamFromAsync(url))
+            try
             {
-                return await JsonDocument.ParseAsync(stream);
+                using (var stream = await WebService.GetContentStreamFromAsync(url))
+                {
+                    return await JsonDocument.ParseAsync(stream);    
+                }
+            }
+            catch (System.Net.WebException ex)
+            {
+                using(var stream2 = ex.Response.GetResponseStream())
+                {
+                    return await JsonDocument.ParseAsync(stream2);
+                }
             }
         }
 

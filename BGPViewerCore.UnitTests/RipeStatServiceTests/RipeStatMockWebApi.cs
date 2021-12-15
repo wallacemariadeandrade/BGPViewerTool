@@ -27,5 +27,8 @@ namespace BGPViewerCore.UnitTests.RipeStatServiceTests
                 return JsonDocument.Parse(@"{ ""messages"": [], ""see_also"": [], ""version"": ""1.0"", ""data_call_name"": ""network-info"", ""data_call_status"": ""supported"", ""cached"": false, ""data"": { ""asns"": [ ""131111"" ], ""prefix"": ""2000::/3"" }, ""query_id"": ""20211214112026-f2f13557-909d-4e4e-9545-d8664e61ad33"", ""process_time"": 80, ""server_id"": ""app116"", ""build_version"": ""live.2021.12.10.55"", ""status"": ""ok"", ""status_code"": 200, ""time"": ""2021-12-14T11:20:26.104886"" }");
             return Error();
         }
+
+        public override Task<JsonDocument> RetrieveIpDetailsAsync(string ipAddress)
+            => Task.FromResult(RetrieveIpDetails(ipAddress));
     }
 }
