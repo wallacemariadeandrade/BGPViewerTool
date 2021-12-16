@@ -2,7 +2,6 @@
 FROM mcr.microsoft.com/dotnet/sdk:5.0.402 AS build
 WORKDIR /BGPViewerTool
 COPY *.sln .
-COPY BGPViewerConsoleTool/*.csproj BGPViewerConsoleTool/
 COPY BGPViewerCore/*.csproj BGPViewerCore/
 COPY BGPViewerCore.Models/*.csproj BGPViewerCore.Models/
 COPY BGPViewerCore.UnitTests/*.csproj BGPViewerCore.UnitTests/
