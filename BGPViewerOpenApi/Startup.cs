@@ -80,6 +80,18 @@ namespace BGPViewerOpenApi
             });
             services.AddScoped<IWebDriver, ChromeDriver>((s) => new ChromeDriver(s.GetService<ChromeOptions>()));
 
+            services.AddScoped<ApiBase, PeeringDbApi>();
+            services.AddScoped<PeeringDbService>();
+            services.AddScoped<PeeringDbWebApi>();
+
+            services.AddScoped<ApiBase, ArinApi>();
+            services.AddScoped<ArinService>();
+            services.AddScoped<ArinWebApi>();
+
+            services.AddScoped<ApiBase, RipeStatApi>();
+            services.AddScoped<RipeStatService>();
+            services.AddScoped<RipeStatWebApi>();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo 
