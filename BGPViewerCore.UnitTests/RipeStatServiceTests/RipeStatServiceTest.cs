@@ -274,5 +274,91 @@ namespace BGPViewerCore.UnitTests.RipeStatServiceTests
             await Assert.ThrowsAsync<ArgumentException>(() => Service.GetIpDetailsAsync("2001::db8::"));
             await Assert.ThrowsAsync<ArgumentException>(() => Service.GetIpDetailsAsync("2001:db8:1:"));
         }
+
+        [Fact]
+        public void GetPrefixDetails()
+        {
+            var details191 = Service.GetPrefixDetails("191.241.64.0", 20);
+            Assert.Equal("191.241.64.0/20", details191.Prefix);
+            Assert.Equal("IANA IPv4 Address Space Registry", details191.Name);
+            Assert.Equal("Administered by LACNIC", details191.Description);
+            Assert.True(details191.ParentAsns.Count() == 1);
+            Assert.Equal(53181, details191.ParentAsns.First().ASN);
+            Assert.Equal("K2 Telecom e Multimidia LTDA ME", details191.ParentAsns.First().Name);
+            Assert.Equal("K2 Telecom e Multimidia LTDA ME", details191.ParentAsns.First().Description);
+            Assert.Equal(string.Empty, details191.ParentAsns.First().CountryCode);
+            
+            var details2001 = Service.GetPrefixDetails("2804::113c", 32);
+            Assert.Equal("2804::113c/32", details2001.Prefix);
+            Assert.Equal("IANA IPv6 Global Unicast Address Assignments", details2001.Name);
+            Assert.Equal("Designated to LACNIC on 03 October 2006 (Status: allocated; Note: 2800:0000::/23 was allocated on 2005-11-17. The more recent allocation (2006-10-03) incorporates the \nprevious allocation.)", details2001.Description);
+            Assert.True(details2001.ParentAsns.Count() == 1);
+            Assert.Equal(2716, details2001.ParentAsns.First().ASN);
+            Assert.Equal("Universidade Federal do Rio Grande do Sul", details2001.ParentAsns.First().Name);
+            Assert.Equal("Universidade Federal do Rio Grande do Sul", details2001.ParentAsns.First().Description);
+            Assert.Equal(string.Empty, details2001.ParentAsns.First().CountryCode);
+        }
+
+        [Fact]
+        public async void GetPrefixDetailsAsync()
+        {
+            var details191 = await Service.GetPrefixDetailsAsync("191.241.64.0", 20);
+            Assert.Equal("191.241.64.0/20", details191.Prefix);
+            Assert.Equal("IANA IPv4 Address Space Registry", details191.Name);
+            Assert.Equal("Administered by LACNIC", details191.Description);
+            Assert.True(details191.ParentAsns.Count() == 1);
+            Assert.Equal(53181, details191.ParentAsns.First().ASN);
+            Assert.Equal("K2 Telecom e Multimidia LTDA ME", details191.ParentAsns.First().Name);
+            Assert.Equal("K2 Telecom e Multimidia LTDA ME", details191.ParentAsns.First().Description);
+            Assert.Equal(string.Empty, details191.ParentAsns.First().CountryCode);
+            
+            var details2001 = await Service.GetPrefixDetailsAsync("2804::113c", 32);
+            Assert.Equal("2804::113c/32", details2001.Prefix);
+            Assert.Equal("IANA IPv6 Global Unicast Address Assignments", details2001.Name);
+            Assert.Equal("Designated to LACNIC on 03 October 2006 (Status: allocated; Note: 2800:0000::/23 was allocated on 2005-11-17. The more recent allocation (2006-10-03) incorporates the \nprevious allocation.)", details2001.Description);
+            Assert.True(details2001.ParentAsns.Count() == 1);
+            Assert.Equal(2716, details2001.ParentAsns.First().ASN);
+            Assert.Equal("Universidade Federal do Rio Grande do Sul", details2001.ParentAsns.First().Name);
+            Assert.Equal("Universidade Federal do Rio Grande do Sul", details2001.ParentAsns.First().Description);
+            Assert.Equal(string.Empty, details2001.ParentAsns.First().CountryCode);
+        }
+
+        [Fact]
+        public void SearchByAlwaysReturnNullObject()
+        {
+            var result1 = Service.SearchBy("abc");
+            Assert.Empty(result1.IPv4);
+            Assert.Empty(result1.IPv6);
+            Assert.Empty(result1.RelatedAsns);
+
+            var result2 = Service.SearchBy("google");
+            Assert.Empty(result2.IPv4);
+            Assert.Empty(result2.IPv6);
+            Assert.Empty(result2.RelatedAsns);
+
+            var result3 = Service.SearchBy("1.1.1.1");
+            Assert.Empty(result3.IPv4);
+            Assert.Empty(result3.IPv6);
+            Assert.Empty(result3.RelatedAsns);
+        }
+        
+        [Fact]
+        public async void SearchByAlwaysReturnNullObjectAsync()
+        {
+            var result1 = await Service.SearchByAsync("abc");
+            Assert.Empty(result1.IPv4);
+            Assert.Empty(result1.IPv6);
+            Assert.Empty(result1.RelatedAsns);
+
+            var result2 = await Service.SearchByAsync("google");
+            Assert.Empty(result2.IPv4);
+            Assert.Empty(result2.IPv6);
+            Assert.Empty(result2.RelatedAsns);
+
+            var result3 = await Service.SearchByAsync("1.1.1.1");
+            Assert.Empty(result3.IPv4);
+            Assert.Empty(result3.IPv6);
+            Assert.Empty(result3.RelatedAsns);
+        }
     }
 }

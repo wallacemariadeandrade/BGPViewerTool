@@ -133,23 +133,37 @@ namespace BGPViewerCore.Service
         }
 
         public PrefixDetailModel GetPrefixDetails(string prefix, byte cidr)
-        {
-            throw new NotImplementedException();
-        }
+            => GetPrefixDetailsAsync(prefix, cidr).GetAwaiter().GetResult();
 
-        public Task<PrefixDetailModel> GetPrefixDetailsAsync(string prefix, byte cidr)
+        public async Task<PrefixDetailModel> GetPrefixDetailsAsync(string prefix, byte cidr)
         {
-            throw new NotImplementedException();
+            var jsonData = await api.RetrievePrefixDetailsAsync(prefix, cidr);
+            ValidateData(jsonData);
+            var data = jsonData.RootElement.GetProperty("data");
+            var block = data.GetProperty("block");
+            return new PrefixDetailModel {
+                Prefix = $"{prefix}/{cidr}",
+                Name = block.GetProperty("name").GetString(),
+                Description = block.GetProperty("desc").GetString(),
+                ParentAsns = data.GetProperty("asns")
+                    .EnumerateArray()
+                    .Select(element => new AsnModel {
+                        ASN = element.GetProperty("asn").GetInt32(),
+                        Name = element.GetProperty("holder").GetString(),
+                        Description = element.GetProperty("holder").GetString(),
+                        CountryCode = string.Empty
+                    })
+            };
         }
 
         public SearchModel SearchBy(string queryTerm)
-        {
-            throw new NotImplementedException();
-        }
+            => new SearchModel {
+            IPv4 = Enumerable.Empty<PrefixDetailModel>(),
+            IPv6 = Enumerable.Empty<PrefixDetailModel>(),
+            RelatedAsns = Enumerable.Empty<AsnWithContactsModel>()
+        };
 
         public Task<SearchModel> SearchByAsync(string queryTerm)
-        {
-            throw new NotImplementedException();
-        }
+            => Task.FromResult(SearchBy(queryTerm));
     }
 }

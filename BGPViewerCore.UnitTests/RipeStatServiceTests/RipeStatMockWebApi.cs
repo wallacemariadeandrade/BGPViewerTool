@@ -1,3 +1,4 @@
+using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 using BGPViewerCore.Service;
@@ -42,5 +43,18 @@ namespace BGPViewerCore.UnitTests.RipeStatServiceTests
 
         public override Task<JsonDocument> RetrieveIpDetailsAsync(string ipAddress)
             => Task.FromResult(RetrieveIpDetails(ipAddress));
+
+        public override JsonDocument RetrievePrefixDetails(string prefix, byte cidr)
+        {
+            var p = $"{prefix}/{cidr}";
+            if(p == "191.241.64.0/20")
+                return JsonDocument.Parse(@"{ ""messages"": [], ""see_also"": [ { ""relation"": ""less-specific"", ""resource"": ""191.241.64.0/20"" } ], ""version"": ""1.3"", ""data_call_name"": ""prefix-overview"", ""data_call_status"": ""supported - connecting to ursa"", ""cached"": false, ""data"": { ""is_less_specific"": false, ""announced"": true, ""asns"": [ { ""asn"": 53181, ""holder"": ""K2 Telecom e Multimidia LTDA ME"" } ], ""related_prefixes"": [ ""191.241.64.0/20"" ], ""resource"": ""191.241.64.0/24"", ""type"": ""prefix"", ""block"": { ""resource"": ""191.0.0.0/8"", ""desc"": ""Administered by LACNIC"", ""name"": ""IANA IPv4 Address Space Registry"" }, ""actual_num_related"": 1, ""query_time"": ""2021-12-16T00:00:00"", ""num_filtered_out"": 0 }, ""query_id"": ""20211216093354-19c57233-da05-4fc2-a6f8-b8799fc8ebf8"", ""process_time"": 118, ""server_id"": ""app132"", ""build_version"": ""live.2021.12.15.56"", ""status"": ""ok"", ""status_code"": 200, ""time"": ""2021-12-16T09:33:54.548663"" }");
+            if(p == "2804::113c/32")
+                return JsonDocument.Parse(@"{ ""messages"": [], ""see_also"": [ { ""relation"": ""more-specific"", ""resource"": ""2804:0:8000::/33"" }, { ""relation"": ""more-specific"", ""resource"": ""2804:0:666::/48"" }, { ""relation"": ""more-specific"", ""resource"": ""2804:0:1800::/48"" }, { ""relation"": ""more-specific"", ""resource"": ""2804:0:1c00::/48"" }, { ""relation"": ""more-specific"", ""resource"": ""2804:0:5c00::/48"" }, { ""relation"": ""more-specific"", ""resource"": ""2804:0:6c00::/48"" } ], ""version"": ""1.3"", ""data_call_name"": ""prefix-overview"", ""data_call_status"": ""supported - connecting to ursa"", ""cached"": true, ""data"": { ""is_less_specific"": false, ""announced"": true, ""asns"": [ { ""asn"": 2716, ""holder"": ""Universidade Federal do Rio Grande do Sul"" } ], ""related_prefixes"": [ ""2804:0:8000::/33"", ""2804:0:666::/48"", ""2804:0:1800::/48"", ""2804:0:1c00::/48"", ""2804:0:5c00::/48"", ""2804:0:6c00::/48"" ], ""resource"": ""2804::/32"", ""type"": ""prefix"", ""block"": { ""resource"": ""2800::/12"", ""desc"": ""Designated to LACNIC on 03 October 2006 (Status: allocated; Note: 2800:0000::/23 was allocated on 2005-11-17. The more recent allocation (2006-10-03) incorporates the \nprevious allocation.)"", ""name"": ""IANA IPv6 Global Unicast Address Assignments"" }, ""actual_num_related"": 6, ""query_time"": ""2021-12-16T00:00:00"", ""num_filtered_out"": 0 }, ""query_id"": ""20211216092500-40257e40-17e6-40d2-82c3-9b99d35eaf40"", ""process_time"": 0, ""server_id"": ""app130"", ""build_version"": ""live.2021.12.15.56"", ""status"": ""ok"", ""status_code"": 200, ""time"": ""2021-12-16T09:25:00.766906"" }");
+            return Error();
+        }
+
+        public override Task<JsonDocument> RetrievePrefixDetailsAsync(string prefix, byte cidr)
+            => Task.FromResult(RetrievePrefixDetails(prefix, cidr));
     }
 }
