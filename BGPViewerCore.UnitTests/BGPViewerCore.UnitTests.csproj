@@ -21,6 +21,9 @@
     <Content Include="BGPHeServiceMockTestData\*.*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>  
+    <Content Include="ArinServiceMockTestData\*.*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>  
   </ItemGroup>
 
 </Project>
